@@ -1,4 +1,4 @@
-module github.com/loebfly/gokit
+module github.com/loebfly/ezgin
 
 go 1.17
 

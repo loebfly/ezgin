@@ -1,4 +1,4 @@
-package gokit
+package config
 
 import dbYml "github.com/loebfly/dblite/yml"
 
