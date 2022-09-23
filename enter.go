@@ -43,7 +43,12 @@ func Start() error {
 	return StartWithCustom("", nil)
 }
 
-// ShutdownWhenException 服务异常退出时 优雅关闭服务
-func ShutdownWhenException(will func(os.Signal), did func(context.Context)) {
-	App.ShutdownWhenException(will, did)
+// ShutdownWhenExitSignalWithCallBack 服务异常退出时 优雅关闭服务
+func ShutdownWhenExitSignalWithCallBack(will func(os.Signal), did func(context.Context)) {
+	App.ShutdownWhenExitSignal(will, did)
+}
+
+// ShutdownWhenExitSignal 服务异常退出时 优雅关闭服务
+func ShutdownWhenExitSignal() {
+	ShutdownWhenExitSignalWithCallBack(nil, nil)
 }

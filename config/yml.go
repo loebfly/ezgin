@@ -23,13 +23,14 @@ type GoYml struct {
 	} `yaml:"nacos"` // nacos配置
 
 	Log struct {
-		Out   string `yaml:"out"`  // 日志输出方式, 可选值: console, file, mongo
-		File  string `yaml:"file"` // 日志文件路径, 如果Out包含file, 则必须配置, 否则无法输出到文件
-		Mongo struct {
-			NacosMongo string      `yaml:"nacos_mongo"` // nacos的mongo日志配置文件名, 如果Out包含mongo, 则必须配置, 否则无法输出到mongo
-			LocalMongo dbYml.Mongo `yaml:"local_mongo"` // 本地 mongo 数据库配置, 如果Out包含mongo, 则必须配置, 否则无法输出到mongo
-		} `yaml:"mongo"` // mongo日志配置, nacos 与 local 二选一
+		Out  string `yaml:"out"`  // 日志输出方式, 可选值: console, file 默认 console
+		File string `yaml:"file"` // 日志文件路径, 如果Out包含file, 则必须配置, 否则无法输出到文件
 	} `yaml:"log"` // 日志配置
+
+	RequestLog struct {
+		NacosMongo string      `yaml:"nacos_mongo"` // nacos的mongo日志配置文件名, 如果Out包含mongo, 则必须配置, 否则无法输出到mongo
+		LocalMongo dbYml.Mongo `yaml:"local_mongo"` // 本地 mongo 数据库配置, 如果Out包含mongo, 则必须配置, 否则无法输出到mongo
+	} `yaml:"request_log"` // 请求日志配置
 
 	LocalDB struct {
 		MySql dbYml.Mysql `yaml:"mysql"` // mysql 数据库本地配置

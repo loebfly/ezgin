@@ -12,7 +12,12 @@ func (receiver enter) GetOriEngine() *gin.Engine {
 }
 
 func (receiver enter) SetOriEngine(engine *gin.Engine) {
-	oriEngine = engine
+	if engine == nil {
+		engine = gin.Default()
+	}
+	if oriEngine == nil {
+		oriEngine = engine
+	}
 }
 
 func (receiver enter) Use(middleware ...gin.HandlerFunc) gin.IRoutes {

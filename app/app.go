@@ -30,17 +30,13 @@ func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 		klogs.Warn("日志模块初始化错误:{}", err.Error())
 	}
 
-	if ginEngine == nil {
-		ginEngine = gin.Default()
-	}
-
 	engine.Enter.SetOriEngine(ginEngine)
 
 	return nil
 }
 
-// ShutdownWhenException 服务异常退出时 优雅关闭服务
-func (receiver enter) ShutdownWhenException(will func(os.Signal), did func(context.Context)) {
+// ShutdownWhenExitSignal 服务异常退出时 优雅关闭服务
+func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(context.Context)) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
 	sig := <-signalChan
