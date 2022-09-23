@@ -2,6 +2,9 @@ package app
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
+	"github.com/loebfly/ezgin/config"
+	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/klogs"
 	"net/http"
 	"os"
@@ -14,12 +17,30 @@ var (
 	servers = make([]*http.Server, 0)
 )
 
-func (receiver Enter) StartServer() {
+// StartServer 启动服务
+func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 
+	err := config.Enter.Load(ymlPath)
+	if err != nil {
+		return err
+	}
+
+	err = klogs.Init(ymlPath)
+	if err != nil {
+		klogs.Warn("日志模块初始化错误:{}", err.Error())
+	}
+
+	if ginEngine == nil {
+		ginEngine = gin.Default()
+	}
+
+	engine.Enter.SetOriEngine(ginEngine)
+
+	return nil
 }
 
 // ShutdownWhenException 服务异常退出时 优雅关闭服务
-func (receiver Enter) ShutdownWhenException(will func(os.Signal), did func(context.Context)) {
+func (receiver enter) ShutdownWhenException(will func(os.Signal), did func(context.Context)) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
 	sig := <-signalChan

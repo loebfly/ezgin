@@ -2,91 +2,38 @@ package config
 
 import dbYml "github.com/loebfly/dblite/yml"
 
-/*
-# 应用程序配置
-app:
-  name: xxxx
-  port: 0000 # http端口
-  port_ssl: 0000 # https端口
-  env: test # 环境
-  debug: true # 是否开启debug模式
-  db_config: local or nacos # 数据库配置来源
-  is_register_nacos: true # 是否注册到nacos
-
-# nacos 配置
-nacos:
-  server: http:// # nacos 服务地址
-    yml:
-      mysql: xxxx # mysql 配置文件名称，不带.yml后缀
-      mongo: xxxx # mongo 配置文件名称，不带.yml后缀
-      redis: xxxx # redis 配置文件名称，不带.yml后缀
-
-# log 配置
-log:
-  out: console,file # log output
-  file: /opt/logs/xxxx # log file path
-  mongo: xxxx # mongodb log collection name
-
-# 本地mysql配置
-db_local:
-  mysql:
-    url:
-    pool:
-      max: 20
-      idle: 10
-      timeout:
-        idle: 60
-        life: 60
-
-  # 本地redis配置
-  redis:
-    host:
-    port:
-    password:
-    database: 5
-    timeout: 1000
-    pool:
-      min: 3
-      max: 20
-      idle: 10
-      timeout: 300
-
-  # 本地mongodb配置
-  mongo:
-    url:
-    database:
-    pool_max: 20
-*/
-
 type GoYml struct {
 	App struct {
-		Name            string `yaml:"name"`
-		Port            int    `yaml:"port"`
-		PortSsl         int    `yaml:"port_ssl"`
-		Env             string `yaml:"env"`
-		Debug           bool   `yaml:"debug"`
-		DbConfig        string `yaml:"db_config"`
-		IsRegisterNacos bool   `yaml:"is_register_nacos"`
-	} `yaml:"app"`
+		Name    string `yaml:"name"`     // 应用名称
+		Port    int    `yaml:"port"`     // http服务端口
+		PortSsl int    `yaml:"port_ssl"` // https服务端口
+		Cert    string `yaml:"cert"`     // 证书, 用于https, 如果不需要https,则不需要配置
+		Key     string `yaml:"key"`      // 私钥,用于https,如果不需要https,则不需要配置
+		Debug   bool   `yaml:"debug"`    // 是否开启debug模式, 默认false, 如果开启, 则不会被其他服务调用
+	} `yaml:"app"` // 应用配置
 
 	Nacos struct {
-		Server string `yaml:"server"`
+		Server string `yaml:"server"` // nacos服务地址
+		Env    string `yaml:"env"`    // 环境 test, dev, prod
 		Yml    struct {
-			Mysql string `yaml:"mysql"`
-			Mongo string `yaml:"mongo"`
-			Redis string `yaml:"redis"`
-		} `yaml:"yml"`
-	} `yaml:"nacos"`
+			Mysql string `yaml:"mysql"` // mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+			Mongo string `yaml:"mongo"` // mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+			Redis string `yaml:"redis"` // redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+		} `yaml:"yml"` // nacos配置文件名
+	} `yaml:"nacos"` // nacos配置
 
 	Log struct {
-		Out   string `yaml:"out"`
-		File  string `yaml:"file"`
-		Mongo string `yaml:"mongo"`
-	} `yaml:"log"`
+		Out   string `yaml:"out"`  // 日志输出方式, 可选值: console, file, mongo
+		File  string `yaml:"file"` // 日志文件路径, 如果Out包含file, 则必须配置, 否则无法输出到文件
+		Mongo struct {
+			NacosMongo string      `yaml:"nacos_mongo"` // nacos的mongo日志配置文件名, 如果Out包含mongo, 则必须配置, 否则无法输出到mongo
+			LocalMongo dbYml.Mongo `yaml:"local_mongo"` // 本地 mongo 数据库配置, 如果Out包含mongo, 则必须配置, 否则无法输出到mongo
+		} `yaml:"mongo"` // mongo日志配置, nacos 与 local 二选一
+	} `yaml:"log"` // 日志配置
 
-	DBLocal struct {
-		MySql dbYml.Mysql `yaml:"mysql"`
-		Mongo dbYml.Mongo `yaml:"mongo"`
-		Redis dbYml.Redis `yaml:"redis"`
-	} `yaml:"db_local"`
+	LocalDB struct {
+		MySql dbYml.Mysql `yaml:"mysql"` // mysql 数据库本地配置
+		Mongo dbYml.Mongo `yaml:"mongo"` // mongo 数据库本地配置
+		Redis dbYml.Redis `yaml:"redis"` // redis 数据库本地配置
+	} `yaml:"local_db"` // 本地数据库配置
 }

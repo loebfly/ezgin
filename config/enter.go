@@ -1,3 +1,5 @@
 package config
 
-type Enter int
+type enter int
+
+const Enter = enter(0)
