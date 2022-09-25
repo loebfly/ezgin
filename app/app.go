@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -20,7 +22,7 @@ var (
 // StartServer 启动服务
 func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 
-	err := config.Enter.Load(ymlPath)
+	err := config.Enter.Init(ymlPath)
 	if err != nil {
 		return err
 	}
@@ -31,6 +33,59 @@ func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 	}
 
 	engine.Enter.SetOriEngine(ginEngine)
+
+	ez := config.ObjConfig.EZGin
+
+	if ez.App.Debug {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	if ez.App.Port > 0 {
+		// HTTP 端口
+		servers = append(servers, &http.Server{
+			Addr:    strconv.Itoa(ez.App.Port),
+			Handler: engine.Enter.GetOriEngine(),
+		})
+		go func() {
+			if listenErr := servers[0].ListenAndServe(); listenErr != nil {
+				klogs.Error("侦听HTTP端口{}失败:{}", ez.App.Port, listenErr.Error())
+			}
+		}()
+	}
+	if ez.App.PortSsl > 0 {
+		// HTTPS 端口
+		servers = append(servers, &http.Server{
+			Addr:    strconv.Itoa(ez.App.PortSsl),
+			Handler: engine.Enter.GetOriEngine(),
+		})
+		if ez.App.Cert != "" && ez.App.Key != "" {
+			go func() {
+				path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+				if listenErr := servers[1].ListenAndServeTLS(path+"/"+ez.App.Cert, path+"/"+ez.App.Key); listenErr != nil {
+					klogs.Error("侦听HTTP端口{}失败:{}", ez.App.PortSsl, listenErr.Error())
+				}
+			}()
+		} else {
+			klogs.Error("HTTPS证书私钥文件未配置")
+		}
+	}
+
+	if ez.Nacos.Server != "" {
+
+		//nacos.Enter.InitObj()
+	}
+
+	klogs.C("APP").Debug("|-----------------------------------|")
+	klogs.C("APP").Debug("|	   			{} {}				|", ez.App.Name, ez.App.Version)
+	klogs.C("APP").Debug("|-----------------------------------|")
+	if ez.App.Port > 0 {
+		klogs.C("APP").Debug("|		HTTP端口: {}				|", ez.App.Port)
+	}
+	if ez.App.PortSsl > 0 {
+		klogs.C("APP").Debug("|		HTTPS端口: {}				|", ez.App.PortSsl)
+	}
 
 	return nil
 }
