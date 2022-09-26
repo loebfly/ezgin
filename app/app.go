@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/config"
 	"github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/nacos"
 	"github.com/loebfly/klogs"
 	"net/http"
 	"os"
@@ -34,10 +35,10 @@ func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 
 	engine.Enter.SetOriEngine(ginEngine)
 
-	ez := config.ObjConfig.EZGin
+	ez := config.YmlObj.EZGin
 
-	if ez.App.Debug {
-		gin.SetMode(gin.DebugMode)
+	if ez.Gin.Mode != "" {
+		gin.SetMode(ez.Gin.Mode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -73,19 +74,34 @@ func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 	}
 
 	if ez.Nacos.Server != "" {
+		nacosPrefix := config.YmlObj.EZGin.Nacos.Yml.Nacos
+		if nacosPrefix != "" {
+			nacosUrl := config.YmlObj.GetNacosUrl(config.YmlObj.EZGin.Nacos.Yml.Nacos)
+			var yml nacos.Yml
+			err = config.Enter.GetYmlObj(nacosUrl, &yml)
+			if err != nil {
+				klogs.Error("获取nacos配置失败:{}", err.Error())
+				return err
+			}
 
-		//nacos.Enter.InitObj()
+			err = nacos.Enter.InitObj(yml)
+			if err != nil {
+				klogs.Error("nacos初始化失败:{}", err.Error())
+				return err
+			}
+		}
 	}
 
 	klogs.C("APP").Debug("|-----------------------------------|")
 	klogs.C("APP").Debug("|	   			{} {}				|", ez.App.Name, ez.App.Version)
 	klogs.C("APP").Debug("|-----------------------------------|")
 	if ez.App.Port > 0 {
-		klogs.C("APP").Debug("|		HTTP端口: {}				|", ez.App.Port)
+		klogs.C("APP").Debug("|	启动成功!		HTTP端口: {}				|", ez.App.Port)
 	}
 	if ez.App.PortSsl > 0 {
-		klogs.C("APP").Debug("|		HTTPS端口: {}				|", ez.App.PortSsl)
+		klogs.C("APP").Debug("|	启动成功!		HTTPS端口: {}			|", ez.App.PortSsl)
 	}
+	klogs.C("APP").Debug("|-----------------------------------|")
 
 	return nil
 }
@@ -97,6 +113,9 @@ func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(cont
 	sig := <-signalChan
 	klogs.Error("收到退出信号:{}", sig.String())
 	klogs.Error("关闭服务...")
+
+	nacos.Enter.Unregister()
+
 	will(sig)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

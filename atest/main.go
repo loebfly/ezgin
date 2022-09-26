@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin"
 	"github.com/loebfly/ezgin/engine"
-	"os"
 )
 
 func main() {
@@ -25,7 +23,7 @@ func main() {
 		"/hello3": TestHandler,
 	})
 
-	ezgin.Engine.GroupRoutes(engine.Get, "group", map[string]engine.GinHandlerFunc{
+	ezgin.Engine.GroupRoutes(engine.Get, "oss", map[string]engine.GinHandlerFunc{
 		"hello4": TestHandler,
 		"hello5": TestHandler,
 	})
@@ -55,11 +53,7 @@ func main() {
 	})
 
 	// 服务异常退出时 优雅关闭服务
-	ezgin.ShutdownWhenException(func(signal os.Signal) {
-
-	}, func(ctx context.Context) {
-
-	})
+	ezgin.ShutdownWhenExitSignal()
 }
 
 func TestHandler(ctx *gin.Context) engine.GinResult {

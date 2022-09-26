@@ -30,3 +30,8 @@ func (enter) GetClient() naming_client.INamingClient {
 func (enter) Unregister() {
 	ctl.unregister()
 }
+
+// GetService 获取服务
+func (enter) GetService(name string) (url string, err error) {
+	return ctl.getService(name)
+}

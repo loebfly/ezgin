@@ -2,12 +2,14 @@ package nacos
 
 import (
 	"errors"
+	"github.com/loebfly/ezgin/cache"
 	"github.com/loebfly/klogs"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/model"
 	"github.com/nacos-group/nacos-sdk-go/vo"
+	"math/rand"
 	"net"
 	"os"
 	"path/filepath"
@@ -126,6 +128,10 @@ func (c *control) register() bool {
 
 // Unregister 注销Nacos客户端
 func (c *control) unregister() {
+	if c.client == nil {
+		klogs.C("NACOS").Error("Nacos客户端未注册")
+		return
+	}
 	subErr := c.client.Unsubscribe(&vo.SubscribeParam{
 		ServiceName: config.Nacos.App.Name,
 		Clusters:    []string{config.Nacos.ClusterName},
@@ -173,8 +179,20 @@ func (c *control) unregister() {
 }
 
 // getService 获取服务
-func (c *control) getService(name string) (url, cluster, group string, err error) {
+func (c *control) getService(name string) (url string, err error) {
+	// 从缓存中获取, 有则随机返回缓存中的一个
+	if cacheUrls, isExist := cache.Enter.Table("nacos").Get(name); cacheUrls != nil && isExist {
+		if urls, ok := cacheUrls.([]string); ok {
+			if len(urls) > 0 {
+				url = urls[rand.Intn(len(urls))]
+				return
+			}
+		}
+	}
+
+	// 从Nacos中获取, 有则随机返回Nacos中的一个
 	var targetInstance model.Instance
+	var group string
 	// 最多尝试3次
 	for i := 0; i < 3; i++ {
 		group = config.Nacos.GroupName
@@ -200,21 +218,25 @@ func (c *control) getService(name string) (url, cluster, group string, err error
 				continue
 			}
 		}
-		// 找到非debug环境的服务
-		for _, instance := range instances {
-			if instance.Metadata != nil &&
-				instance.Metadata["debug"] == "false" {
-				targetInstance = instance
-				break
+
+		// 删除debug实例
+		for j := 0; j < len(instances); j++ {
+			if instances[j].Metadata["debug"] == "true" {
+				instances = append(instances[:j], instances[j+1:]...)
+				j--
 			}
 		}
+		if len(instances) > 0 {
+			targetInstance = instances[rand.Intn(len(instances))]
+			break
+		}
 	}
+
 	if targetInstance.InstanceId == "" {
 		klogs.C("NACOS").Error("未获取到服务:{}", name)
-		return "", "", "", errors.New("未获取到服务:" + name)
+		return "", errors.New("未获取到服务:" + name)
 	}
 	err = nil
-	cluster = targetInstance.ClusterName
 	klogs.C("NACOS").Debug("获取到服务:{}", targetInstance)
 	url = targetInstance.Ip + ":" + strconv.Itoa(int(targetInstance.Port))
 	if targetInstance.Metadata != nil &&
@@ -223,7 +245,54 @@ func (c *control) getService(name string) (url, cluster, group string, err error
 	} else {
 		url = "http:" + "//" + url
 	}
-	return url, cluster, group, err
+
+	// 订阅服务，回调中更新缓存
+	subErr := c.subscribeService(name, group)
+	if subErr != nil {
+		klogs.C("NACOS").Error("客户端订阅服务:{}失败:{}", name, subErr.Error())
+	}
+
+	return url, err
+}
+
+func (c *control) subscribeService(serviceName, groupName string) error {
+	return c.client.Subscribe(&vo.SubscribeParam{
+		ServiceName: serviceName,
+		Clusters:    []string{"DEFAULT"},
+		GroupName:   groupName,
+		SubscribeCallback: func(services []model.SubscribeService, err error) {
+			klogs.C("NACOS").Debug("处理订阅服务回调:{}", services)
+			if err != nil {
+				klogs.Error("Nacos订阅回调错误:{}", err.Error())
+				return
+			}
+			if services == nil || len(services) == 0 {
+				klogs.C("NACOS").Error("订阅回调服务列表为空")
+				return
+			}
+			servicesMap := make(map[string][]string)
+			for _, s := range services {
+				protocol := "http"
+				if s.Metadata != nil &&
+					s.Metadata["ssl"] == "true" {
+					protocol = "https:"
+				}
+				host := protocol + "://" + s.Ip + ":" + strconv.Itoa(int(s.Port))
+				if _, ok := servicesMap[s.ServiceName]; !ok {
+					servicesMap[s.ServiceName] = []string{host}
+				} else {
+					servicesMap[s.ServiceName] = append(servicesMap[s.ServiceName], host)
+				}
+			}
+			for sName, hosts := range servicesMap {
+				if cache.Enter.Table("NACOS").IsExist(sName) {
+					cache.Enter.Table("NACOS").Delete(sName)
+				}
+				klogs.C("NACOS").Debug("添加{}服务缓存,列表:{}", sName, hosts)
+				cache.Enter.Table("NACOS").Add(sName, hosts, 0)
+			}
+		},
+	})
 }
 
 // createCacheDirIfNeed 创建缓存目录

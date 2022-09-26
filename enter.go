@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/app"
+	"github.com/loebfly/ezgin/cache"
 	"github.com/loebfly/ezgin/config"
 	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/nacos"
@@ -16,6 +17,7 @@ const (
 	Config = config.Enter
 	Nacos  = nacos.Enter
 	Engine = engine.Enter
+	Cache  = cache.Enter
 )
 
 // GetYmlPath 获取yml配置文件路径

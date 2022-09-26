@@ -14,15 +14,15 @@ type enter int
 
 const Enter = enter(0)
 
-var YmlConfig *koanf.Koanf
+var YmlData *koanf.Koanf
 
-var ObjConfig *Yml
+var YmlObj *Yml
 
 func (enter) Init(ymlPath string) error {
 	klogs.Debug("读取配置文件:" + ymlPath)
-	YmlConfig = koanf.New(".")
+	YmlData = koanf.New(".")
 	f := file.Provider(ymlPath)
-	err := YmlConfig.Load(f, kYaml.Parser())
+	err := YmlData.Load(f, kYaml.Parser())
 	if err != nil {
 		klogs.Error("读取配置文件错误:" + err.Error())
 		return err
@@ -32,7 +32,7 @@ func (enter) Init(ymlPath string) error {
 		klogs.Error("读取配置文件错误:" + err.Error())
 		return err
 	}
-	if err = yaml.Unmarshal(fBytes, &ObjConfig); err != nil {
+	if err = yaml.Unmarshal(fBytes, &YmlObj); err != nil {
 		klogs.Error("配置文件解析错误:" + err.Error())
 		return err
 	}
@@ -55,11 +55,15 @@ func (enter) GetYmlData(confUrl string) (*koanf.Koanf, error) {
 	return conf, nil
 }
 
-// GetYmlObj 以结构体获取配置数据，结构体tag必须包含yaml
+// GetYmlObj 以结构体获取配置数据，结构体tag必须包含json
 func (enter) GetYmlObj(confUrl string, obj interface{}) error {
 	resp, err := grequests.Get(confUrl, nil)
 	if err != nil {
 		klogs.Error(confUrl + "配置下载失败! " + err.Error())
+		return err
+	}
+	if resp.StatusCode != 200 {
+		klogs.Error(confUrl + "配置下载失败! " + resp.String())
 		return err
 	}
 	err = yaml.Unmarshal(resp.Bytes(), &obj)
