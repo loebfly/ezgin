@@ -1,13 +1,13 @@
 ezgin:
     app:
-        name: "test"
+        name: test
         port: 8080
-        port_ssl: 8443
-        cert: "cert.pem"
-        key: "key.pem"
+        port_ssl: 0
+        cert: cert.pem
+        key: key.pem
         debug: false
-        version: "1.0.0"
-        env: "test"
+        version: 1.0.0
+        env: test
     nacos:
         server: http://59.56.77.23:58848/
         yml:

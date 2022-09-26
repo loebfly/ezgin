@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"flag"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/config"
 	"github.com/loebfly/ezgin/engine"
@@ -12,6 +13,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -20,9 +22,21 @@ var (
 	servers = make([]*http.Server, 0)
 )
 
-// StartServer 启动服务
-func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
+// getLocalYml 获取yml配置文件路径
+func (receiver enter) getYml() string {
+	var fileName string
+	flag.StringVar(&fileName, "f", os.Args[0]+".yml", "yml配置文件名")
+	flag.Parse()
+	path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	if strings.Contains(fileName, "/") || strings.Contains(fileName, "\\") {
+		return fileName
+	}
+	return path + "/" + fileName
+}
 
+// StartServer 启动服务
+func (receiver enter) StartServer(ginEngine *gin.Engine) error {
+	ymlPath := receiver.getYml()
 	err := config.Enter.Init(ymlPath)
 	if err != nil {
 		return err
@@ -46,7 +60,7 @@ func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 	if ez.App.Port > 0 {
 		// HTTP 端口
 		servers = append(servers, &http.Server{
-			Addr:    strconv.Itoa(ez.App.Port),
+			Addr:    ":" + strconv.Itoa(ez.App.Port),
 			Handler: engine.Enter.GetOriEngine(),
 		})
 		go func() {
@@ -58,14 +72,14 @@ func (receiver enter) StartServer(ymlPath string, ginEngine *gin.Engine) error {
 	if ez.App.PortSsl > 0 {
 		// HTTPS 端口
 		servers = append(servers, &http.Server{
-			Addr:    strconv.Itoa(ez.App.PortSsl),
+			Addr:    ":" + strconv.Itoa(ez.App.PortSsl),
 			Handler: engine.Enter.GetOriEngine(),
 		})
 		if ez.App.Cert != "" && ez.App.Key != "" {
 			go func() {
 				path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 				if listenErr := servers[1].ListenAndServeTLS(path+"/"+ez.App.Cert, path+"/"+ez.App.Key); listenErr != nil {
-					klogs.Error("侦听HTTP端口{}失败:{}", ez.App.PortSsl, listenErr.Error())
+					klogs.Error("侦听HTTPS端口{}失败:{}", ez.App.PortSsl, listenErr.Error())
 				}
 			}()
 		} else {

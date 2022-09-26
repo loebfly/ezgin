@@ -274,10 +274,15 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 			servicesMap := make(map[string][]string)
 			for _, s := range services {
 				protocol := "http"
-				if s.Metadata != nil &&
-					s.Metadata["ssl"] == "true" {
-					protocol = "https:"
+				if s.Metadata != nil {
+					if s.Metadata["debug"] == "true" {
+						continue
+					}
+					if s.Metadata["ssl"] == "true" {
+						protocol = "https"
+					}
 				}
+
 				host := protocol + "://" + s.Ip + ":" + strconv.Itoa(int(s.Port))
 				if _, ok := servicesMap[s.ServiceName]; !ok {
 					servicesMap[s.ServiceName] = []string{host}
