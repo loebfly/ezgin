@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var ctl = new(control)
@@ -289,7 +290,7 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 					cache.Enter.Table("NACOS").Delete(sName)
 				}
 				klogs.C("NACOS").Debug("添加{}服务缓存,列表:{}", sName, hosts)
-				cache.Enter.Table("NACOS").Add(sName, hosts, 0)
+				cache.Enter.Table("NACOS").Add(sName, hosts, time.Minute*5)
 			}
 		},
 	})
