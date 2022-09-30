@@ -3,7 +3,7 @@ package nacos
 import (
 	"errors"
 	"github.com/loebfly/ezgin/cache"
-	"github.com/loebfly/klogs"
+	"github.com/loebfly/ezgin/logs"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -49,25 +49,25 @@ func (c *control) register() bool {
 		})
 	}
 
-	klogs.C("NACOS").Debug("Nacos服务器配置:{}", serverConfigs)
+	logs.Enter.CDebug("NACOS", "Nacos服务器配置:{}", serverConfigs)
 
 	clientConfig := constant.ClientConfig{
 		UpdateCacheWhenEmpty: true,
 		LogLevel:             "error",
 	}
-	klogs.C("NACOS").Debug("Nacos客户端配置:{}", clientConfig)
+	logs.Enter.CDebug("NACOS", "Nacos客户端配置:{}", clientConfig)
 
 	naming, err := clients.CreateNamingClient(map[string]interface{}{
 		"serverConfigs": serverConfigs,
 		"clientConfig":  clientConfig,
 	})
 	if err != nil {
-		klogs.C("NACOS").Error("Nacos客户端创建失败:{}", err)
+		logs.Enter.CError("NACOS", "Nacos客户端创建失败:{}", err)
 		return false
 	}
 	c.client = naming
 
-	klogs.C("NACOS").Debug("Nacos客户端创建成功")
+	logs.Enter.CDebug("NACOS", "Nacos客户端创建成功")
 
 	appIp := ""
 	if config.Nacos.App.Ip != "" {
@@ -104,7 +104,7 @@ func (c *control) register() bool {
 		Ephemeral:   true,
 	})
 	if !isSuccess {
-		klogs.C("NACOS").Error("Nacos客户端注册失败:{}", regErr)
+		logs.Enter.CError("NACOS", "Nacos客户端注册失败:{}", regErr)
 		return false
 	}
 
@@ -114,14 +114,14 @@ func (c *control) register() bool {
 		GroupName:   config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
-				klogs.C("NACOS").Error("Nacos客户端订阅错误:{}", err)
+				logs.Enter.CError("NACOS", "Nacos客户端订阅错误:{}", err)
 				return
 			}
-			klogs.C("NACOS").Debug("Nacos客户端订阅成功:{}", services)
+			logs.Enter.CDebug("NACOS", "Nacos客户端订阅成功:{}", services)
 		},
 	})
 	if subErr != nil {
-		klogs.C("NACOS").Error("Nacos客户端订阅失败:{}", subErr)
+		logs.Enter.CError("NACOS", "Nacos客户端订阅失败:{}", subErr)
 		return false
 	}
 	return true
@@ -130,7 +130,7 @@ func (c *control) register() bool {
 // Unregister 注销Nacos客户端
 func (c *control) unregister() {
 	if c.client == nil {
-		klogs.C("NACOS").Error("Nacos客户端未注册")
+		logs.Enter.CError("NACOS", "Nacos客户端未注册")
 		return
 	}
 	subErr := c.client.Unsubscribe(&vo.SubscribeParam{
@@ -139,14 +139,14 @@ func (c *control) unregister() {
 		GroupName:   config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
-				klogs.C("NACOS").Error("Nacos客户端取消订阅错误:{}", err)
+				logs.Enter.CError("NACOS", "Nacos客户端取消订阅错误:{}", err)
 				return
 			}
-			klogs.C("NACOS").Debug("Nacos客户端取消订阅成功:{}", services)
+			logs.Enter.CDebug("NACOS", "Nacos客户端取消订阅成功:{}", services)
 		},
 	})
 	if subErr != nil {
-		klogs.C("NACOS").Error("Nacos客户端取消订阅失败:{}", subErr)
+		logs.Enter.CError("NACOS", "Nacos客户端取消订阅失败:{}", subErr)
 	}
 
 	appIp := ""
@@ -174,7 +174,7 @@ func (c *control) unregister() {
 		Ephemeral:   true,
 	})
 	if !isSuccess {
-		klogs.C("NACOS").Error("Nacos客户端注销失败:{}", regErr)
+		logs.Enter.CError("NACOS", "Nacos客户端注销失败:{}", regErr)
 		return
 	}
 }
@@ -197,7 +197,7 @@ func (c *control) getService(name string) (url string, err error) {
 	// 最多尝试3次
 	for i := 0; i < 3; i++ {
 		group = config.Nacos.GroupName
-		klogs.C("NACOS").Debug("尝试从{}组中获取到服务:{}", group, name)
+		logs.Enter.CDebug("NACOS", "尝试从{}组中获取到服务:{}", group, name)
 		instances, err := c.client.SelectInstances(vo.SelectInstancesParam{
 			Clusters:    []string{config.Nacos.ClusterName, "DEFAULT"},
 			ServiceName: name,
@@ -205,9 +205,9 @@ func (c *control) getService(name string) (url string, err error) {
 			HealthyOnly: true,
 		})
 		if instances == nil || len(instances) == 0 || err != nil {
-			klogs.C("NACOS").Warn("未从{}组中获取到服务:{}", group, name)
+			logs.Enter.CWarn("NACOS", "未从{}组中获取到服务:{}", group, name)
 			group = "DEFAULT_GROUP"
-			klogs.C("NACOS").Debug("尝试从{}组中获取服务:{}", group, name)
+			logs.Enter.CDebug("NACOS", "尝试从{}组中获取服务:{}", group, name)
 			instances, err = c.client.SelectInstances(vo.SelectInstancesParam{
 				Clusters:    []string{config.Nacos.ClusterName, "DEFAULT"},
 				ServiceName: name,
@@ -215,7 +215,7 @@ func (c *control) getService(name string) (url string, err error) {
 				HealthyOnly: true,
 			})
 			if instances == nil || len(instances) == 0 || err != nil {
-				klogs.C("NACOS").Warn("未从从{}组中获取服务:{}", group, name)
+				logs.Enter.CWarn("NACOS", "未从从{}组中获取服务:{}", group, name)
 				continue
 			}
 		}
@@ -234,11 +234,11 @@ func (c *control) getService(name string) (url string, err error) {
 	}
 
 	if targetInstance.InstanceId == "" {
-		klogs.C("NACOS").Error("未获取到服务:{}", name)
+		logs.Enter.CError("NACOS", "未获取到服务:{}", name)
 		return "", errors.New("未获取到服务:" + name)
 	}
 	err = nil
-	klogs.C("NACOS").Debug("获取到服务:{}", targetInstance)
+	logs.Enter.CDebug("NACOS", "获取到服务:{}", targetInstance)
 	url = targetInstance.Ip + ":" + strconv.Itoa(int(targetInstance.Port))
 	if targetInstance.Metadata != nil &&
 		targetInstance.Metadata["ssl"] == "true" {
@@ -250,7 +250,7 @@ func (c *control) getService(name string) (url string, err error) {
 	// 订阅服务，回调中更新缓存
 	subErr := c.subscribeService(name, group)
 	if subErr != nil {
-		klogs.C("NACOS").Error("客户端订阅服务:{}失败:{}", name, subErr.Error())
+		logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
 	}
 
 	return url, err
@@ -262,13 +262,13 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 		Clusters:    []string{"DEFAULT"},
 		GroupName:   groupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
-			klogs.C("NACOS").Debug("处理订阅服务回调:{}", services)
+			logs.Enter.CDebug("NACOS", "处理订阅服务回调:{}", services)
 			if err != nil {
-				klogs.Error("Nacos订阅回调错误:{}", err.Error())
+				logs.Enter.CError("NACOS", "Nacos订阅回调错误:{}", err.Error())
 				return
 			}
 			if services == nil || len(services) == 0 {
-				klogs.C("NACOS").Error("订阅回调服务列表为空")
+				logs.Enter.CError("NACOS", "订阅回调服务列表为空")
 				return
 			}
 			servicesMap := make(map[string][]string)
@@ -294,7 +294,7 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 				if cache.Enter.Table("NACOS").IsExist(sName) {
 					cache.Enter.Table("NACOS").Delete(sName)
 				}
-				klogs.C("NACOS").Debug("添加{}服务缓存,列表:{}", sName, hosts)
+				logs.Enter.CDebug("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
 				cache.Enter.Table("NACOS").Add(sName, hosts, time.Minute*5)
 			}
 		},

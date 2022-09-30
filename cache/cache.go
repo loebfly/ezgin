@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/loebfly/klogs"
+	"github.com/loebfly/ezgin/logs"
 	"github.com/muesli/cache2go"
 	"time"
 )
@@ -25,7 +25,7 @@ func (receiver Memory) Get(key string) (value interface{}, isExist bool) {
 func (receiver Memory) Delete(key string) {
 	_, err := receiver.table.Delete(key)
 	if err != nil {
-		klogs.C("cache").Error("delete cache error", err)
+		logs.Enter.CError("cache", "delete cache error", err)
 	}
 }
 

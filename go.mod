@@ -7,7 +7,6 @@ require (
 	github.com/knadh/koanf v1.4.3
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
 	github.com/loebfly/dblite v0.0.5
-	github.com/loebfly/klogs v0.0.1
 	github.com/muesli/cache2go v0.0.0-20211005105910-8e46465cca4a
 	github.com/nacos-group/nacos-sdk-go v1.1.2
 	gopkg.in/yaml.v3 v3.0.1
