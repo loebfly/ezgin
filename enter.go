@@ -6,6 +6,7 @@ import (
 	"github.com/loebfly/ezgin/internal/app"
 	"github.com/loebfly/ezgin/internal/cache"
 	"github.com/loebfly/ezgin/internal/config"
+	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/engine"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
@@ -13,11 +14,12 @@ import (
 )
 
 const (
-	Config = config.Enter
-	Nacos  = nacos.Enter
-	Engine = engine.Enter
-	Cache  = cache.Enter
-	Logs   = logs.Enter
+	Config = config.Enter // 配置
+	Nacos  = nacos.Enter  // nacos
+	Engine = engine.Enter // gin引擎
+	Cache  = cache.Enter  // 缓存
+	Logs   = logs.Enter   // 日志
+	DBLite = dblite.Enter // 数据库
 )
 
 // StartWithEngine 自定义启动服务
