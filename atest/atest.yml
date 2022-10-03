@@ -13,9 +13,7 @@ ezgin:
         yml:
             nacos: nacos
             mysql: mysql
-            mongo:
-                log: mongo
-                data: mongo
+            mongo: mongo
             redis: redis
     gin:
         Mode: debug
