@@ -1,16 +1,15 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin"
 	"github.com/loebfly/ezgin/engine"
+	"os"
 )
 
 func main() {
-	err := ezgin.Start()
-	if err != nil {
-		return
-	}
+	ezgin.Start()
 
 	// 业务...
 
@@ -53,7 +52,12 @@ func main() {
 	})
 
 	// 服务异常退出时 优雅关闭服务
-	ezgin.ShutdownWhenExitSignal()
+	//ezgin.ShutdownWhenExitSignal()
+	ezgin.ShutdownWhenExitSignalWithCallBack(func(signal os.Signal) {
+
+	}, func(ctx context.Context) {
+
+	})
 }
 
 func TestHandler(ctx *gin.Context) engine.GinResult {
