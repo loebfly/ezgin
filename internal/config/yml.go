@@ -42,7 +42,6 @@ type EZGinYml struct {
 	LocalDB struct {
 		MySql dbYml.Mysql `yaml:"mysql"` // mysql 数据库本地配置
 		Mongo dbYml.Mongo `yaml:"mongo"` // mongo 数据库本地配置
-		Logs  dbYml.Mongo `yaml:"mongo"` // mongo 数据库本地配置, 用于日志输出
 		Redis dbYml.Redis `yaml:"redis"` // redis 数据库本地配置
 	} `yaml:"local_db"` // 本地数据库配置
 }
