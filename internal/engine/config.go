@@ -1,17 +1,16 @@
-package internal
+package engine
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/loebfly/ezgin/internal/engine"
 )
 
 type ymlConfig struct {
-	Gin engine.Yml `yml:"gin"` // gin配置
+	Gin Yml `yml:"gin"` // gin配置
 }
 
-var Config = new(ymlConfig)
+var config = new(ymlConfig)
 
-func (cfg *ymlConfig) initObj(obj engine.Yml) {
+func (cfg *ymlConfig) initObj(obj Yml) {
 	cfg.Gin = obj
 	cfg.fillNull()
 }

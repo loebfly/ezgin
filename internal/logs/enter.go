@@ -1,13 +1,11 @@
 package logs
 
-import "github.com/loebfly/ezgin/internal/logs/internal"
-
 type enter int
 
 const Enter = enter(0)
 
 func InitObj(obj Yml) {
-	internal.InitObj(obj)
+	Config.initObj(obj)
 }
 
 func (enter) Debug(format string, args ...interface{}) {

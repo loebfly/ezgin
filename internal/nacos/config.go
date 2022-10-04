@@ -1,17 +1,16 @@
-package internal
+package nacos
 
 import (
 	"errors"
-	"github.com/loebfly/ezgin/internal/nacos"
 )
 
 type ymlConfig struct {
-	Nacos nacos.Yml `yaml:"nacos"`
+	Nacos Yml `yaml:"nacos"`
 }
 
 var Config = new(ymlConfig)
 
-func (cfg *ymlConfig) initObj(obj nacos.Yml) {
+func (cfg *ymlConfig) initObj(obj Yml) {
 	if obj.Server == "" {
 		panic(errors.New("nacos server is empty"))
 	}

@@ -1,21 +1,20 @@
-package internal
+package config
 
 import (
 	"fmt"
 	"github.com/knadh/koanf"
 	kYaml "github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
-	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/logs"
 	"gopkg.in/yaml.v3"
 )
 
 var (
 	YmlData *koanf.Koanf
-	YmlObj  *config.Yml
+	YmlObj  *Yml
 )
 
-func initPath(ymlPath string) {
+func InitPath(ymlPath string) {
 	logs.Enter.Debug("读取配置文件:" + ymlPath)
 	YmlData = koanf.New(".")
 	f := file.Provider(ymlPath)

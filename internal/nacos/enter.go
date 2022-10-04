@@ -1,7 +1,6 @@
 package nacos
 
 import (
-	"github.com/loebfly/ezgin/internal/nacos/internal"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 )
 
@@ -10,7 +9,7 @@ type enter int
 const Enter = enter(0)
 
 func InitObj(obj Yml) {
-	internal.InitObj(obj)
+	Config.initObj(obj)
 	ctl.register()
 }
 

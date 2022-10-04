@@ -2,8 +2,7 @@ package engine
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/loebfly/ezgin"
-	"github.com/loebfly/ezgin/internal/engine/internal"
+	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/engine/middleware"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
 	"github.com/loebfly/ezgin/internal/logs"
@@ -23,13 +22,14 @@ const (
 )
 
 func (receiver control) initEngine() {
-	receiver.engine = internal.Config.Gin.Engine
-	gin.SetMode(internal.Config.Gin.Mode)
-	if internal.Config.Gin.Middleware != "-" {
-		if strings.Contains(internal.Config.Gin.Middleware, "cors") {
+	receiver.engine = config.Gin.Engine
+	gin.SetMode(config.Gin.Mode)
+
+	if config.Gin.Middleware != "-" {
+		if strings.Contains(config.Gin.Middleware, "cors") {
 			receiver.Use(middleware.Cors)
 		}
-		if strings.Contains(internal.Config.Gin.Middleware, "trace") {
+		if strings.Contains(config.Gin.Middleware, "trace") {
 			receiver.Use(middleware.Trace)
 			logs.Use(func(category, level string) map[string]int {
 				requestId := trace.Enter.GetCurReqId()
@@ -41,10 +41,11 @@ func (receiver control) initEngine() {
 				return nil
 			})
 		}
-		if strings.Contains(internal.Config.Gin.Middleware, "logs") {
+		if strings.Contains(config.Gin.Middleware, "logs") {
 			receiver.Use(middleware.Logs)
 		}
 	}
+
 }
 
 func (receiver control) Use(middleware ...gin.HandlerFunc) gin.IRoutes {
@@ -104,31 +105,31 @@ func (receiver control) StaticFS(relativePath string, fs http.FileSystem) gin.IR
 }
 
 // Routers 批量生成路由
-func (receiver control) Routers(method ezgin.HttpMethod, routers map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (receiver control) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
 
 	for path, handler := range routers {
 		switch method {
-		case ezgin.HttpMethodGet:
+		case engine.Get:
 			receiver.engine.GET(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodPost:
+		case engine.Post:
 			receiver.engine.POST(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodDelete:
+		case engine.Delete:
 			receiver.engine.DELETE(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodPatch:
+		case engine.Patch:
 			receiver.engine.PATCH(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodPut:
+		case engine.Put:
 			receiver.engine.PUT(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
@@ -145,33 +146,33 @@ func (receiver control) Routers(method ezgin.HttpMethod, routers map[string]ezgi
 }
 
 // GroupRoutes 批量生成路由组
-func (receiver control) GroupRoutes(method ezgin.HttpMethod, group string, routers map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (receiver control) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
 
 	groupRouter := receiver.engine.Group(group)
 
 	for path, handler := range routers {
 		switch method {
-		case ezgin.HttpMethodGet:
+		case engine.Get:
 			groupRouter.GET(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodPost:
+		case engine.Post:
 			groupRouter.POST(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodDelete:
+		case engine.Delete:
 			groupRouter.DELETE(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodPatch:
+		case engine.Patch:
 			groupRouter.PATCH(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
 			})
-		case ezgin.HttpMethodPut:
+		case engine.Put:
 			groupRouter.PUT(path, func(ctx *gin.Context) {
 				result := handler(ctx)
 				ctx.JSON(result.Code, result)
@@ -188,7 +189,7 @@ func (receiver control) GroupRoutes(method ezgin.HttpMethod, group string, route
 }
 
 // FreeRoutes 批量生成自由路由 map[请求方法]map[接口地址]处理函数
-func (receiver control) FreeRoutes(routers map[ezgin.HttpMethod]map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (receiver control) FreeRoutes(routers map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
 	for method, router := range routers {
 		receiver.Routers(method, router)
 	}
@@ -196,7 +197,7 @@ func (receiver control) FreeRoutes(routers map[ezgin.HttpMethod]map[string]ezgin
 }
 
 // FreeGroupRoutes 批量生成自由路由组 map[路由组]map[请求方法]map[接口地址]处理函数
-func (receiver control) FreeGroupRoutes(routers map[string]map[ezgin.HttpMethod]map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (receiver control) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
 	for group, groupRouter := range routers {
 		for method, router := range groupRouter {
 			receiver.GroupRoutes(method, group, router)

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/loebfly/ezgin/internal/logs/color"
-	"github.com/loebfly/ezgin/internal/logs/internal"
 	"os"
 	"path"
 	"reflect"
@@ -96,10 +95,10 @@ func (logger Logger) outPut(format string, args ...interface{}) {
 
 	log := strings.Join(logStack, " ")
 
-	if strings.Contains(internal.Config.Logs.Out, OutConsole) {
+	if strings.Contains(Config.Logs.Out, OutConsole) {
 		logger.outputToConsole(log)
 	}
-	if strings.Contains(internal.Config.Logs.Out, OutFile) {
+	if strings.Contains(Config.Logs.Out, OutFile) {
 		logger.outputToFile(log)
 	}
 }
@@ -112,7 +111,7 @@ func (logger Logger) outputToConsole(content string) {
 
 func (logger Logger) outputToFile(content string) {
 	// 写入log文件
-	filePath := internal.Config.Logs.File + "."
+	filePath := Config.Logs.File + "."
 	filePath += time.Now().Format("2006-01-02")
 	filePath += ".log"
 	fileDir := path.Dir(filePath)

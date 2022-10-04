@@ -5,7 +5,6 @@ import (
 	kYaml "github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/levigross/grequests"
-	"github.com/loebfly/ezgin/internal/config/internal"
 	"github.com/loebfly/ezgin/internal/logs"
 	"gopkg.in/yaml.v3"
 )
@@ -14,12 +13,8 @@ type enter int
 
 const Enter = enter(0)
 
-func InitPath(ymlPath string) {
-	internal.InitPath(ymlPath)
-}
-
 func EZGin() EZGinYml {
-	return internal.YmlObj.EZGin
+	return YmlObj.EZGin
 }
 
 // GetYmlData 以字节获取配置数据，结构体必须是yaml格式
@@ -58,17 +53,17 @@ func (enter) GetYmlObj(confUrl string, obj interface{}) error {
 }
 
 func (enter) GetString(key string) string {
-	return internal.YmlData.String(key)
+	return YmlData.String(key)
 }
 
 func (enter) GetInt(key string) int {
-	return internal.YmlData.Int(key)
+	return YmlData.Int(key)
 }
 
 func (enter) GetBool(key string) bool {
-	return internal.YmlData.Bool(key)
+	return YmlData.Bool(key)
 }
 
 func (enter) GetFloat64(key string) float64 {
-	return internal.YmlData.Float64(key)
+	return YmlData.Float64(key)
 }

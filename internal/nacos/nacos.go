@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/loebfly/ezgin/internal/cache"
 	"github.com/loebfly/ezgin/internal/logs"
-	"github.com/loebfly/ezgin/internal/nacos/internal"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -36,8 +35,8 @@ func (c *control) register() bool {
 
 	var serverConfigs = make([]constant.ServerConfig, 0)
 
-	servers := strings.Split(internal.Config.Nacos.Server, ",")
-	ports := strings.Split(internal.Config.Nacos.Port, ",")
+	servers := strings.Split(Config.Nacos.Server, ",")
+	ports := strings.Split(Config.Nacos.Port, ",")
 	for i, server := range servers {
 		portIdx := 0
 		if i < len(ports) {
@@ -71,8 +70,8 @@ func (c *control) register() bool {
 	logs.Enter.CDebug("NACOS", "Nacos客户端创建成功")
 
 	appIp := ""
-	if internal.Config.Nacos.App.Ip != "" {
-		appIp = internal.Config.Nacos.App.Ip
+	if Config.Nacos.App.Ip != "" {
+		appIp = Config.Nacos.App.Ip
 	} else {
 		ips := c.getLocalIPV4()
 		if len(ips) > 0 {
@@ -82,26 +81,26 @@ func (c *control) register() bool {
 
 	metadata := make(map[string]string)
 
-	port := uint64(internal.Config.Nacos.App.Port)
-	if internal.Config.Nacos.App.PortSsl > 0 &&
-		internal.Config.Nacos.App.Port == 0 {
+	port := uint64(Config.Nacos.App.Port)
+	if Config.Nacos.App.PortSsl > 0 &&
+		Config.Nacos.App.Port == 0 {
 		metadata["ssl"] = "true"
-		port = uint64(internal.Config.Nacos.App.PortSsl)
+		port = uint64(Config.Nacos.App.PortSsl)
 	}
-	if internal.Config.Nacos.App.Debug {
+	if Config.Nacos.App.Debug {
 		metadata["debug"] = "true"
 	}
 
 	isSuccess, regErr := c.client.RegisterInstance(vo.RegisterInstanceParam{
 		Ip:          appIp,
 		Port:        port,
-		Weight:      float64(internal.Config.Nacos.Weight),
+		Weight:      float64(Config.Nacos.Weight),
 		Enable:      true,
 		Healthy:     true,
 		Metadata:    metadata,
-		ClusterName: internal.Config.Nacos.ClusterName,
-		ServiceName: internal.Config.Nacos.App.Name,
-		GroupName:   internal.Config.Nacos.GroupName,
+		ClusterName: Config.Nacos.ClusterName,
+		ServiceName: Config.Nacos.App.Name,
+		GroupName:   Config.Nacos.GroupName,
 		Ephemeral:   true,
 	})
 	if !isSuccess {
@@ -110,9 +109,9 @@ func (c *control) register() bool {
 	}
 
 	subErr := c.client.Subscribe(&vo.SubscribeParam{
-		ServiceName: internal.Config.Nacos.App.Name,
-		Clusters:    []string{internal.Config.Nacos.ClusterName},
-		GroupName:   internal.Config.Nacos.GroupName,
+		ServiceName: Config.Nacos.App.Name,
+		Clusters:    []string{Config.Nacos.ClusterName},
+		GroupName:   Config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
 				logs.Enter.CError("NACOS", "Nacos客户端订阅错误:{}", err)
@@ -135,9 +134,9 @@ func (c *control) unregister() {
 		return
 	}
 	subErr := c.client.Unsubscribe(&vo.SubscribeParam{
-		ServiceName: internal.Config.Nacos.App.Name,
-		Clusters:    []string{internal.Config.Nacos.ClusterName},
-		GroupName:   internal.Config.Nacos.GroupName,
+		ServiceName: Config.Nacos.App.Name,
+		Clusters:    []string{Config.Nacos.ClusterName},
+		GroupName:   Config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
 				logs.Enter.CError("NACOS", "Nacos客户端取消订阅错误:{}", err)
@@ -151,8 +150,8 @@ func (c *control) unregister() {
 	}
 
 	appIp := ""
-	if internal.Config.Nacos.App.Ip != "" {
-		appIp = internal.Config.Nacos.App.Ip
+	if Config.Nacos.App.Ip != "" {
+		appIp = Config.Nacos.App.Ip
 	} else {
 		ips := c.getLocalIPV4()
 		if len(ips) > 0 {
@@ -160,18 +159,18 @@ func (c *control) unregister() {
 		}
 	}
 
-	port := uint64(internal.Config.Nacos.App.Port)
-	if internal.Config.Nacos.App.PortSsl > 0 &&
-		internal.Config.Nacos.App.Port == 0 {
-		port = uint64(internal.Config.Nacos.App.PortSsl)
+	port := uint64(Config.Nacos.App.Port)
+	if Config.Nacos.App.PortSsl > 0 &&
+		Config.Nacos.App.Port == 0 {
+		port = uint64(Config.Nacos.App.PortSsl)
 	}
 
 	isSuccess, regErr := c.client.DeregisterInstance(vo.DeregisterInstanceParam{
 		Ip:          appIp,
 		Port:        port,
-		Cluster:     internal.Config.Nacos.ClusterName,
-		ServiceName: internal.Config.Nacos.App.Name,
-		GroupName:   internal.Config.Nacos.GroupName,
+		Cluster:     Config.Nacos.ClusterName,
+		ServiceName: Config.Nacos.App.Name,
+		GroupName:   Config.Nacos.GroupName,
 		Ephemeral:   true,
 	})
 	if !isSuccess {
@@ -197,10 +196,10 @@ func (c *control) getService(name string) (url string, err error) {
 	var group string
 	// 最多尝试3次
 	for i := 0; i < 3; i++ {
-		group = internal.Config.Nacos.GroupName
+		group = Config.Nacos.GroupName
 		logs.Enter.CDebug("NACOS", "尝试从{}组中获取到服务:{}", group, name)
 		instances, err := c.client.SelectInstances(vo.SelectInstancesParam{
-			Clusters:    []string{internal.Config.Nacos.ClusterName, "DEFAULT"},
+			Clusters:    []string{Config.Nacos.ClusterName, "DEFAULT"},
 			ServiceName: name,
 			GroupName:   group,
 			HealthyOnly: true,
@@ -210,7 +209,7 @@ func (c *control) getService(name string) (url string, err error) {
 			group = "DEFAULT_GROUP"
 			logs.Enter.CDebug("NACOS", "尝试从{}组中获取服务:{}", group, name)
 			instances, err = c.client.SelectInstances(vo.SelectInstancesParam{
-				Clusters:    []string{internal.Config.Nacos.ClusterName, "DEFAULT"},
+				Clusters:    []string{Config.Nacos.ClusterName, "DEFAULT"},
 				ServiceName: name,
 				GroupName:   group,
 				HealthyOnly: true,
@@ -325,20 +324,20 @@ func (c *control) getLocalIPV4() []string {
 		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
 			if ipNet.IP.IsPrivate() {
 				lanIps = append(lanIps, ipNet.IP.String())
-				if internal.Config.Nacos.Lan &&
-					strings.HasSuffix(ipNet.IP.String(), internal.Config.Nacos.LanNet) {
+				if Config.Nacos.Lan &&
+					strings.HasSuffix(ipNet.IP.String(), Config.Nacos.LanNet) {
 					ips = append(ips, ipNet.IP.String())
 				}
 			} else {
 				wanIps = append(wanIps, ipNet.IP.String())
-				if internal.Config.Nacos.Lan == false {
+				if Config.Nacos.Lan == false {
 					ips = append(ips, ipNet.IP.String())
 				}
 			}
 		}
 	}
 	if len(ips) == 0 {
-		if internal.Config.Nacos.Lan {
+		if Config.Nacos.Lan {
 			ips = append(ips, wanIps...)
 		} else {
 			ips = append(ips, lanIps...)

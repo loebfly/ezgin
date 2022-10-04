@@ -2,8 +2,7 @@ package engine
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/loebfly/ezgin"
-	"github.com/loebfly/ezgin/internal/engine/internal"
+	"github.com/loebfly/ezgin/engine"
 	"net/http"
 )
 
@@ -12,7 +11,7 @@ type enter int
 const Enter = enter(0)
 
 func InitObj(obj Yml) {
-	internal.InitObj(obj)
+	config.initObj(obj)
 	ctl.initEngine()
 }
 
@@ -83,21 +82,21 @@ func (enter) StaticFS(relativePath string, fs http.FileSystem) gin.IRoutes {
 }
 
 // Routers 批量生成路由
-func (enter) Routers(method ezgin.HttpMethod, routers map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (enter) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
 	return ctl.Routers(method, routers)
 }
 
 // GroupRoutes 批量生成路由组
-func (enter) GroupRoutes(method ezgin.HttpMethod, group string, routers map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (enter) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
 	return ctl.GroupRoutes(method, group, routers)
 }
 
 // FreeRoutes 批量生成自由路由 map[请求方法]map[接口地址]处理函数
-func (enter) FreeRoutes(routers map[ezgin.HttpMethod]map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (enter) FreeRoutes(routers map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
 	return ctl.FreeRoutes(routers)
 }
 
 // FreeGroupRoutes 批量生成自由路由组 map[路由组]map[请求方法]map[接口地址]处理函数
-func (enter) FreeGroupRoutes(routers map[string]map[ezgin.HttpMethod]map[string]ezgin.GinHandlerFunc) gin.IRoutes {
+func (enter) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
 	return ctl.FreeGroupRoutes(routers)
 }

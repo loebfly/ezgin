@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"github.com/loebfly/ezgin/internal/engine"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
 	"github.com/loebfly/ezgin/internal/logs"
 	"io/ioutil"
 	"strings"
 	"time"
+)
+
+const (
+	ContentTypeFormUrlEncode = "application/x-www-form-urlencoded"
+	ContentTypeFormMultipart = "multipart/form-data"
 )
 
 func (receiver enter) Middleware(c *gin.Context) {
@@ -49,7 +53,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 		reqParams = params
 	} else if strings.Contains(c.ContentType(), "application/x-www-form-urlencoded") ||
 		strings.Contains(c.ContentType(), "multipart/form-rawData") {
-		reqParams = engine.Enter.GetFormParams(c)
+		reqParams = receiver.GetFormParams(c)
 	} else {
 		reqParams = string(rawData)
 	}
@@ -88,4 +92,34 @@ func (receiver enter) Middleware(c *gin.Context) {
 		URI:         uri,
 	}
 	logChan <- ctx
+}
+
+func (receiver enter) GetFormParams(ctx *gin.Context) map[string]string {
+	params := make(map[string]string)
+	cType := ctx.ContentType()
+	if cType != ContentTypeFormUrlEncode &&
+		cType != ContentTypeFormMultipart {
+		return params
+	}
+	if ctx.Request == nil {
+		return params
+	}
+	if ctx.Request.Method == "GET" {
+		for k, v := range ctx.Request.URL.Query() {
+			params[k] = v[0]
+		}
+		return params
+	} else {
+		err := ctx.Request.ParseForm()
+		if err != nil {
+			return params
+		}
+		for k, v := range ctx.Request.PostForm {
+			params[k] = v[0]
+		}
+		for k, v := range ctx.Request.URL.Query() {
+			params[k] = v[0]
+		}
+		return params
+	}
 }
