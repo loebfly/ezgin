@@ -6,7 +6,6 @@ import (
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/levigross/grequests"
 	"github.com/loebfly/ezgin/internal/logs"
-	"gopkg.in/yaml.v3"
 )
 
 type enter int
@@ -44,7 +43,13 @@ func (enter) GetYmlObj(confUrl string, obj interface{}) error {
 		logs.Enter.Error(confUrl + "配置下载失败! " + resp.String())
 		return err
 	}
-	err = yaml.Unmarshal(resp.Bytes(), &obj)
+	conf := koanf.New(".")
+	err = conf.Load(rawbytes.Provider([]byte(resp.String())), kYaml.Parser())
+	if err != nil {
+		logs.Enter.Error(confUrl + "配置格式解析错误:" + err.Error())
+		return err
+	}
+	err = conf.Unmarshal("", &obj)
 	if err != nil {
 		logs.Enter.Error(confUrl + "配置格式解析错误:" + err.Error())
 		return err

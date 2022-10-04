@@ -8,7 +8,7 @@ type enter int
 
 const Enter = enter(0)
 
-func InitObj(obj Yml) {
+func InitObj(obj EZGinNacos) {
 	Config.initObj(obj)
 	ctl.register()
 }
@@ -18,9 +18,11 @@ func (enter) GetClient() naming_client.INamingClient {
 	return ctl.getClient()
 }
 
-// Unregister 注销Nacos客户端
-func (enter) Unregister() {
-	ctl.unregister()
+// UnregisterIfNeed	如果需要则注销
+func (enter) UnregisterIfNeed() {
+	if ctl.client != nil {
+		ctl.unregister()
+	}
 }
 
 // GetService 获取服务

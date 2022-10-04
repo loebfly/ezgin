@@ -6,7 +6,6 @@ import (
 	kYaml "github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/loebfly/ezgin/internal/logs"
-	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -22,11 +21,7 @@ func InitPath(ymlPath string) {
 	if err != nil {
 		panic(fmt.Errorf("配置文件解析错误:%s", err.Error()))
 	}
-	fBytes, err := f.ReadBytes()
-	if err != nil {
-		panic(fmt.Errorf("读取配置文件错误:%s", err.Error()))
-	}
-	if err = yaml.Unmarshal(fBytes, &YmlObj); err != nil {
+	if err = YmlData.Unmarshal("", &YmlObj); err != nil {
 		panic(fmt.Errorf("配置文件解析错误:%s", err.Error()))
 	}
 	checkYmlObj()

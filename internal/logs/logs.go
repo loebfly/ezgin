@@ -51,10 +51,7 @@ func (logger Logger) Error(format string, args ...interface{}) {
 func (logger Logger) outPut(format string, args ...interface{}) {
 	// Determine caller func
 	createdAt := "[" + time.Now().Format("2006-01-02 15:04:05") + "]"
-	skip := 2
-	if logger.category == "" {
-		skip = 3
-	}
+	skip := 3
 	pc, _, line, ok := runtime.Caller(skip)
 	src := "(UNKNOWN)"
 	if ok {

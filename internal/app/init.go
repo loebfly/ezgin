@@ -31,9 +31,9 @@ func (receiver enter) getYml() string {
 func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine) {
 	receiver.initConfig(ymlPath)
 	receiver.initLogs()
-	receiver.initEngine(ginEngine)
-	receiver.initServer()
-	receiver.initNacos()
+	//receiver.initEngine(ginEngine)
+	//receiver.initServer()
+	//receiver.initNacos()
 }
 
 func (receiver enter) initConfig(ymlPath string) {
@@ -114,14 +114,14 @@ func (receiver enter) initNacos() {
 			if err != nil {
 				panic(fmt.Errorf("nacos配置文件获取失败: %s", err.Error()))
 			}
-			yml.App = nacos.AppYml{
+			yml.EZGinNacos.App = nacos.App{
 				Name:    ez.App.Name,
 				Ip:      ez.App.Ip,
 				Port:    ez.App.Port,
 				PortSsl: ez.App.PortSsl,
 				Debug:   ez.App.Debug,
 			}
-			nacos.InitObj(yml)
+			nacos.InitObj(yml.EZGinNacos)
 		}
 	}
 }

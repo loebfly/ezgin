@@ -130,23 +130,24 @@ func (c *control) register() bool {
 // Unregister 注销Nacos客户端
 func (c *control) unregister() {
 	if c.client == nil {
-		logs.Enter.CError("NACOS", "Nacos客户端未注册")
+		logs.Enter.CError("NACOS", "Nacos客户端未注册, 无法注销")
 		return
 	}
+	logs.Enter.CInfo("NACOS", "正在注销客户端")
 	subErr := c.client.Unsubscribe(&vo.SubscribeParam{
 		ServiceName: Config.Nacos.App.Name,
 		Clusters:    []string{Config.Nacos.ClusterName},
 		GroupName:   Config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
-				logs.Enter.CError("NACOS", "Nacos客户端取消订阅错误:{}", err)
+				logs.Enter.CError("NACOS", "客户端取消订阅错误:{}", err)
 				return
 			}
-			logs.Enter.CDebug("NACOS", "Nacos客户端取消订阅成功:{}", services)
+			logs.Enter.CDebug("NACOS", "客户端取消订阅成功:{}", services)
 		},
 	})
 	if subErr != nil {
-		logs.Enter.CError("NACOS", "Nacos客户端取消订阅失败:{}", subErr)
+		logs.Enter.CError("NACOS", "客户端取消订阅失败:{}", subErr)
 	}
 
 	appIp := ""
@@ -174,9 +175,10 @@ func (c *control) unregister() {
 		Ephemeral:   true,
 	})
 	if !isSuccess {
-		logs.Enter.CError("NACOS", "Nacos客户端注销失败:{}", regErr)
+		logs.Enter.CError("NACOS", "客户端注销失败:{}", regErr)
 		return
 	}
+	logs.Enter.CInfo("NACOS", "客户端注销成功")
 }
 
 // getService 获取服务

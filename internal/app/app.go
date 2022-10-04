@@ -23,16 +23,17 @@ func (receiver enter) Start(ymlPath string, ginEngine *gin.Engine) {
 	receiver.initEZGin(ymlPath, ginEngine)
 	ez := config.EZGin()
 
-	logs.Enter.CDebug("APP", "|-----------------------------------|")
-	logs.Enter.CDebug("APP", "|	   			{} {}				|", ez.App.Name, ez.App.Version)
-	logs.Enter.CDebug("APP", "|-----------------------------------|")
+	logs.Enter.CInfo("APP", "|-----------------------------------|")
+	logs.Enter.CInfo("APP", "| 服务名: {}", ez.App.Name)
+	logs.Enter.CInfo("APP", "| 版本号: {}", ez.App.Version)
+	logs.Enter.CInfo("APP", "|-----------------------------------|")
 	if ez.App.Port > 0 {
-		logs.Enter.CDebug("APP", "|	启动成功!		HTTP端口: {}				|", ez.App.Port)
+		logs.Enter.CInfo("APP", "| HTTP端口: {}", ez.App.Port)
 	}
 	if ez.App.PortSsl > 0 {
-		logs.Enter.CDebug("APP", "|	启动成功!		HTTPS端口: {}			|", ez.App.PortSsl)
+		logs.Enter.CInfo("APP", "| HTTPS端口: {}", ez.App.PortSsl)
 	}
-	logs.Enter.CDebug("APP", "|-----------------------------------|")
+	logs.Enter.CInfo("APP", "|-----------------------------------|")
 }
 
 // ShutdownWhenExitSignal 服务异常退出时 优雅关闭服务
@@ -40,23 +41,32 @@ func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(cont
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
 	sig := <-signalChan
-	logs.Enter.Error("收到退出信号:{}", sig.String())
-	logs.Enter.Error("关闭服务...")
+	logs.Enter.CError("APP", "收到退出信号:{}", sig.String())
+	nacos.Enter.UnregisterIfNeed()
 
-	nacos.Enter.Unregister()
-
-	will(sig)
+	if will != nil {
+		will(sig)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	closeAllSuccess := true
+	if len(servers) == 0 {
+		closeAllSuccess = false
+	}
 	for _, server := range servers {
 		if server != nil {
 			if err := server.Shutdown(ctx); err != nil {
-				logs.Enter.Error("关闭服务失败:{}", err.Error())
+				closeAllSuccess = false
+				logs.Enter.CError("APP", "关闭服务失败:{}", err.Error())
 				return
 			}
 		}
 	}
+	if closeAllSuccess {
+		logs.Enter.CError("APP", "服务已关闭")
+	}
 
-	logs.Enter.Error("服务已关闭")
-	did(ctx)
+	if did != nil {
+		did(ctx)
+	}
 }

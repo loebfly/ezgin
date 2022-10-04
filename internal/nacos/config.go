@@ -5,12 +5,12 @@ import (
 )
 
 type ymlConfig struct {
-	Nacos Yml `yaml:"nacos"`
+	Nacos EZGinNacos `yaml:"nacos"`
 }
 
 var Config = new(ymlConfig)
 
-func (cfg *ymlConfig) initObj(obj Yml) {
+func (cfg *ymlConfig) initObj(obj EZGinNacos) {
 	if obj.Server == "" {
 		panic(errors.New("nacos server is empty"))
 	}
