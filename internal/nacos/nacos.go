@@ -49,25 +49,25 @@ func (c *control) register() bool {
 		})
 	}
 
-	logs.Enter.CDebug("NACOS", "Nacos服务器配置:{}", serverConfigs)
+	logs.Enter.CDebug("NACOS", "服务器配置:{}", serverConfigs)
 
 	clientConfig := constant.ClientConfig{
 		UpdateCacheWhenEmpty: true,
 		LogLevel:             "error",
 	}
-	logs.Enter.CDebug("NACOS", "Nacos客户端配置:{}", clientConfig)
+	logs.Enter.CDebug("NACOS", "客户端配置:{}", clientConfig)
 
 	naming, err := clients.CreateNamingClient(map[string]interface{}{
 		"serverConfigs": serverConfigs,
 		"clientConfig":  clientConfig,
 	})
 	if err != nil {
-		logs.Enter.CError("NACOS", "Nacos客户端创建失败:{}", err)
+		logs.Enter.CError("NACOS", "客户端创建失败:{}", err)
 		return false
 	}
 	c.client = naming
 
-	logs.Enter.CDebug("NACOS", "Nacos客户端创建成功")
+	logs.Enter.CInfo("NACOS", "客户端创建成功")
 
 	appIp := ""
 	if Config.Nacos.App.Ip != "" {
@@ -104,7 +104,7 @@ func (c *control) register() bool {
 		Ephemeral:   true,
 	})
 	if !isSuccess {
-		logs.Enter.CError("NACOS", "Nacos客户端注册失败:{}", regErr)
+		logs.Enter.CError("NACOS", "客户端注册失败:{}", regErr)
 		return false
 	}
 
@@ -114,14 +114,14 @@ func (c *control) register() bool {
 		GroupName:   Config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
-				logs.Enter.CError("NACOS", "Nacos客户端订阅错误:{}", err)
+				logs.Enter.CError("NACOS", "客户端订阅错误:{}", err)
 				return
 			}
-			logs.Enter.CDebug("NACOS", "Nacos客户端订阅成功:{}", services)
+			logs.Enter.CInfo("NACOS", "客户端订阅成功:{}", services)
 		},
 	})
 	if subErr != nil {
-		logs.Enter.CError("NACOS", "Nacos客户端订阅失败:{}", subErr)
+		logs.Enter.CError("NACOS", "客户端订阅失败:{}", subErr)
 		return false
 	}
 	return true
@@ -130,10 +130,10 @@ func (c *control) register() bool {
 // Unregister 注销Nacos客户端
 func (c *control) unregister() {
 	if c.client == nil {
-		logs.Enter.CError("NACOS", "Nacos客户端未注册, 无法注销")
+		logs.Enter.CError("NACOS", "客户端未注册, 无法注销")
 		return
 	}
-	logs.Enter.CInfo("NACOS", "正在注销客户端")
+	logs.Enter.CWarn("NACOS", "正在注销客户端")
 	subErr := c.client.Unsubscribe(&vo.SubscribeParam{
 		ServiceName: Config.Nacos.App.Name,
 		Clusters:    []string{Config.Nacos.ClusterName},
@@ -178,7 +178,7 @@ func (c *control) unregister() {
 		logs.Enter.CError("NACOS", "客户端注销失败:{}", regErr)
 		return
 	}
-	logs.Enter.CInfo("NACOS", "客户端注销成功")
+	logs.Enter.CWarn("NACOS", "客户端注销成功")
 }
 
 // getService 获取服务
@@ -240,7 +240,7 @@ func (c *control) getService(name string) (url string, err error) {
 		return "", errors.New("未获取到服务:" + name)
 	}
 	err = nil
-	logs.Enter.CDebug("NACOS", "获取到服务:{}", targetInstance)
+	logs.Enter.CInfo("NACOS", "获取到服务:{}", targetInstance)
 	url = targetInstance.Ip + ":" + strconv.Itoa(int(targetInstance.Port))
 	if targetInstance.Metadata != nil &&
 		targetInstance.Metadata["ssl"] == "true" {
@@ -266,7 +266,7 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			logs.Enter.CDebug("NACOS", "处理订阅服务回调:{}", services)
 			if err != nil {
-				logs.Enter.CError("NACOS", "Nacos订阅回调错误:{}", err.Error())
+				logs.Enter.CError("NACOS", "订阅回调错误:{}", err.Error())
 				return
 			}
 			if services == nil || len(services) == 0 {
@@ -296,7 +296,7 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 				if cache.Enter.Table("NACOS").IsExist(sName) {
 					cache.Enter.Table("NACOS").Delete(sName)
 				}
-				logs.Enter.CDebug("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
+				logs.Enter.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
 				cache.Enter.Table("NACOS").Add(sName, hosts, time.Minute*5)
 			}
 		},

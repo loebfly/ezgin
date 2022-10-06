@@ -49,21 +49,13 @@ func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(cont
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	closeAllSuccess := true
-	if len(servers) == 0 {
-		closeAllSuccess = false
-	}
 	for _, server := range servers {
 		if server != nil {
 			if err := server.Shutdown(ctx); err != nil {
-				closeAllSuccess = false
-				logs.Enter.CError("APP", "关闭服务失败:{}", err.Error())
-				return
+				logs.Enter.CWarn("APP", "关闭{}端口失败:{}", server.Addr, err.Error())
+				continue
 			}
 		}
-	}
-	if closeAllSuccess {
-		logs.Enter.CError("APP", "服务已关闭")
 	}
 
 	if did != nil {

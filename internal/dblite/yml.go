@@ -1,34 +1,37 @@
 package dblite
 
 type MongoYml struct {
-	Url      string `yaml:"url" json:"url"`
-	Database string `yaml:"database" json:"database"`
-	PoolMax  int    `yaml:"pool_max" json:"pool_max"`
+	Url      string `koanf:"url"`       // 连接地址, 必填
+	Database string `koanf:"database"`  // 数据库, 必填
+	PoolMax  int    `koanf:"pool_max"`  // 连接池最大连接数 默认20
+	FindName string `koanf:"find_name"` // 用于区分不同的数据库, 必填
 }
 
 type MysqlYml struct {
-	Url   string `yaml:"url" json:"url"`
-	Debug bool   `yaml:"debug" json:"debug"`
+	Url   string `koanf:"url"`   // 连接地址, 必填
+	Debug bool   `koanf:"debug"` // 是否开启调试模式，默认false
 	Pool  struct {
-		Max     int `yaml:"max" json:"max"`
-		Idle    int `yaml:"idle" json:"idle"`
+		Max     int `koanf:"max"`  // 连接池最大连接数 默认20
+		Idle    int `koanf:"idle"` // 连接池最大空闲连接数 默认10
 		Timeout struct {
-			Idle int `yaml:"idle" json:"idle"`
-			Life int `yaml:"life" json:"life"`
-		} `yaml:"timeout" json:"timeout"`
-	} `yaml:"pool" json:"pool"`
+			Idle int `koanf:"idle"` // 连接池最大空闲时间 默认60s
+			Life int `koanf:"life"` // 连接池最大生存时间 默认60s
+		} `koanf:"timeout"` // 连接池超时时间
+	} `koanf:"pool"` // 连接池配置
+	FindName string `koanf:"find_name"` // 用于区分不同的数据库, 必填
 }
 
 type RedisYml struct {
-	Host     string `yaml:"host" json:"host"`
-	Port     int    `yaml:"port" json:"port"`
-	Password string `yaml:"password" json:"password"`
-	Database int    `yaml:"database" json:"database"`
-	Timeout  int    `yaml:"timeout" json:"timeout"`
+	Host     string `koanf:"host"`     // 连接Ip, 必填
+	Port     int    `koanf:"port"`     // 连接端口, 必填
+	Password string `koanf:"password"` // 密码, 必填
+	Database int    `koanf:"database"` // 数据编号, 必填
+	Timeout  int    `koanf:"timeout"`  // 连接超时时间 默认1000ms
 	Pool     struct {
-		Min     int `yaml:"min" json:"min"`
-		Max     int `yaml:"max" json:"max"`
-		Idle    int `yaml:"idle" json:"idle"`
-		Timeout int `yaml:"timeout" json:"timeout"`
-	} `yaml:"pool" json:"pool"`
+		Min     int `koanf:"min"`     // 连接池最小连接数 默认3
+		Max     int `koanf:"max"`     // 连接池最大连接数 默认20
+		Idle    int `koanf:"idle"`    // 连接池最大空闲连接数 默认10
+		Timeout int `koanf:"timeout"` // 连接池超时时间 默认300ms
+	} `koanf:"pool" json:"pool"` // 连接池配置
+	FindName string `koanf:"find_name"` // 用于区分不同的数据库, 必填
 }

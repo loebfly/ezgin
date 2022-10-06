@@ -1,0 +1,24 @@
+package mysql
+
+import (
+	"github.com/loebfly/ezgin/internal/logs"
+	"gorm.io/gorm"
+)
+
+func InitObjs(objs []Yml) {
+	logs.Enter.CDebug("MYSQL", "初始化")
+	config.InitObjs(objs)
+	err := ctl.initConnect()
+	if err != nil {
+		logs.Enter.CError("MYSQL", "初始化失败: %s", err.Error())
+	}
+	ctl.addCheckTicker()
+}
+
+func GetDB(findName ...string) (db *gorm.DB, err error) {
+	return ctl.getDB(findName...)
+}
+
+func Disconnect() {
+	ctl.disconnect()
+}

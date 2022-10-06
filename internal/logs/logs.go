@@ -55,7 +55,18 @@ func (logger Logger) outPut(format string, args ...interface{}) {
 	pc, _, line, ok := runtime.Caller(skip)
 	src := "(UNKNOWN)"
 	if ok {
-		src = fmt.Sprintf("[%s:%d]", runtime.FuncForPC(pc).Name(), line)
+		src = runtime.FuncForPC(pc).Name()
+		callFunc := src
+		if strings.Contains(callFunc, "github.com/loebfly/ezgin") {
+			// 取最后一个/后面的字符串
+			callFunc = callFunc[strings.LastIndex(callFunc, "/")+1:]
+			// 取第一个.前面的字符串
+			callFunc = callFunc[:strings.Index(callFunc, ".")]
+			// 取倒数第二个.后面的字符串
+			callFunc += src[strings.LastIndex(src, "."):]
+			callFunc = "ezgin." + callFunc
+		}
+		src = fmt.Sprintf("[%s:%d]", callFunc, line)
 	}
 
 	// args 填充 format

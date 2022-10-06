@@ -31,9 +31,9 @@ func (receiver enter) getYml() string {
 func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine) {
 	receiver.initConfig(ymlPath)
 	receiver.initLogs()
-	//receiver.initEngine(ginEngine)
-	//receiver.initServer()
-	//receiver.initNacos()
+	receiver.initEngine(ginEngine)
+	receiver.initServer()
+	receiver.initNacos()
 }
 
 func (receiver enter) initConfig(ymlPath string) {
@@ -78,9 +78,8 @@ func (receiver enter) initServer() {
 			Handler: engine.Enter.GetOriEngine(),
 		})
 		go func() {
-			if listenErr := servers[0].ListenAndServe(); listenErr != nil {
-				panic(fmt.Errorf("侦听HTTP端口%d失败%s", ez.App.Port, listenErr.Error()))
-			}
+			listenErr := servers[0].ListenAndServe()
+			logs.Enter.CWarn("APP", "ListenAndServe:{}:{}", ez.App.Port, listenErr.Error())
 		}()
 	}
 	if ez.App.PortSsl > 0 {
@@ -89,16 +88,11 @@ func (receiver enter) initServer() {
 			Addr:    ":" + strconv.Itoa(ez.App.PortSsl),
 			Handler: engine.Enter.GetOriEngine(),
 		})
-		if ez.App.Cert != "" && ez.App.Key != "" {
-			go func() {
-				path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-				if listenErr := servers[1].ListenAndServeTLS(path+"/"+ez.App.Cert, path+"/"+ez.App.Key); listenErr != nil {
-					panic(fmt.Errorf("侦听HTTPS端口%d失败%s", ez.App.PortSsl, listenErr.Error()))
-				}
-			}()
-		} else {
-			panic("HTTPS端口启动失败: 证书文件不存在")
-		}
+		go func() {
+			path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+			listenErr := servers[1].ListenAndServeTLS(path+"/"+ez.App.Cert, path+"/"+ez.App.Key)
+			logs.Enter.CWarn("APP", "ListenAndServeTLS:{}:{}", ez.App.PortSsl, listenErr.Error())
+		}()
 	}
 }
 
