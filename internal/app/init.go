@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/internal/config"
+	"github.com/loebfly/ezgin/internal/dblite"
+	"github.com/loebfly/ezgin/internal/dblite/mongo"
+	"github.com/loebfly/ezgin/internal/dblite/mysql"
+	"github.com/loebfly/ezgin/internal/dblite/redis"
 	"github.com/loebfly/ezgin/internal/engine"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
@@ -34,6 +38,7 @@ func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine) {
 	receiver.initEngine(ginEngine)
 	receiver.initServer()
 	receiver.initNacos()
+	receiver.initDBLite()
 }
 
 func (receiver enter) initConfig(ymlPath string) {
@@ -118,4 +123,53 @@ func (receiver enter) initNacos() {
 			nacos.InitObj(yml.EZGinNacos)
 		}
 	}
+}
+
+func (receiver enter) initDBLite() {
+	ez := config.EZGin()
+
+	var mongoObjs []mongo.Yml
+	if ez.Nacos.Yml.Mongo != "" {
+		names := strings.Split(ez.Nacos.Yml.Mongo, ",")
+		mongoObjs = make([]mongo.Yml, len(names))
+		for _, name := range names {
+			var yml mongo.Yml
+			nacosUrl := ez.GetNacosUrl(name)
+			err := config.Enter.GetYmlObj(nacosUrl, &yml)
+			if err != nil {
+				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
+			}
+			mongoObjs = append(mongoObjs, yml)
+		}
+	}
+
+	var mysqlObjs []mysql.Yml
+	if ez.Nacos.Yml.Mysql != "" {
+		names := strings.Split(ez.Nacos.Yml.Mysql, ",")
+		mysqlObjs = make([]mysql.Yml, len(names))
+		for _, name := range names {
+			var yml mysql.Yml
+			nacosUrl := ez.GetNacosUrl(name)
+			err := config.Enter.GetYmlObj(nacosUrl, &yml)
+			if err != nil {
+				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
+			}
+			mysqlObjs = append(mysqlObjs, yml)
+		}
+	}
+	var redisObjs []redis.Yml
+	if ez.Nacos.Yml.Redis != "" {
+		names := strings.Split(ez.Nacos.Yml.Redis, ",")
+		redisObjs = make([]redis.Yml, len(names))
+		for _, name := range names {
+			var yml redis.Yml
+			nacosUrl := ez.GetNacosUrl(name)
+			err := config.Enter.GetYmlObj(nacosUrl, &yml)
+			if err != nil {
+				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
+			}
+			redisObjs = append(redisObjs, yml)
+		}
+	}
+	dblite.InitDB(mongoObjs, mysqlObjs, redisObjs)
 }

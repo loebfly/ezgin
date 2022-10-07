@@ -21,27 +21,25 @@ type EZGinYml struct {
 		Server string `koanf:"server"` // nacos服务地址
 		Yml    struct {
 			Nacos string `koanf:"nacos"` // nacos配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml
-			Mysql string `koanf:"mysql"` // mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml
-			Mongo string `koanf:"mongo"` // mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml
-			Redis string `koanf:"redis"` // redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+			Mysql string `koanf:"mysql"` // mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔
+			Mongo string `koanf:"mongo"` // mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔
+			Redis string `koanf:"redis"` // redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔
 		} `koanf:"yml"` // nacos配置文件名
 	} `koanf:"nacos"` // nacos配置
 
 	Gin struct {
 		Mode       string `koanf:"mode"`       // gin模式 debug, release
 		Middleware string `koanf:"middleware"` // 中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
+		Logs       struct {
+			Mongo string `koanf:"mongo"`      // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
+			Table string `koanf:"table_name"` // 日志表名, 默认为${App.Name}APIRequestLogs
+		} `koanf:"logs"` // 日志配置
 	} `yaml:"gin"` // gin配置
 
 	Logs struct {
 		Out  string `koanf:"out"`  // 日志输出方式, 可选值: console, file 默认 console
 		File string `koanf:"file"` // 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}.$(Date +%F).log
 	} `yaml:"log"` // 日志配置
-
-	//LocalDB struct {
-	//	MySql dbYml.Mysql `koanf:"mysql"` // mysql 数据库本地配置
-	//	Mongo dbYml.Mongo `koanf:"mongo"` // mongo 数据库本地配置
-	//	Redis dbYml.Redis `koanf:"redis"` // redis 数据库本地配置
-	//} `yaml:"local_db"` // 本地数据库配置
 }
 
 // GetNacosUrl 根据配置文件前缀获取nacos配置文件完整地址
