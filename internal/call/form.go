@@ -7,22 +7,24 @@ import (
 	"github.com/loebfly/ezgin/internal/nacos"
 )
 
-type form int
+type formCall int
 
-const Form = form(0)
+const Form = formCall(0)
 
-func (receiver form) request(method, service, uri string, header, params map[string]string, files []grequests.FileUpload) (string, error) {
+func (receiver formCall) request(method, service, uri string, header, params map[string]string, files []grequests.FileUpload) (string, error) {
 	var url string
 	var err error
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, header)
 	if err != nil {
+		logs.Enter.CError("CALL", "FORM - 获取{}服务地址失败:{}", service, err)
 		return "", err
 	}
-	logs.Enter.CDebug("CALL",
-		"Nacos -- {}微服务调用 -- url: {}, params: {}, headers: {}",
-		method, url, params, header)
+
 	var resp *grequests.Response
 	if files != nil {
+		logs.Enter.CDebug("CALL",
+			"FORM - FILE微服务开始请求 -- url: {}, params: {}, headers: {}",
+			method, url, params, header)
 		resp, err = grequests.Post(url, &grequests.RequestOptions{
 			Data:               params,
 			Files:              files,
@@ -30,34 +32,36 @@ func (receiver form) request(method, service, uri string, header, params map[str
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
+			logs.Enter.CError("CALL", "FORM - FILE微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}", method, url, params, header, err)
 			return "", err
 		}
 	} else {
+		logs.Enter.CDebug("CALL",
+			"FORM - {}微服务开始请求 -- url: {}, params: {}, headers: {}",
+			method, url, params, header)
+		var options = &grequests.RequestOptions{
+			Data:               params,
+			Headers:            header,
+			InsecureSkipVerify: true,
+		}
 		if method == "GET" {
-			resp, err = grequests.Get(url, &grequests.RequestOptions{
-				Params:             params,
-				Headers:            header,
-				InsecureSkipVerify: true,
-			})
-			if err != nil {
-				return "", err
-			}
+			resp, err = grequests.Get(url, options)
 		} else {
-			resp, err = grequests.Post(url, &grequests.RequestOptions{
-				Params:             params,
-				Headers:            header,
-				InsecureSkipVerify: true,
-			})
+			resp, err = grequests.Post(url, options)
+		}
+		if err != nil {
+			logs.Enter.CError("CALL", "FORM - {}微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}", method, url, params, header, err)
+			return "", err
 		}
 	}
 	logs.Enter.CDebug("CALL",
-		"Nacos -- {} 微服务响应 -- url: {} method: {}, params: {}, headers: {}, resp: {}",
+		"FORM - {} 微服务请求响应 -- url: {} method: {}, params: {}, headers: {}, resp: {}",
 		method, url, params, header, resp.String())
 	return resp.String(), nil
 
 }
 
-func (receiver form) getReqUrlAndHeader(service, uri string, header map[string]string) (string, map[string]string, error) {
+func (receiver formCall) getReqUrlAndHeader(service, uri string, header map[string]string) (string, map[string]string, error) {
 	host, err := nacos.Enter.GetService(service)
 	if err != nil {
 		return "", nil, err

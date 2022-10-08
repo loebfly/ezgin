@@ -1,6 +1,9 @@
 package call
 
-import "github.com/levigross/grequests"
+import (
+	"github.com/levigross/grequests"
+	"github.com/loebfly/ezgin/engine"
+)
 
 type enter int
 
@@ -33,3 +36,21 @@ func (receiver enter) FormFileWithHeader(service string, uri string, header, par
 }
 
 /******* Json ******* */
+
+func (receiver enter) Json(method engine.HttpMethod, service string, uri string, query map[string]string, body interface{}) (string, error) {
+	return receiver.JsonWithHeader(method, service, uri, nil, query, body)
+}
+
+func (receiver enter) JsonWithHeader(method engine.HttpMethod, service string, uri string, header, query map[string]string, body interface{}) (string, error) {
+	return Json.request(method, service, uri, header, query, body)
+}
+
+/******* Restful ******* */
+
+func (receiver enter) Restful(method engine.HttpMethod, service string, uri string, path, query map[string]string, body interface{}) (string, error) {
+	return receiver.RestfulWithHeader(method, service, uri, path, nil, query, body)
+}
+
+func (receiver enter) RestfulWithHeader(method engine.HttpMethod, service string, uri string, path, header, query map[string]string, body interface{}) (string, error) {
+	return Restful.request(method, service, uri, path, header, query, body)
+}

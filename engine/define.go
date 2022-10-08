@@ -12,9 +12,7 @@ const (
 	Put     HttpMethod = "PUT"
 	Patch   HttpMethod = "PATCH"
 	Delete  HttpMethod = "DELETE"
-	Connect HttpMethod = "CONNECT"
 	Options HttpMethod = "OPTIONS"
-	Trace   HttpMethod = "TRACE"
 )
 
 type HandlerFunc func(ctx *gin.Context) Result
