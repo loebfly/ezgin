@@ -13,6 +13,7 @@ type enter int
 
 const Enter = enter(0)
 
+// InitDB 初始化数据库
 func InitDB(mongoObjs []mongoDB.EZGinMongo, mysqlObjs []mysqlDB.EZGinMysql, redisObjs []redisDB.EZGinRedis) {
 	if mongoObjs != nil && len(mongoObjs) > 0 {
 		mongoDB.InitObjs(mongoObjs)
@@ -30,18 +31,22 @@ func IsExistMongoTag(tag string) bool {
 	return mongoDB.IsExistTag(tag)
 }
 
+// Mysql 获取mysql数据库
 func (enter) Mysql(tag ...string) (db *gorm.DB, err error) {
 	return mysqlDB.GetDB(tag...)
 }
 
+// Mongo 获取mongo数据库
 func (enter) Mongo(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
 	return mongoDB.GetDB(tag...)
 }
 
+// Redis 获取redis数据库
 func (enter) Redis(tag ...string) (db *redis.Client, err error) {
 	return redisDB.GetDB(tag...)
 }
 
+// SafeExit 关闭数据库
 func (enter) SafeExit() {
 	mongoDB.Disconnect()
 	mysqlDB.Disconnect()
