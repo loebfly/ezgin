@@ -18,9 +18,9 @@ var (
 )
 
 // Start 启动服务
-func (receiver enter) Start(ymlPath string, ginEngine *gin.Engine) {
+func (receiver enter) Start(ymlPath string, ginEngine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
 
-	receiver.initEZGin(ymlPath, ginEngine)
+	receiver.initEZGin(ymlPath, ginEngine, recoveryFunc)
 	ez := config.EZGin()
 
 	logs.Enter.CInfo("APP", "|-----------------------------------|")

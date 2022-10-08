@@ -34,13 +34,13 @@ func (receiver enter) getYml() string {
 }
 
 // initPath 初始化所有组件入口
-func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine) {
+func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
 	receiver.initConfig(ymlPath)
 	receiver.initLogs()
 	receiver.initServer()
 	receiver.initNacos()
 	receiver.initDBLite()
-	receiver.initEngine(ginEngine)
+	receiver.initEngine(ginEngine, recoveryFunc)
 }
 
 func (receiver enter) initConfig(ymlPath string) {
@@ -167,7 +167,7 @@ func (receiver enter) initDBLite() {
 }
 
 // initEngine 初始化gin引擎
-func (receiver enter) initEngine(ginEngine *gin.Engine) {
+func (receiver enter) initEngine(ginEngine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
 	ez := config.EZGin()
 
 	logMongoTag := ez.Gin.MwLogs.MongoTag
@@ -203,10 +203,11 @@ func (receiver enter) initEngine(ginEngine *gin.Engine) {
 	}
 
 	yml := engine.Yml{
-		Mode:       ez.Gin.Mode,
-		Middleware: ez.Gin.Middleware,
-		Engine:     ginEngine,
-		LogChan:    logChan,
+		Mode:         ez.Gin.Mode,
+		Middleware:   ez.Gin.Middleware,
+		Engine:       ginEngine,
+		LogChan:      logChan,
+		RecoveryFunc: recoveryFunc,
 	}
 	engine.InitObj(yml)
 }

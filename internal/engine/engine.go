@@ -48,7 +48,12 @@ func (receiver control) initEngine() {
 			receiver.Use(middleware.XLang)
 		}
 		if strings.Contains(config.Gin.Middleware, "recover") {
-			receiver.Use(middleware.Recover(config.Gin.RecoverCallback))
+			if config.Gin.RecoveryFunc != nil {
+				config.Gin.RecoveryFunc = func(c *gin.Context, err interface{}) {
+					c.AbortWithStatus(http.StatusInternalServerError)
+				}
+			}
+			receiver.Use(middleware.Recover(config.Gin.RecoveryFunc))
 		}
 	}
 

@@ -3,6 +3,8 @@ package engine
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
+	"github.com/loebfly/ezgin/internal/engine/middleware/xlang"
 	"net/http"
 )
 
@@ -23,6 +25,16 @@ func (enter) GetOriEngine() *gin.Engine {
 // GetFormParams 获取表单参数
 func (enter) GetFormParams(ctx *gin.Context) map[string]string {
 	return ctl.GetFormParams(ctx)
+}
+
+// GetCurReqId 获取当前请求id
+func (enter) GetCurReqId() string {
+	return trace.Enter.GetCurReqId()
+}
+
+// GetCurXLang 获取当前请求语言
+func (enter) GetCurXLang() string {
+	return xlang.Enter.GetCurXLang()
 }
 
 func (enter) Use(middleware ...gin.HandlerFunc) gin.IRoutes {

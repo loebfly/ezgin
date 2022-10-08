@@ -10,8 +10,8 @@ type enter int
 
 const Enter = enter(0)
 
-func StartWithEngine(ymlPath string, engine *gin.Engine) {
-	Enter.Start(ymlPath, engine)
+func StartWithEngine(ymlPath string, engine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
+	Enter.Start(ymlPath, engine, recoveryFunc)
 }
 
 // ShutdownWhenExitSignalWithCallBack 服务异常退出时 优雅关闭服务

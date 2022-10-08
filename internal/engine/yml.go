@@ -6,9 +6,9 @@ import (
 )
 
 type Yml struct {
-	Mode            string                                // gin模式 debug, release
-	Middleware      string                                // 中间件, 用逗号分隔, 暂时支持cors, trace, logs, 不填则默认全部开启, - 表示不开启
-	LogChan         chan reqlogs.ReqCtx                   // 日志通道
-	Engine          *gin.Engine                           // gin引擎
-	RecoverCallback func(c *gin.Context, err interface{}) // 异常回调
+	Mode         string              // gin模式 debug, release
+	Middleware   string              // 中间件, 用逗号分隔, 暂时支持cors,trace,logs,recover,xlang, 不填则默认全部开启, - 表示不开启
+	LogChan      chan reqlogs.ReqCtx // 日志通道
+	Engine       *gin.Engine         // gin引擎
+	RecoveryFunc gin.RecoveryFunc    // 异常回调
 }
