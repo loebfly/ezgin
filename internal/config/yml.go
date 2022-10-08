@@ -30,10 +30,10 @@ type EZGinYml struct {
 	Gin struct {
 		Mode       string `koanf:"mode"`       // gin模式 debug, release
 		Middleware string `koanf:"middleware"` // gin中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
-		Logs       struct {
-			Mongo string `koanf:"mongo"`      // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
-			Table string `koanf:"table_name"` // 日志表名, 默认为${App.Name}APIRequestLogs
-		} `koanf:"logs"` // 日志配置
+		MwLogs     struct {
+			MongoTag string `koanf:"mongo_tag"`  // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
+			Table    string `koanf:"table_name"` // 日志表名, 默认为${App.Name}APIRequestLogs
+		} `koanf:"mw_logs"` // 日志中间件数据库配置
 	} `yaml:"gin"` // gin配置
 
 	Logs struct {

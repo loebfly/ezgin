@@ -39,3 +39,12 @@ func (cfg *ymlConfig) fillNull() {
 		}
 	}
 }
+
+func (cfg *ymlConfig) isExistTag(tag string) bool {
+	for _, obj := range cfg.Objs {
+		if obj.Tag == tag {
+			return true
+		}
+	}
+	return false
+}

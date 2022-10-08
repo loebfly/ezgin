@@ -1,17 +1,27 @@
 package reqlogs
 
-import (
-	"github.com/loebfly/ezgin/internal/logs"
-)
-
 type enter int
 
 const Enter = enter(0)
 
-var logChan = make(chan ReqCtx, 1000)
+var reqCtxChan chan ReqCtx
 
-func (enter) HandleLogChan() {
-	for ctx := range logChan {
-		logs.Enter.CDebug("access", "{}", ctx)
+var logWriter *mongoWriter
+
+func (enter) OpenMongoWriter(mongoTag, table string) {
+	if mongoTag == "-" {
+		return
+	}
+	logWriter = &mongoWriter{
+		MongoTag: mongoTag,
+		Table:    table,
+	}
+	reqCtxChan = make(chan ReqCtx, 100)
+	go Enter.HandleReqCtxChan()
+}
+
+func (enter) HandleReqCtxChan() {
+	for ctx := range reqCtxChan {
+		logWriter.Write(ctx)
 	}
 }

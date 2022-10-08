@@ -46,8 +46,8 @@ func (c *control) initConnect() error {
 	return nil
 }
 
-func (c *control) tryConnect(findName string) error {
-	if db, ok := c.dbMap[findName]; !ok {
+func (c *control) tryConnect(tag string) error {
+	if db, ok := c.dbMap[tag]; !ok {
 		if db != nil {
 			_, err := db.Ping().Result()
 			if err == nil {
@@ -57,7 +57,7 @@ func (c *control) tryConnect(findName string) error {
 	}
 
 	for _, v := range config.Objs {
-		if v.Tag == findName {
+		if v.Tag == tag {
 			addr := fmt.Sprintf("%s:%d", v.Host, v.Port)
 			client := redis.NewClient(&redis.Options{
 				Addr:         addr,
@@ -83,7 +83,7 @@ func (c *control) tryConnect(findName string) error {
 			return nil
 		}
 	}
-	return errors.New(fmt.Sprintf("未找到%s对应的Redis数据库", findName))
+	return errors.New(fmt.Sprintf("未找到%s对应的Redis数据库", tag))
 }
 
 func (c *control) disconnect() {
@@ -112,13 +112,19 @@ func (c *control) addCheckTicker() {
 	}(c)
 }
 
-func (c *control) getDB(findName string) (*redis.Client, error) {
-	if db, ok := c.dbMap[findName]; ok {
+func (c *control) getDB(tag ...string) (*redis.Client, error) {
+	key := ""
+	if len(tag) == 0 {
+		key = config.Objs[0].Tag
+	} else {
+		key = tag[0]
+	}
+	if db, ok := c.dbMap[key]; ok {
 		return db, nil
 	}
-	err := c.tryConnect(findName)
+	err := c.tryConnect(key)
 	if err != nil {
 		return nil, err
 	}
-	return c.dbMap[findName], nil
+	return c.dbMap[key], nil
 }

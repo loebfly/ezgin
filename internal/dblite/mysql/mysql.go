@@ -42,8 +42,8 @@ func (c *control) initConnect() error {
 	return nil
 }
 
-func (c *control) tryConnect(fineName string) error {
-	if db, ok := c.dbMap[fineName]; ok {
+func (c *control) tryConnect(tag string) error {
+	if db, ok := c.dbMap[tag]; ok {
 		if db != nil {
 			sqlDB, err := db.DB()
 			if err == nil {
@@ -55,7 +55,7 @@ func (c *control) tryConnect(fineName string) error {
 		}
 	}
 	for _, v := range config.Objs {
-		if v.Tag == fineName {
+		if v.Tag == tag {
 			gormDB, err := gorm.Open(mysql.Open(v.Url), &gorm.Config{})
 			if err != nil {
 				return err
@@ -77,7 +77,7 @@ func (c *control) tryConnect(fineName string) error {
 			return nil
 		}
 	}
-	return errors.New(fmt.Sprintf("未找到%s对应的Mysql数据库", fineName))
+	return errors.New(fmt.Sprintf("未找到%s对应的Mysql数据库", tag))
 }
 
 func (c *control) disconnect() {

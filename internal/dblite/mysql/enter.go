@@ -15,8 +15,8 @@ func InitObjs(objs []EZGinMysql) {
 	ctl.addCheckTicker()
 }
 
-func GetDB(findName ...string) (db *gorm.DB, err error) {
-	return ctl.getDB(findName...)
+func GetDB(tag ...string) (db *gorm.DB, err error) {
+	return ctl.getDB(tag...)
 }
 
 func Disconnect() {

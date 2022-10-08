@@ -16,7 +16,11 @@ func Trace(ctx *gin.Context) {
 	trace.Enter.Middleware(ctx)
 }
 
-func Logs(ctx *gin.Context) {
-	go reqlogs.Enter.HandleLogChan()
-	reqlogs.Enter.Middleware(ctx)
+func Logs(mongoTag, table string) func(ctx *gin.Context) {
+	if mongoTag != "-" {
+		reqlogs.Enter.OpenMongoWriter(mongoTag, table)
+	}
+	return func(ctx *gin.Context) {
+		reqlogs.Enter.Middleware(ctx)
+	}
 }

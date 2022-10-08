@@ -25,16 +25,21 @@ func InitDB(mongoObjs []mongoDB.EZGinMongo, mysqlObjs []mysqlDB.EZGinMysql, redi
 	}
 }
 
-func (enter) Mysql(findName ...string) (db *gorm.DB, err error) {
-	return mysqlDB.GetDB(findName...)
+// IsExistMongoTag 判断是否存在mongo标签
+func IsExistMongoTag(tag string) bool {
+	return mongoDB.IsExistTag(tag)
 }
 
-func (enter) Mongo(findName ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
-	return mongoDB.GetDB(findName...)
+func (enter) Mysql(tag ...string) (db *gorm.DB, err error) {
+	return mysqlDB.GetDB(tag...)
 }
 
-func (enter) Redis(findName ...string) (db *redis.Client, err error) {
-	return redisDB.GetDB(findName...)
+func (enter) Mongo(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
+	return mongoDB.GetDB(tag...)
+}
+
+func (enter) Redis(tag ...string) (db *redis.Client, err error) {
+	return redisDB.GetDB(tag...)
 }
 
 func (enter) SafeExit() {

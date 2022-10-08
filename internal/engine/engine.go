@@ -42,7 +42,7 @@ func (receiver control) initEngine() {
 			})
 		}
 		if strings.Contains(config.Gin.Middleware, "logs") {
-			receiver.Use(middleware.Logs)
+			receiver.Use(middleware.Logs(config.Gin.Logs.MongoTag, config.Gin.Logs.Table))
 		}
 	}
 

@@ -15,11 +15,10 @@ func InitObjs(objs []EZGinRedis) {
 	ctl.addCheckTicker()
 }
 
-func GetDB(findName ...string) (db *redis.Client, err error) {
-	//return ctl.getDB(findName...)
-	return nil, nil
+func GetDB(tag ...string) (db *redis.Client, err error) {
+	return ctl.getDB(tag...)
 }
 
 func Disconnect() {
-	//ctl.disconnect()
+	ctl.disconnect()
 }

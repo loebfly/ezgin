@@ -35,10 +35,10 @@ func (receiver enter) getYml() string {
 func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine) {
 	receiver.initConfig(ymlPath)
 	receiver.initLogs()
-	receiver.initEngine(ginEngine)
 	receiver.initServer()
 	receiver.initNacos()
 	receiver.initDBLite()
+	receiver.initEngine(ginEngine)
 }
 
 func (receiver enter) initConfig(ymlPath string) {
@@ -60,16 +60,6 @@ func (receiver enter) initLogs() {
 		File: file,
 	}
 	logs.InitObj(yml)
-}
-
-// initEngine 初始化gin引擎
-func (receiver enter) initEngine(ginEngine *gin.Engine) {
-	yml := engine.Yml{
-		Mode:       config.EZGin().Gin.Mode,
-		Middleware: config.EZGin().Gin.Middleware,
-		Engine:     ginEngine,
-	}
-	engine.InitObj(yml)
 }
 
 // initServer 初始化服务
@@ -172,4 +162,28 @@ func (receiver enter) initDBLite() {
 		}
 	}
 	dblite.InitDB(mongoObjs, mysqlObjs, redisObjs)
+}
+
+// initEngine 初始化gin引擎
+func (receiver enter) initEngine(ginEngine *gin.Engine) {
+	ez := config.EZGin()
+
+	mongoTag := ez.Gin.MwLogs.MongoTag
+	if mongoTag != "-" && mongoTag != "" {
+		if !dblite.IsExistMongoTag(mongoTag) {
+			panic(fmt.Errorf("mongo_tag:%s不存在", mongoTag))
+		}
+	}
+	table := ez.Gin.MwLogs.Table
+	if table == "" {
+		table = ez.App.Name + "APIRequestLogs"
+	}
+
+	yml := engine.Yml{
+		Mode:       ez.Gin.Mode,
+		Middleware: ez.Gin.Middleware,
+		Engine:     ginEngine,
+		MwLogs:     engine.MwLogs{MongoTag: mongoTag, Table: table},
+	}
+	engine.InitObj(yml)
 }

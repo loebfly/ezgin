@@ -30,8 +30,8 @@ func (c *control) initConnect() error {
 	return nil
 }
 
-func (c *control) tryConnect(findName string) error {
-	if db, ok := c.dbMap[findName]; ok {
+func (c *control) tryConnect(tag string) error {
+	if db, ok := c.dbMap[tag]; ok {
 		if db != nil {
 			err := db.Ping()
 			if err == nil {
@@ -40,7 +40,7 @@ func (c *control) tryConnect(findName string) error {
 		}
 	}
 	for _, v := range config.Objs {
-		if v.Tag == findName {
+		if v.Tag == tag {
 			session, err := mgo.Dial(v.Url)
 			if err != nil {
 				return err
@@ -51,7 +51,7 @@ func (c *control) tryConnect(findName string) error {
 			return nil
 		}
 	}
-	return errors.New(fmt.Sprintf("未找到%s对应的Mongo数据库", findName))
+	return errors.New(fmt.Sprintf("未找到%s对应的Mongo数据库", tag))
 }
 
 func (c *control) disconnect() {
@@ -85,12 +85,12 @@ func (c *control) addCheckTicker() {
 // getDB 获取mongoDB
 // 如果fineName为空且有已连接的数据库链接，则返回第一个链接，没有则返回错误
 // 如果fineName不为空，则返回fineName对应的链接，如果没有则错误
-func (c *control) getDB(findName ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
+func (c *control) getDB(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
 	key := ""
-	if len(findName) == 0 {
+	if len(tag) == 0 {
 		key = config.Objs[0].Tag
 	} else {
-		key = findName[0]
+		key = tag[0]
 	}
 
 	if v, ok := c.dbMap[key]; ok {
