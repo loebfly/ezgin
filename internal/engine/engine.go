@@ -44,6 +44,12 @@ func (receiver control) initEngine() {
 		if strings.Contains(config.Gin.Middleware, "logs") {
 			receiver.Use(middleware.Logs(config.Gin.LogChan))
 		}
+		if strings.Contains(config.Gin.Middleware, "xlang") {
+			receiver.Use(middleware.XLang)
+		}
+		if strings.Contains(config.Gin.Middleware, "recover") {
+			receiver.Use(middleware.Recover(config.Gin.RecoverCallback))
+		}
 	}
 
 }

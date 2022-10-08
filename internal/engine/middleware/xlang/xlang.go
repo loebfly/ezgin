@@ -1,4 +1,4 @@
-package trace
+package xlang
 
 import (
 	"bytes"
@@ -10,14 +10,16 @@ import (
 )
 
 const (
-	HeaderXRequestId = "X-Request-Id"
-	CacheTable       = "Middleware_Trace"
+	CacheTable = "Middleware_XLang"
 )
 
 func (receiver enter) Middleware(c *gin.Context) {
-	requestId := c.GetHeader(HeaderXRequestId)
+	lang := c.GetHeader("X-Lang")
+	if lang == "" {
+		lang = "zh-cn"
+	}
 	routineId := receiver.getRoutineId()
-	cache.Enter.Table(CacheTable).Add(routineId, requestId, 5*time.Minute)
+	cache.Enter.Table(CacheTable).Add(routineId, lang, 5*time.Minute)
 }
 
 // GetRoutineId 获取当前协程Id
@@ -30,8 +32,8 @@ func (receiver enter) getRoutineId() string {
 	return strconv.FormatUint(n, 10)
 }
 
-// GetCurReqId 获取当前请求Id
-func (receiver enter) GetCurReqId() string {
+// GetCurXLang 获取当前语言
+func (receiver enter) GetCurXLang() string {
 	value, exist := cache.Enter.Table(CacheTable).Get(receiver.getRoutineId())
 	if exist {
 		return value.(string)

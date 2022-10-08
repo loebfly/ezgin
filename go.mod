@@ -3,7 +3,9 @@ module github.com/loebfly/ezgin
 go 1.17
 
 require (
+	github.com/ekyoung/gin-nice-recovery v0.0.0-20160510022553-1654dca486db
 	github.com/gin-gonic/gin v1.8.1
+	github.com/go-errors/errors v1.0.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/knadh/koanf v1.4.3
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
@@ -21,7 +23,6 @@ require (
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
