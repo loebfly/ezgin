@@ -91,7 +91,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 		ContentType: contentType,
 		URI:         uri,
 	}
-	reqCtxChan <- ctx
+	logChan <- ctx
 }
 
 func (receiver enter) GetFormParams(ctx *gin.Context) map[string]string {

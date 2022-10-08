@@ -16,10 +16,8 @@ func Trace(ctx *gin.Context) {
 	trace.Enter.Middleware(ctx)
 }
 
-func Logs(mongoTag, table string) func(ctx *gin.Context) {
-	if mongoTag != "-" {
-		reqlogs.Enter.OpenMongoWriter(mongoTag, table)
-	}
+func Logs(logChan chan reqlogs.ReqCtx) func(ctx *gin.Context) {
+	reqlogs.Enter.SetLogChan(logChan)
 	return func(ctx *gin.Context) {
 		reqlogs.Enter.Middleware(ctx)
 	}

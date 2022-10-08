@@ -10,8 +10,10 @@ import (
 	"github.com/loebfly/ezgin/internal/dblite/mysql"
 	"github.com/loebfly/ezgin/internal/dblite/redis"
 	"github.com/loebfly/ezgin/internal/engine"
+	"github.com/loebfly/ezgin/internal/engine/middleware/reqlogs"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
+	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -168,22 +170,43 @@ func (receiver enter) initDBLite() {
 func (receiver enter) initEngine(ginEngine *gin.Engine) {
 	ez := config.EZGin()
 
-	mongoTag := ez.Gin.MwLogs.MongoTag
-	if mongoTag != "-" && mongoTag != "" {
-		if !dblite.IsExistMongoTag(mongoTag) {
-			panic(fmt.Errorf("mongo_tag:%s不存在", mongoTag))
+	logMongoTag := ez.Gin.MwLogs.MongoTag
+	if logMongoTag != "-" && logMongoTag != "" {
+		if !dblite.IsExistMongoTag(logMongoTag) {
+			panic(fmt.Errorf("mongo_tag:%s不存在", logMongoTag))
 		}
 	}
-	table := ez.Gin.MwLogs.Table
-	if table == "" {
-		table = ez.App.Name + "APIRequestLogs"
+
+	logTable := ez.Gin.MwLogs.Table
+	if logTable == "" {
+		logTable = ez.App.Name + "APIRequestLogs"
+	}
+	var logChan chan reqlogs.ReqCtx
+	if logMongoTag != "-" {
+		logChan = make(chan reqlogs.ReqCtx, 1000)
+		go func(tag, tableName string) {
+			for ctx := range logChan {
+				db, returnDB, err := dblite.Enter.Mongo(tag)
+				if err != nil {
+					logs.Enter.CError("MIDDLEWARE", "写入日志失败, 获取数据库失败: %s", err.Error())
+					return
+				}
+				ctx.Id = bson.NewObjectId()
+				err = db.C(tableName).Insert(ctx)
+				if err != nil {
+					logs.Enter.CError("MIDDLEWARE", "写入日志失败: %s", err.Error())
+					returnDB(db)
+				}
+				returnDB(db)
+			}
+		}(logMongoTag, logTable)
 	}
 
 	yml := engine.Yml{
 		Mode:       ez.Gin.Mode,
 		Middleware: ez.Gin.Middleware,
 		Engine:     ginEngine,
-		MwLogs:     engine.MwLogs{MongoTag: mongoTag, Table: table},
+		LogChan:    logChan,
 	}
 	engine.InitObj(yml)
 }
