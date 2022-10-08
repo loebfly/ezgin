@@ -34,9 +34,9 @@ func (c *control) initConnect() error {
 		sqlDB.SetConnMaxIdleTime(time.Duration(v.Pool.Timeout.Idle) * time.Second)
 		sqlDB.SetConnMaxLifetime(time.Duration(v.Pool.Timeout.Life) * time.Minute)
 		if v.Debug {
-			c.dbMap[v.FindName] = gormDB.Debug()
+			c.dbMap[v.Tag] = gormDB.Debug()
 		} else {
-			c.dbMap[v.FindName] = gormDB
+			c.dbMap[v.Tag] = gormDB
 		}
 	}
 	return nil
@@ -55,7 +55,7 @@ func (c *control) tryConnect(fineName string) error {
 		}
 	}
 	for _, v := range config.Objs {
-		if v.FindName == fineName {
+		if v.Tag == fineName {
 			gormDB, err := gorm.Open(mysql.Open(v.Url), &gorm.Config{})
 			if err != nil {
 				return err
@@ -70,9 +70,9 @@ func (c *control) tryConnect(fineName string) error {
 			sqlDB.SetConnMaxIdleTime(time.Duration(v.Pool.Timeout.Idle) * time.Second)
 			sqlDB.SetConnMaxLifetime(time.Duration(v.Pool.Timeout.Life) * time.Minute)
 			if v.Debug {
-				c.dbMap[v.FindName] = gormDB.Debug()
+				c.dbMap[v.Tag] = gormDB.Debug()
 			} else {
-				c.dbMap[v.FindName] = gormDB
+				c.dbMap[v.Tag] = gormDB
 			}
 			return nil
 		}
@@ -110,7 +110,7 @@ func (c *control) addCheckTicker() {
 func (c *control) getDB(findName ...string) (*gorm.DB, error) {
 	key := ""
 	if len(findName) == 0 {
-		key = config.Objs[0].FindName
+		key = config.Objs[0].Tag
 	} else {
 		key = findName[0]
 	}

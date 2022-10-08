@@ -41,7 +41,7 @@ func (c *control) initConnect() error {
 		if err != nil {
 			return err
 		}
-		c.dbMap[v.FindName] = client
+		c.dbMap[v.Tag] = client
 	}
 	return nil
 }
@@ -57,7 +57,7 @@ func (c *control) tryConnect(findName string) error {
 	}
 
 	for _, v := range config.Objs {
-		if v.FindName == findName {
+		if v.Tag == findName {
 			addr := fmt.Sprintf("%s:%d", v.Host, v.Port)
 			client := redis.NewClient(&redis.Options{
 				Addr:         addr,
@@ -79,7 +79,7 @@ func (c *control) tryConnect(findName string) error {
 			if err != nil {
 				return err
 			}
-			c.dbMap[v.FindName] = client
+			c.dbMap[v.Tag] = client
 			return nil
 		}
 	}

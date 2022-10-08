@@ -1,0 +1,30 @@
+ezgin:
+  app:
+    name: "ezgin" # 应用名称
+    ip: 127.0.0.1 # 应用ip地址, 默认为本机ip
+    port: 8080 # 应用http端口, 默认为8080
+    port_ssl: 8090 # 应用https端口, 默认为8090
+    cert: # 应用证书文件路径, 用于https, 如果不需要https,则不需要配置
+    key: # 应用私钥文件路径, 用于https, 如果不需要https,则不需要配置
+    debug: true # 是否开启debug模式, 默认false, 如果开启, 则不会被其他服务调用
+    version: 1.0.0 # 应用版本号
+    env: dev # 应用环境, test, dev, prod
+
+  nacos:
+    server: 127.0.0.1:58848 # nacos服务地址
+    yml:
+      nacos: nacos-ezgin # nacos配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 不支持多个配置文件
+      mysql: mysql-ezgin # mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mysql,则不需要配置
+      mongo: mongo-ezgin # mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mongo,则不需要配置
+      redis: redis-ezgin # redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要redis,则不需要配置
+
+  gin:
+    mode: debug # gin模式, debug, release
+    middleware: cors,trace,logs # gin中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
+    logs:
+      mongo: mongo-ezgin # 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
+      table: EZGinAPIRequestLogs # mongo中的表名, 默认为${App.Name}APIRequestLogs
+
+  Logs:
+    out: console,file #日志输出方式, 可选值: console, file 默认 console
+    file: /opt/logs/ezgin # 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}, 生成的文件会带上.$(Date +%F).log

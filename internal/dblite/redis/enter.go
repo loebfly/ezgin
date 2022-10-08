@@ -5,7 +5,7 @@ import (
 	"github.com/loebfly/ezgin/internal/logs"
 )
 
-func InitObjs(objs []Yml) {
+func InitObjs(objs []EZGinRedis) {
 	logs.Enter.CDebug("REDIS", "初始化")
 	config.InitObjs(objs)
 	err := ctl.initConnect()

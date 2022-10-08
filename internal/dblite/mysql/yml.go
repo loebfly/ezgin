@@ -1,6 +1,10 @@
 package mysql
 
 type Yml struct {
+	EZGinMysql EZGinMysql `koanf:"ezgin_mysql"`
+}
+
+type EZGinMysql struct {
 	Url   string `koanf:"url"`   // 连接地址, 必填
 	Debug bool   `koanf:"debug"` // 是否开启调试模式，默认false
 	Pool  struct {
@@ -11,5 +15,5 @@ type Yml struct {
 			Life int `koanf:"life"` // 连接池最大生存时间 默认60s
 		} `koanf:"timeout"` // 连接池超时时间
 	} `koanf:"pool"` // 连接池配置
-	FindName string `koanf:"find_name"` // 用于区分不同的数据库, 必填
+	Tag string `koanf:"tag"` // 唯一标识，用于获取连接时查找使用, 必填
 }

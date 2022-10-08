@@ -10,8 +10,8 @@ type EZGinYml struct {
 		Ip      string `koanf:"ip"`       // 应用ip地址, 默认为本机ip
 		Port    int    `koanf:"port"`     // http服务端口
 		PortSsl int    `koanf:"port_ssl"` // https服务端口
-		Cert    string `koanf:"cert"`     // 证书, 用于https, 如果不需要https,则不需要配置
-		Key     string `koanf:"key"`      // 私钥,用于https,如果不需要https,则不需要配置
+		Cert    string `koanf:"cert"`     // 应用证书文件路径, 用于https, 如果不需要https,则不需要配置
+		Key     string `koanf:"key"`      // 应用私钥文件路径, 用于https,如果不需要https,则不需要配置
 		Debug   bool   `koanf:"debug"`    // 是否开启debug模式, 默认false, 如果开启, 则不会被其他服务调用
 		Version string `koanf:"version"`  // 版本号
 		Env     string `koanf:"env"`      // 环境 test, dev, prod
@@ -29,7 +29,7 @@ type EZGinYml struct {
 
 	Gin struct {
 		Mode       string `koanf:"mode"`       // gin模式 debug, release
-		Middleware string `koanf:"middleware"` // 中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
+		Middleware string `koanf:"middleware"` // gin中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
 		Logs       struct {
 			Mongo string `koanf:"mongo"`      // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
 			Table string `koanf:"table_name"` // 日志表名, 默认为${App.Name}APIRequestLogs
@@ -38,7 +38,7 @@ type EZGinYml struct {
 
 	Logs struct {
 		Out  string `koanf:"out"`  // 日志输出方式, 可选值: console, file 默认 console
-		File string `koanf:"file"` // 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}.$(Date +%F).log
+		File string `koanf:"file"` // 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}, 生成的文件会带上.$(Date +%F).log
 	} `yaml:"log"` // 日志配置
 }
 

@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitObjs(objs []Yml) {
+func InitObjs(objs []EZGinMysql) {
 	logs.Enter.CDebug("MYSQL", "初始化")
 	config.InitObjs(objs)
 	err := ctl.initConnect()

@@ -13,7 +13,7 @@ type enter int
 
 const Enter = enter(0)
 
-func InitDB(mongoObjs []mongoDB.Yml, mysqlObjs []mysqlDB.Yml, redisObjs []redisDB.Yml) {
+func InitDB(mongoObjs []mongoDB.EZGinMongo, mysqlObjs []mysqlDB.EZGinMysql, redisObjs []redisDB.EZGinRedis) {
 	if mongoObjs != nil && len(mongoObjs) > 0 {
 		mongoDB.InitObjs(mongoObjs)
 	}

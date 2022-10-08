@@ -8,10 +8,10 @@ import (
 var config = new(ymlConfig)
 
 type ymlConfig struct {
-	Objs []Yml
+	Objs []EZGinMysql
 }
 
-func (cfg *ymlConfig) InitObjs(objs []Yml) {
+func (cfg *ymlConfig) InitObjs(objs []EZGinMysql) {
 	cfg.Objs = objs
 	err := cfg.checkObjs()
 	if err != nil {

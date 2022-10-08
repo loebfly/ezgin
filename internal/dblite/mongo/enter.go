@@ -5,7 +5,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func InitObjs(objs []Yml) {
+func InitObjs(objs []EZGinMongo) {
 	logs.Enter.CDebug("MONGO", "初始化")
 	config.InitObjs(objs)
 	err := ctl.initConnect()

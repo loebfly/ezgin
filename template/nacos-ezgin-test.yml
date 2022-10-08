@@ -1,0 +1,8 @@
+ezgin_nacos:
+  server: 127.0.0.1 # nacos服务地址
+  port: 58848 # nacos服务端口
+  cluster_name: DEFAULT # nacos集群名称
+  group_name: DEFAULT_GROUP # nacos配置组名称
+  weight: 1 # nacos权重
+  lan: false # nacos是否为内网
+  lanNet: 192.168.3. # nacos内网网段

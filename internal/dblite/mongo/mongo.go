@@ -25,7 +25,7 @@ func (c *control) initConnect() error {
 		}
 		session.SetPoolLimit(v.PoolMax)
 		session.SetMode(mgo.Monotonic, true)
-		c.dbMap[v.FindName] = session
+		c.dbMap[v.Tag] = session
 	}
 	return nil
 }
@@ -40,14 +40,14 @@ func (c *control) tryConnect(findName string) error {
 		}
 	}
 	for _, v := range config.Objs {
-		if v.FindName == findName {
+		if v.Tag == findName {
 			session, err := mgo.Dial(v.Url)
 			if err != nil {
 				return err
 			}
 			session.SetPoolLimit(v.PoolMax)
 			session.SetMode(mgo.Monotonic, true)
-			c.dbMap[v.FindName] = session
+			c.dbMap[v.Tag] = session
 			return nil
 		}
 	}
@@ -88,7 +88,7 @@ func (c *control) addCheckTicker() {
 func (c *control) getDB(findName ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
 	key := ""
 	if len(findName) == 0 {
-		key = config.Objs[0].FindName
+		key = config.Objs[0].Tag
 	} else {
 		key = findName[0]
 	}
