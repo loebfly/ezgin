@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/dblite/mongo"
@@ -11,6 +12,7 @@ import (
 	"github.com/loebfly/ezgin/internal/dblite/redis"
 	"github.com/loebfly/ezgin/internal/engine"
 	"github.com/loebfly/ezgin/internal/engine/middleware/reqlogs"
+	"github.com/loebfly/ezgin/internal/i18n"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
 	"gopkg.in/mgo.v2/bson"
@@ -34,12 +36,13 @@ func (receiver enter) getYml() string {
 }
 
 // initPath 初始化所有组件入口
-func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
+func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
 	receiver.initConfig(ymlPath)
 	receiver.initLogs()
 	receiver.initServer()
 	receiver.initNacos()
 	receiver.initDBLite()
+	receiver.initI18n()
 	receiver.initEngine(ginEngine, recoveryFunc)
 }
 
@@ -167,7 +170,7 @@ func (receiver enter) initDBLite() {
 }
 
 // initEngine 初始化gin引擎
-func (receiver enter) initEngine(ginEngine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
+func (receiver enter) initEngine(ginEngine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
 	ez := config.EZGin()
 
 	logMongoTag := ez.Gin.MwLogs.MongoTag
@@ -210,4 +213,22 @@ func (receiver enter) initEngine(ginEngine *gin.Engine, recoveryFunc gin.Recover
 		RecoveryFunc: recoveryFunc,
 	}
 	engine.InitObj(yml)
+}
+
+func (receiver enter) initI18n() {
+	ez := config.EZGin()
+	if ez.I18n.AppName != "-" {
+		appName := ez.I18n.AppName
+		if appName == "" {
+			appName = "default," + ez.App.Name
+		}
+		var yml = i18n.Yml{
+			AppName:    strings.Split(appName, ","),
+			ServerName: ez.I18n.ServerName,
+			CheckUri:   ez.I18n.CheckUri,
+			QueryUri:   ez.I18n.QueryUri,
+			Duration:   ez.I18n.Duration,
+		}
+		i18n.InitObj(yml)
+	}
 }

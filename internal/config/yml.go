@@ -40,6 +40,14 @@ type EZGinYml struct {
 		Out  string `koanf:"out"`  // 日志输出方式, 可选值: console, file 默认 console
 		File string `koanf:"file"` // 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}, 生成的文件会带上.$(Date +%F).log
 	} `koanf:"logs"` // 日志配置
+
+	I18n struct {
+		AppName    string `koanf:"app_name"`    // i18n应用名称, 多个用逗号分隔, 默认为default,${App.Name}, - 表示不开启
+		ServerName string `koanf:"server_name"` // i18n微服务名称, 默认x-lang
+		CheckUri   string `koanf:"check_uri"`   // i18n服务检查uri, 默认/lang/string/app/version
+		QueryUri   string `koanf:"query_uri"`   // i18n服务查询uri, 默认/lang/string/list
+		Duration   int    `koanf:"duration"`    //  i18n服务查询间隔, 默认360s
+	} `koanf:"i18n"` // i18n配置
 }
 
 // GetNacosUrl 根据配置文件前缀获取nacos配置文件完整地址

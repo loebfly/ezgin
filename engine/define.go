@@ -17,6 +17,8 @@ const (
 
 type HandlerFunc func(ctx *gin.Context) Result
 
+type RecoveryFunc func(c *gin.Context, err interface{})
+
 type Result struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`

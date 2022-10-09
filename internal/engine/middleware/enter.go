@@ -29,7 +29,7 @@ func XLang(ctx *gin.Context) {
 	xlang.Enter.Middleware(ctx)
 }
 
-func Recover(recoverFunc gin.RecoveryFunc) func(ctx *gin.Context) {
+func Recover(recoverFunc func(c *gin.Context, err interface{})) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		ginrecover.Enter.Middleware(recoverFunc)
 	}

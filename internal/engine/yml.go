@@ -2,6 +2,7 @@ package engine
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/engine/middleware/reqlogs"
 )
 
@@ -10,5 +11,5 @@ type Yml struct {
 	Middleware   string              // 中间件, 用逗号分隔, 暂时支持cors,trace,logs,recover,xlang, 不填则默认全部开启, - 表示不开启
 	LogChan      chan reqlogs.ReqCtx // 日志通道
 	Engine       *gin.Engine         // gin引擎
-	RecoveryFunc gin.RecoveryFunc    // 异常回调
+	RecoveryFunc engine.RecoveryFunc // 异常回调
 }

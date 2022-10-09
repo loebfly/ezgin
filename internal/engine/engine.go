@@ -56,7 +56,6 @@ func (receiver control) initEngine() {
 			receiver.Use(middleware.Recover(config.Gin.RecoveryFunc))
 		}
 	}
-
 }
 
 func (receiver control) Use(middleware ...gin.HandlerFunc) gin.IRoutes {

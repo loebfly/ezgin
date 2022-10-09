@@ -9,6 +9,7 @@ import (
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/engine"
+	"github.com/loebfly/ezgin/internal/i18n"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
 	"os"
@@ -22,6 +23,7 @@ const (
 	Logs   = logs.Enter   // 日志
 	DBLite = dblite.Enter // 数据库
 	Call   = call.Enter   // 微服务调用
+	I18n   = i18n.Enter   // 国际化
 )
 
 // Start 完整参数启动服务
