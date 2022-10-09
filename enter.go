@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/internal/app"
 	"github.com/loebfly/ezgin/internal/cache"
+	"github.com/loebfly/ezgin/internal/call"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/engine"
@@ -20,6 +21,7 @@ const (
 	Cache  = cache.Enter  // 缓存
 	Logs   = logs.Enter   // 日志
 	DBLite = dblite.Enter // 数据库
+	Call   = call.Enter   // 微服务调用
 )
 
 // Start 完整参数启动服务
