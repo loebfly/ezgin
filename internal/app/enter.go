@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/loebfly/ezgin/engine"
 	"os"
 )
 
@@ -10,7 +11,7 @@ type enter int
 
 const Enter = enter(0)
 
-func StartWithEngine(ymlPath string, engine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
+func StartWithEngine(ymlPath string, engine *gin.Engine, recoveryFunc engine.RecoveryFunc) {
 	Enter.Start(ymlPath, engine, recoveryFunc)
 }
 

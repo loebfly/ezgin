@@ -13,11 +13,20 @@ func InitObj(obj Yml) {
 	ctl.initXlang()
 }
 
-func (enter) GetString(lang, messageId string, args ...interface{}) string {
+func (enter) String(messageId string) string {
+	lang := engine.Enter.GetCurXLang()
+	return ctl.getString(lang, messageId)
+}
+
+func (enter) StringFormat(messageId string, args ...interface{}) string {
+	lang := engine.Enter.GetCurXLang()
 	return ctl.getString(lang, messageId, args...)
 }
 
-func (enter) GetCurLangString(messageId string, args ...interface{}) string {
-	lang := engine.Enter.GetCurXLang()
+func (enter) StringByLang(lang, messageId string, args ...interface{}) string {
+	return ctl.getString(lang, messageId, args...)
+}
+
+func (enter) StringFormatByLang(lang, messageId string, args ...interface{}) string {
 	return ctl.getString(lang, messageId, args...)
 }

@@ -3,6 +3,7 @@ package ezgin
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/app"
 	"github.com/loebfly/ezgin/internal/cache"
 	"github.com/loebfly/ezgin/internal/call"
@@ -30,7 +31,7 @@ const (
 // @param ymlPath yml配置文件路径, 为空时默认为当前程序所在目录的同名yml文件
 // @param engine gin引擎, 传nil则使用gin默认引擎
 // @param recoveryFunc 异常回调, 传nil则使用gin默认回调
-func Start(ymlPath string, engine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
+func Start(ymlPath string, engine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
 	app.StartWithEngine(ymlPath, engine, recoveryFunc)
 }
 
@@ -40,7 +41,7 @@ func StartWithDefault() {
 
 // StartWithRecover 启动服务, 并捕获异常
 // @param recoveryFunc 异常回调, 传nil则使用gin默认回调
-func StartWithRecover(recoveryFunc gin.RecoveryFunc) {
+func StartWithRecover(recoveryFunc engineDefine.RecoveryFunc) {
 	app.StartWithEngine("", nil, recoveryFunc)
 }
 

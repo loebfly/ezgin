@@ -23,8 +23,8 @@ func (receiver formCall) request(method, service, uri string, header, params map
 	var resp *grequests.Response
 	if files != nil {
 		logs.Enter.CDebug("CALL",
-			"FORM - FILE微服务开始请求 -- url: {}, params: {}, headers: {}",
-			method, url, params, header)
+			"FORM - FILE 微服务开始请求 -- url: {}, params: {}, header: {}",
+			url, method, params, header)
 		resp, err = grequests.Post(url, &grequests.RequestOptions{
 			Data:               params,
 			Files:              files,
@@ -32,12 +32,14 @@ func (receiver formCall) request(method, service, uri string, header, params map
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
-			logs.Enter.CError("CALL", "FORM - FILE微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}", method, url, params, header, err)
+			logs.Enter.CError("CALL",
+				"FORM - FILE 微服务请求失败 -- url: {}, params: {}, header: {}, err: {}",
+				url, params, header, err)
 			return "", err
 		}
 	} else {
 		logs.Enter.CDebug("CALL",
-			"FORM - {}微服务开始请求 -- url: {}, params: {}, headers: {}",
+			"FORM - {} 微服务开始请求 -- url: {}, params: {}, header: {}",
 			method, url, params, header)
 		var options = &grequests.RequestOptions{
 			Data:               params,
@@ -50,12 +52,14 @@ func (receiver formCall) request(method, service, uri string, header, params map
 			resp, err = grequests.Post(url, options)
 		}
 		if err != nil {
-			logs.Enter.CError("CALL", "FORM - {}微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}", method, url, params, header, err)
+			logs.Enter.CError("CALL",
+				"FORM - {} 微服务请求失败 -- url: {}, params: {}, header: {}, err: {}",
+				method, url, params, header, err)
 			return "", err
 		}
 	}
 	logs.Enter.CDebug("CALL",
-		"FORM - {} 微服务请求响应 -- url: {} method: {}, params: {}, headers: {}, resp: {}",
+		"FORM - {} 微服务请求响应 -- url: {}, params: {}, header: {}, resp: {}",
 		method, url, params, header, resp.String())
 	return resp.String(), nil
 

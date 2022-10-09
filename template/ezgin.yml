@@ -30,7 +30,7 @@ ezgin:
     file: /opt/logs/ezgin # 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}, 生成的文件会带上.$(Date +%F).log
 
   i18n: # 国际化配置
-    app_name: ezgin # i18n应用名称, 多个用逗号分隔, 默认为default,${App.Name}, - 表示不开启
+    app_name: default,ezgin # i18n应用名称, 多个用逗号分隔, 默认为default,${App.Name}, - 表示不开启
     server_name: x-lang # i18n微服务名称, 默认x-lang
     check_uri: /lang/string/app/version # i18n服务检查uri, 默认/lang/string/app/version
     query_uri: /lang/string/list # i18n服务查询uri, 默认/lang/string/list

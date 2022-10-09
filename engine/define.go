@@ -20,13 +20,15 @@ type HandlerFunc func(ctx *gin.Context) Result
 type RecoveryFunc func(c *gin.Context, err interface{})
 
 type Result struct {
-	Code    int         `json:"code"`
+	Status  int         `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
-	Page    struct {
-		Count int `json:"count"`
-		Index int `json:"index"`
-		Size  int `json:"size"`
-		Total int `json:"total"`
-	} `json:"page"`
+	Page    *Page       `json:"page"`
+}
+
+type Page struct {
+	Count int `json:"count"`
+	Index int `json:"index"`
+	Size  int `json:"size"`
+	Total int `json:"total"`
 }

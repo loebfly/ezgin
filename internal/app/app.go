@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
@@ -18,7 +19,7 @@ var (
 )
 
 // Start 启动服务
-func (receiver enter) Start(ymlPath string, ginEngine *gin.Engine, recoveryFunc gin.RecoveryFunc) {
+func (receiver enter) Start(ymlPath string, ginEngine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
 
 	receiver.initEZGin(ymlPath, ginEngine, recoveryFunc)
 	ez := config.EZGin()

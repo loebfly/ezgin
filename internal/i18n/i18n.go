@@ -41,11 +41,11 @@ func (ctl *control) refreshCache() {
 		lastVersion, err := ctl.getAppXLangLastVersion(appName)
 		if err != nil {
 			logs.Enter.CError("I18N", "获取应用多语言版本号失败", err)
-			return
+			continue
 		}
-		value, isExist := cache.Enter.Table(CacheTableXLangVersion).Get(CacheKeyXLangVersion)
-		cacheVersion := value.(string)
+		value, isExist := cache.Enter.Table(CacheTableXLangVersion).Get(appName + "-" + CacheKeyXLangVersion)
 		if isExist {
+			cacheVersion := value.(string)
 			if lastVersion != cacheVersion {
 				ctl.cacheAppXlangData(appName, lastVersion)
 			}
@@ -67,7 +67,7 @@ func (ctl *control) cacheAppXlangData(appName, version string) {
 		cache.Enter.Table(CacheTableXLang).Add(key, value, 0)
 	}
 
-	cache.Enter.Table(CacheTableXLangVersion).Add(CacheKeyXLangVersion, version, 0)
+	cache.Enter.Table(CacheTableXLangVersion).Add(appName+"-"+CacheKeyXLangVersion, version, 0)
 }
 
 // getAppXLangLastVersion 获取应用最新的多语言版本号
@@ -83,11 +83,15 @@ func (ctl *control) getAppXLangLastVersion(appName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if result.Code != 1 {
+	if result.Status != 1 {
 		return "", errors.New(result.Message)
 	}
 	data := make(map[string]string)
-	err = json.Unmarshal([]byte(result.Data.(string)), &data)
+	respData, err := json.Marshal(result.Data)
+	if err != nil {
+		return "", err
+	}
+	err = json.Unmarshal(respData, &data)
 	return data["version"], nil
 }
 
@@ -104,11 +108,15 @@ func (ctl *control) getLastAppXlangData(appName string) (map[string]string, erro
 	if err != nil {
 		return nil, err
 	}
-	if result.Code != 1 {
+	if result.Status != 1 {
 		return nil, errors.New(result.Message)
 	}
 	data := make(map[string]string)
-	err = json.Unmarshal([]byte(result.Data.(string)), &data)
+	respData, err := json.Marshal(result.Data)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(respData, &data)
 	return data, nil
 }
 
