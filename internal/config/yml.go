@@ -39,7 +39,7 @@ type EZGinYml struct {
 	Logs struct {
 		Out  string `koanf:"out"`  // 日志输出方式, 可选值: console, file 默认 console
 		File string `koanf:"file"` // 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}, 生成的文件会带上.$(Date +%F).log
-	} `yaml:"logs"` // 日志配置
+	} `koanf:"logs"` // 日志配置
 }
 
 // GetNacosUrl 根据配置文件前缀获取nacos配置文件完整地址
