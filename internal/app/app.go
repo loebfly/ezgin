@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/config"
+	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
 	"net/http"
@@ -43,7 +44,8 @@ func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(cont
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
 	sig := <-signalChan
 	logs.Enter.CError("APP", "收到退出信号:{}", sig.String())
-	nacos.Enter.UnregisterIfNeed()
+	nacos.DeInit()
+	dblite.DeInit()
 
 	if will != nil {
 		will(sig)

@@ -26,6 +26,13 @@ func InitDB(mongoObjs []mongoDB.EZGinMongo, mysqlObjs []mysqlDB.EZGinMysql, redi
 	}
 }
 
+// DeInit 断开数据库连接
+func DeInit() {
+	mongoDB.Disconnect()
+	mysqlDB.Disconnect()
+	redisDB.Disconnect()
+}
+
 // IsExistMongoTag 判断是否存在mongo标签
 func IsExistMongoTag(tag string) bool {
 	return mongoDB.IsExistTag(tag)
@@ -44,11 +51,4 @@ func (enter) Mongo(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Datab
 // Redis 获取redis数据库
 func (enter) Redis(tag ...string) (db *redis.Client, err error) {
 	return redisDB.GetDB(tag...)
-}
-
-// SafeExit 关闭数据库
-func (enter) SafeExit() {
-	mongoDB.Disconnect()
-	mysqlDB.Disconnect()
-	redisDB.Disconnect()
 }
