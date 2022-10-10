@@ -1,6 +1,6 @@
 ezgin:
   app: # 应用配置
-    name: "ezgin" # 应用名称
+    name: ezgin # 应用名称
     ip: 127.0.0.1 # 应用ip地址, 默认为本机ip
     port: 8080 # 应用http端口, 默认为8080
     port_ssl: 8090 # 应用https端口, 默认为8090

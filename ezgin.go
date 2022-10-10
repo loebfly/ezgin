@@ -28,7 +28,7 @@ const (
 )
 
 // Start 完整参数启动服务
-// @param ymlPath yml配置文件路径, 为空时默认为当前程序所在目录的同名yml文件
+// @param ymlPath yml配置文件路径, 为空时默认为当前程序所在目录的同名yml文件, 程序执行时可通过 -f 指定yml配置文件名
 // @param engine gin引擎, 传nil则使用gin默认引擎
 // @param recoveryFunc 异常回调, 传nil则使用gin默认回调
 func Start(ymlPath string, engine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
