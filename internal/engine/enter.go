@@ -22,11 +22,6 @@ func (enter) GetOriEngine() *gin.Engine {
 	return ctl.engine
 }
 
-// GetFormParams 获取表单参数
-func (enter) GetFormParams(ctx *gin.Context) map[string]string {
-	return ctl.GetFormParams(ctx)
-}
-
 // GetCurReqId 获取当前请求id
 func (enter) GetCurReqId() string {
 	return trace.Enter.GetCurReqId()

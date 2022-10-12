@@ -109,6 +109,18 @@ func (receiver I18nStringId) ErrorResWithStatusAndArgs(status int, args ...inter
 	}
 }
 
+// CheckParamsLost 检查参数是否丢失, 丢失则返回错误, 否则返回status为1的engine.Result
+// params 参数
+// key 参数名
+func (receiver I18nStringId) CheckParamsLost(params map[string]string, key ...string) engine.Result {
+	for _, param := range key {
+		if _, ok := params[param]; !ok {
+			return receiver.ErrorResWithMsg(param, 1003)
+		}
+	}
+	return receiver.Result(nil)
+}
+
 // GetTranslate 获取翻译后的字符串
 func (receiver I18nStringId) GetTranslate() string {
 	return I18n.String(receiver.string())
