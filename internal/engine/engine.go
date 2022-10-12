@@ -215,3 +215,8 @@ func (receiver *control) FreeGroupRoutes(routers map[string]map[engine.HttpMetho
 	}
 	return receiver.engine
 }
+
+// NoRoute adds handlers for NoRoute. It returns a 404 code by default.
+func (receiver *control) NoRoute(handlers ...gin.HandlerFunc) {
+	receiver.engine.NoRoute(handlers...)
+}
