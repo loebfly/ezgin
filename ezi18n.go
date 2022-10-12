@@ -109,10 +109,10 @@ func (receiver I18nStringId) ErrorResWithStatusAndArgs(status int, args ...inter
 	}
 }
 
-// CheckLost 检查参数是否丢失, 丢失则返回错误, 否则返回status为1的engine.Result
+// CheckRes 检查参数是否丢失, 丢失则返回 status为1003 错误, 否则返回status为1的engine.Result
 // params 参数
 // key 参数名
-func (receiver I18nStringId) CheckLost(params map[string]string, key ...string) engine.Result {
+func (receiver I18nStringId) CheckRes(params map[string]string, key ...string) engine.Result {
 	for _, param := range key {
 		if _, ok := params[param]; !ok {
 			return receiver.ErrorResWithMsg(param, 1003)
