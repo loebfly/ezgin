@@ -107,3 +107,8 @@ func (enter) FreeRoutes(routers map[engine.HttpMethod]map[string]engine.HandlerF
 func (enter) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
 	return ctl.FreeGroupRoutes(routers)
 }
+
+// NoRoute adds handlers for NoRoute. It returns a 404 code by default.
+func (enter) NoRoute(handlers ...gin.HandlerFunc) {
+	ctl.engine.NoRoute(handlers...)
+}
