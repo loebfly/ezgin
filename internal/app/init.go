@@ -39,11 +39,11 @@ func (receiver enter) getYml() string {
 func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
 	receiver.initConfig(ymlPath)
 	receiver.initLogs()
-	receiver.initServer()
 	receiver.initNacos()
 	receiver.initDBLite()
 	receiver.initI18n()
 	receiver.initEngine(ginEngine, recoveryFunc)
+	receiver.initServer()
 }
 
 func (receiver enter) initConfig(ymlPath string) {
