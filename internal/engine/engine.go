@@ -21,7 +21,7 @@ const (
 	ContentTypeFormMultipart = "multipart/form-data"
 )
 
-func (receiver control) initEngine() {
+func (receiver *control) initEngine() {
 	receiver.engine = config.Gin.Engine
 	gin.SetMode(config.Gin.Mode)
 
@@ -58,64 +58,64 @@ func (receiver control) initEngine() {
 	}
 }
 
-func (receiver control) Use(middleware ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) Use(middleware ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.Use(middleware...)
 }
 
-func (receiver control) Handle(httpMethod, relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) Handle(httpMethod, relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.Handle(httpMethod, relativePath, handlers...)
 }
 
-func (receiver control) Any(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) Any(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.Any(relativePath, handlers...)
 }
 
-func (receiver control) GET(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) GET(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.GET(relativePath, handlers...)
 }
 
-func (receiver control) POST(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) POST(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.POST(relativePath, handlers...)
 }
 
-func (receiver control) DELETE(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) DELETE(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.DELETE(relativePath, handlers...)
 }
 
-func (receiver control) PATCH(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) PATCH(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.PATCH(relativePath, handlers...)
 }
 
-func (receiver control) PUT(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) PUT(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.PUT(relativePath, handlers...)
 }
 
-func (receiver control) OPTIONS(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) OPTIONS(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.OPTIONS(relativePath, handlers...)
 }
 
-func (receiver control) HEAD(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
+func (receiver *control) HEAD(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
 	return receiver.engine.HEAD(relativePath, handlers...)
 }
 
-func (receiver control) StaticFile(relativePath, filepath string) gin.IRoutes {
+func (receiver *control) StaticFile(relativePath, filepath string) gin.IRoutes {
 	return receiver.engine.StaticFile(relativePath, filepath)
 }
 
-func (receiver control) StaticFileFS(relativePath, filepath string, fs http.FileSystem) gin.IRoutes {
+func (receiver *control) StaticFileFS(relativePath, filepath string, fs http.FileSystem) gin.IRoutes {
 	return receiver.engine.StaticFileFS(relativePath, filepath, fs)
 }
 
-func (receiver control) Static(relativePath, root string) gin.IRoutes {
+func (receiver *control) Static(relativePath, root string) gin.IRoutes {
 	return receiver.engine.Static(relativePath, root)
 }
 
-func (receiver control) StaticFS(relativePath string, fs http.FileSystem) gin.IRoutes {
+func (receiver *control) StaticFS(relativePath string, fs http.FileSystem) gin.IRoutes {
 	return receiver.engine.StaticFS(relativePath, fs)
 }
 
 // Routers 批量生成路由
-func (receiver control) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
+func (receiver *control) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
 
 	for path, handler := range routers {
 		switch method {
@@ -156,7 +156,7 @@ func (receiver control) Routers(method engine.HttpMethod, routers map[string]eng
 }
 
 // GroupRoutes 批量生成路由组
-func (receiver control) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
+func (receiver *control) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
 
 	groupRouter := receiver.engine.Group(group)
 
@@ -199,7 +199,7 @@ func (receiver control) GroupRoutes(method engine.HttpMethod, group string, rout
 }
 
 // FreeRoutes 批量生成自由路由 map[请求方法]map[接口地址]处理函数
-func (receiver control) FreeRoutes(routers map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
+func (receiver *control) FreeRoutes(routers map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
 	for method, router := range routers {
 		receiver.Routers(method, router)
 	}
@@ -207,7 +207,7 @@ func (receiver control) FreeRoutes(routers map[engine.HttpMethod]map[string]engi
 }
 
 // FreeGroupRoutes 批量生成自由路由组 map[路由组]map[请求方法]map[接口地址]处理函数
-func (receiver control) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
+func (receiver *control) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
 	for group, groupRouter := range routers {
 		for method, router := range groupRouter {
 			receiver.GroupRoutes(method, group, router)
