@@ -15,6 +15,7 @@ import (
 	"github.com/loebfly/ezgin/internal/i18n"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"os"
@@ -189,7 +190,15 @@ func (receiver enter) initEngine(ginEngine *gin.Engine, recoveryFunc engineDefin
 		logChan = make(chan reqlogs.ReqCtx, 1000)
 		go func(tag, tableName string) {
 			for ctx := range logChan {
-				db, returnDB, err := dblite.Enter.Mongo(tag)
+				var db *mgo.Database
+				var returnDB func(db *mgo.Database)
+				var err error
+				if tag != "" {
+					db, returnDB, err = dblite.Enter.Mongo(tag)
+				} else {
+					db, returnDB, err = dblite.Enter.Mongo()
+				}
+
 				if err != nil {
 					logs.Enter.CError("MIDDLEWARE", "写入日志失败, 获取数据库失败: %s", err.Error())
 					return
