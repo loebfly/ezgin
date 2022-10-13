@@ -13,13 +13,9 @@ import (
 var ctl = new(control)
 
 type control struct {
-	engine *gin.Engine
+	engine  *gin.Engine
+	routers map[string]engine.HandlerFunc
 }
-
-const (
-	ContentTypeFormUrlEncode = "application/x-www-form-urlencoded"
-	ContentTypeFormMultipart = "multipart/form-data"
-)
 
 func (receiver *control) initEngine() {
 	receiver.engine = config.Gin.Engine
@@ -114,41 +110,28 @@ func (receiver *control) StaticFS(relativePath string, fs http.FileSystem) gin.I
 	return receiver.engine.StaticFS(relativePath, fs)
 }
 
+func (receiver *control) routersHandler(ctx *gin.Context) {
+	result := receiver.routers[ctx.Request.URL.Path](ctx)
+	ctx.JSON(http.StatusOK, result)
+}
+
 // Routers 批量生成路由
 func (receiver *control) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
-
 	for path, handler := range routers {
+		receiver.routers["/"+path+"/"] = handler
 		switch method {
 		case engine.Get:
-			receiver.engine.GET(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			receiver.engine.GET(path, receiver.routersHandler)
 		case engine.Post:
-			receiver.engine.POST(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			receiver.engine.POST(path, receiver.routersHandler)
 		case engine.Delete:
-			receiver.engine.DELETE(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			receiver.engine.DELETE(path, receiver.routersHandler)
 		case engine.Patch:
-			receiver.engine.PATCH(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			receiver.engine.PATCH(path, receiver.routersHandler)
 		case engine.Put:
-			receiver.engine.PUT(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			receiver.engine.PUT(path, receiver.routersHandler)
 		default:
-			receiver.engine.Any(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			receiver.engine.Any(path, receiver.routersHandler)
 		}
 	}
 
@@ -157,41 +140,22 @@ func (receiver *control) Routers(method engine.HttpMethod, routers map[string]en
 
 // GroupRoutes 批量生成路由组
 func (receiver *control) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
-
 	groupRouter := receiver.engine.Group(group)
-
 	for path, handler := range routers {
+		receiver.routers["/"+group+"/"+path+"/"] = handler
 		switch method {
 		case engine.Get:
-			groupRouter.GET(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			groupRouter.GET(path, receiver.routersHandler)
 		case engine.Post:
-			groupRouter.POST(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			groupRouter.POST(path, receiver.routersHandler)
 		case engine.Delete:
-			groupRouter.DELETE(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			groupRouter.DELETE(path, receiver.routersHandler)
 		case engine.Patch:
-			groupRouter.PATCH(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			groupRouter.PATCH(path, receiver.routersHandler)
 		case engine.Put:
-			groupRouter.PUT(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			groupRouter.PUT(path, receiver.routersHandler)
 		default:
-			groupRouter.Any(path, func(ctx *gin.Context) {
-				result := handler(ctx)
-				ctx.JSON(http.StatusOK, result)
-			})
+			groupRouter.Any(path, receiver.routersHandler)
 		}
 	}
 
@@ -207,13 +171,14 @@ func (receiver *control) FreeRoutes(routers map[engine.HttpMethod]map[string]eng
 }
 
 // FreeGroupRoutes 批量生成自由路由组 map[路由组]map[请求方法]map[接口地址]处理函数
-func (receiver *control) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
+func (receiver *control) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) []gin.IRoutes {
+	var groupIR = make([]gin.IRoutes, 0)
 	for group, groupRouter := range routers {
 		for method, router := range groupRouter {
-			receiver.GroupRoutes(method, group, router)
+			groupIR = append(groupIR, receiver.GroupRoutes(method, group, router))
 		}
 	}
-	return receiver.engine
+	return groupIR
 }
 
 // NoRoute adds handlers for NoRoute. It returns a 404 code by default.
