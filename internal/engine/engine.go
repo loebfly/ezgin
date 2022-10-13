@@ -18,6 +18,7 @@ type control struct {
 }
 
 func (receiver *control) initEngine() {
+	receiver.routers = make(map[string]engine.HandlerFunc)
 	receiver.engine = config.Gin.Engine
 	gin.SetMode(config.Gin.Mode)
 
