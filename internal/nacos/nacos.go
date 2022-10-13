@@ -290,10 +290,10 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 				}
 
 				host := protocol + "://" + s.Ip + ":" + strconv.Itoa(int(s.Port))
-				if _, ok := servicesMap[s.ServiceName]; !ok {
-					servicesMap[s.ServiceName] = []string{host}
+				if _, ok := servicesMap[serviceName]; !ok {
+					servicesMap[serviceName] = []string{host}
 				} else {
-					servicesMap[s.ServiceName] = append(servicesMap[s.ServiceName], host)
+					servicesMap[serviceName] = append(servicesMap[serviceName], host)
 				}
 			}
 			for sName, hosts := range servicesMap {
