@@ -104,7 +104,7 @@ func (enter) FreeRoutes(routers map[engine.HttpMethod]map[string]engine.HandlerF
 }
 
 // FreeGroupRoutes 批量生成自由路由组 map[路由组]map[请求方法]map[接口地址]处理函数
-func (enter) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
+func (enter) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) []gin.IRoutes {
 	return ctl.FreeGroupRoutes(routers)
 }
 
