@@ -20,7 +20,7 @@ func (cfg *ymlConfig) fillNull() {
 		cfg.Gin.Mode = gin.ReleaseMode
 	}
 	if cfg.Gin.Middleware == "" {
-		cfg.Gin.Middleware = "cors,trace,logs"
+		cfg.Gin.Middleware = "cors,trace,logs,xlang,recover"
 	}
 	if cfg.Gin.Engine == nil {
 		cfg.Gin.Engine = gin.Default()
