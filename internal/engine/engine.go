@@ -126,10 +126,11 @@ func (receiver *control) routersHandler(ctx *gin.Context) {
 // Routers 批量生成路由
 func (receiver *control) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
 	for path, handler := range routers {
-		key := path
+		key := ""
 		if !strings.HasPrefix(path, "/") {
-			key = "/" + path
+			key += "/"
 		}
+		key += path
 		receiver.routers[key] = handler
 		switch method {
 		case engine.Get:
@@ -154,12 +155,15 @@ func (receiver *control) Routers(method engine.HttpMethod, routers map[string]en
 func (receiver *control) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
 	groupRouter := receiver.engine.Group(group)
 	for path, handler := range routers {
-		key := group
-		if !strings.HasPrefix(path, "/") {
-			key += "/" + path
-		} else {
-			key += path
+		key := ""
+		if !strings.HasPrefix(group, "/") {
+			key += "/"
 		}
+		key += group
+		if !strings.HasPrefix(path, "/") {
+			key += "/"
+		}
+		key += path
 		receiver.routers[key] = handler
 		switch method {
 		case engine.Get:
