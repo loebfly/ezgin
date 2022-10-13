@@ -94,14 +94,14 @@ func (c *control) getDB(tag ...string) (db *mgo.Database, returnDB func(db *mgo.
 	}
 
 	if v, ok := c.dbMap[key]; ok {
-		return v.Copy().DB(key), returnDB, nil
+		return v.Copy().DB(key), c.returnDB, nil
 	}
 
 	err = c.tryConnect(key)
 	if err != nil {
-		return nil, returnDB, err
+		return nil, c.returnDB, err
 	}
-	return c.dbMap[key].Copy().DB(key), returnDB, nil
+	return c.dbMap[key].Copy().DB(key), c.returnDB, nil
 }
 
 func (c *control) returnDB(db *mgo.Database) {
