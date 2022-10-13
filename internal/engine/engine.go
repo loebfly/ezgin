@@ -112,14 +112,25 @@ func (receiver *control) StaticFS(relativePath string, fs http.FileSystem) gin.I
 }
 
 func (receiver *control) routersHandler(ctx *gin.Context) {
-	result := receiver.routers[ctx.Request.URL.Path](ctx)
-	ctx.JSON(http.StatusOK, result)
+	if handler, ok := receiver.routers[ctx.Request.URL.Path]; ok {
+		result := handler(ctx)
+		ctx.JSON(http.StatusOK, result)
+	} else {
+		ctx.JSON(http.StatusNotFound, engine.Result{
+			Status:  -1,
+			Message: "404 not found",
+		})
+	}
 }
 
 // Routers 批量生成路由
 func (receiver *control) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
 	for path, handler := range routers {
-		receiver.routers["/"+path+"/"] = handler
+		key := path
+		if !strings.HasPrefix(path, "/") {
+			key = "/" + path
+		}
+		receiver.routers[key] = handler
 		switch method {
 		case engine.Get:
 			receiver.engine.GET(path, receiver.routersHandler)
@@ -143,7 +154,13 @@ func (receiver *control) Routers(method engine.HttpMethod, routers map[string]en
 func (receiver *control) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
 	groupRouter := receiver.engine.Group(group)
 	for path, handler := range routers {
-		receiver.routers["/"+group+"/"+path+"/"] = handler
+		key := group
+		if !strings.HasPrefix(path, "/") {
+			key += "/" + path
+		} else {
+			key += path
+		}
+		receiver.routers[key] = handler
 		switch method {
 		case engine.Get:
 			groupRouter.GET(path, receiver.routersHandler)
