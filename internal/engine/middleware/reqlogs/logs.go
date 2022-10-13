@@ -76,9 +76,9 @@ func (receiver enter) Middleware(c *gin.Context) {
 	contentType := c.ContentType()
 	uri := c.Request.RequestURI
 
-	logs.Enter.CError("GIN", "|{}|{}|{}|{}|{}ms", method, uri, c.ClientIP(), respTime, ttl)
-	logs.Enter.CError("GIN", "请求参数:{}", reqParams)
-	logs.Enter.CError("GIN", "接口返回:{}", respParams)
+	logs.Enter.CDebug("GIN", "|{}|{}|{}|{}|{}ms", method, uri, c.ClientIP(), respTime, ttl)
+	logs.Enter.CDebug("GIN", "请求参数:{}", reqParams)
+	logs.Enter.CDebug("GIN", "接口返回:{}", respParams)
 
 	ctx := ReqCtx{
 		RequestId:   trace.Enter.GetCurReqId(),

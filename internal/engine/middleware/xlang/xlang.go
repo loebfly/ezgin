@@ -38,5 +38,5 @@ func (receiver enter) GetCurXLang() string {
 	if exist {
 		return value.(string)
 	}
-	return ""
+	return "zh-cn"
 }
