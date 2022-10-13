@@ -122,32 +122,32 @@ func (receiver *control) Routers(method engine.HttpMethod, routers map[string]en
 		case engine.Get:
 			receiver.engine.GET(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Post:
 			receiver.engine.POST(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Delete:
 			receiver.engine.DELETE(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Patch:
 			receiver.engine.PATCH(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Put:
 			receiver.engine.PUT(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		default:
 			receiver.engine.Any(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		}
 	}
@@ -165,32 +165,32 @@ func (receiver *control) GroupRoutes(method engine.HttpMethod, group string, rou
 		case engine.Get:
 			groupRouter.GET(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Post:
 			groupRouter.POST(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Delete:
 			groupRouter.DELETE(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Patch:
 			groupRouter.PATCH(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		case engine.Put:
 			groupRouter.PUT(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		default:
 			groupRouter.Any(path, func(ctx *gin.Context) {
 				result := handler(ctx)
-				ctx.JSON(result.Status, result)
+				ctx.JSON(http.StatusOK, result)
 			})
 		}
 	}
