@@ -24,6 +24,10 @@ type control struct {
 	client naming_client.INamingClient
 }
 
+const (
+	CacheTableService = "nacos_service"
+)
+
 // GetClient 获取Nacos客户端
 func (c *control) getClient() naming_client.INamingClient {
 	return c.client
@@ -184,7 +188,7 @@ func (c *control) unregister() {
 // getService 获取服务
 func (c *control) getService(name string) (url string, err error) {
 	// 从缓存中获取, 有则随机返回缓存中的一个
-	if cacheUrls, isExist := cache.Enter.Table("nacos").Get(name); cacheUrls != nil && isExist {
+	if cacheUrls, isExist := cache.Enter.Table(CacheTableService).Get(name); cacheUrls != nil && isExist {
 		if urls, ok := cacheUrls.([]string); ok {
 			if len(urls) > 0 {
 				url = urls[rand.Intn(len(urls))]
@@ -293,11 +297,11 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 				}
 			}
 			for sName, hosts := range servicesMap {
-				if cache.Enter.Table("NACOS").IsExist(sName) {
-					cache.Enter.Table("NACOS").Delete(sName)
+				if cache.Enter.Table(CacheTableService).IsExist(sName) {
+					cache.Enter.Table(CacheTableService).Delete(sName)
 				}
 				logs.Enter.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
-				cache.Enter.Table("NACOS").Add(sName, hosts, time.Minute*5)
+				cache.Enter.Table(CacheTableService).Add(sName, hosts, time.Minute*5)
 			}
 		},
 	})
