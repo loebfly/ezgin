@@ -196,7 +196,7 @@ func (logger Logger) argToString(iFace interface{}) string {
 		}
 		str := string(b)
 		if v.Kind() == reflect.Map && str == "{}" {
-			return ""
+			return "{ }"
 		}
 		return str
 	}
