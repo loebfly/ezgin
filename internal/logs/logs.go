@@ -158,7 +158,7 @@ func (logger Logger) outputToFile(content string) {
 		}
 	}(file)
 
-	_, err = file.WriteString(content)
+	_, err = file.WriteString(content + "\n")
 	if err != nil {
 		fmt.Println("log write to file failure:", err)
 		return
