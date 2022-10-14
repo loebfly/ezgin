@@ -194,7 +194,11 @@ func (logger Logger) argToString(iFace interface{}) string {
 		if err != nil {
 			return ""
 		}
-		return string(b)
+		str := string(b)
+		if v.Kind() == reflect.Map && str == "{}" {
+			return ""
+		}
+		return str
 	}
 	return fmt.Sprintf("%v", iFace)
 }
