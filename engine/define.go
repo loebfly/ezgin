@@ -5,6 +5,11 @@ import "github.com/gin-gonic/gin"
 type HttpMethod string
 
 const (
+	ErrorCodeServiceUnavailable  = 1010
+	ErrorCodeResUnmarshalFailure = 1011
+)
+
+const (
 	Any     HttpMethod = "ANY"
 	Get     HttpMethod = "GET"
 	Head    HttpMethod = "HEAD"

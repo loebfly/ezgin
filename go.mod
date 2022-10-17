@@ -3,7 +3,6 @@ module github.com/loebfly/ezgin
 go 1.17
 
 require (
-	github.com/ekyoung/gin-nice-recovery v0.0.0-20160510022553-1654dca486db
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-errors/errors v1.0.1
 	github.com/go-redis/redis v6.15.9+incompatible
