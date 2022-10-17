@@ -2,6 +2,7 @@ ezgin_redis:
   host: 127.0.0.1 # redis服务IP, 必填
   port: 6379 # redis服务端口, 必填
   password: 123456 # redis服务密码, 必填
+  database: 0 # redis服务数据库编号, 默认0
   timeout: 1000 # redis连接超时时间, 默认1000ms
   pool:
     min: 3  # redis连接池最小连接数, 默认3
