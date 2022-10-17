@@ -2,8 +2,7 @@ package app
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	engineDefine "github.com/loebfly/ezgin/engine"
+	appDefine "github.com/loebfly/ezgin/app"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/logs"
@@ -20,9 +19,9 @@ var (
 )
 
 // Start 启动服务
-func (receiver enter) Start(ymlPath string, ginEngine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
+func (receiver enter) Start(start ...appDefine.Start) {
 
-	receiver.initEZGin(ymlPath, ginEngine, recoveryFunc)
+	receiver.initEZGin(start...)
 	ez := config.EZGin()
 
 	logs.Enter.CInfo("APP", "|-----------------------------------|")
@@ -39,7 +38,7 @@ func (receiver enter) Start(ymlPath string, ginEngine *gin.Engine, recoveryFunc 
 }
 
 // ShutdownWhenExitSignal 服务异常退出时 优雅关闭服务
-func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(context.Context)) {
+func (receiver enter) ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
 	sig := <-signalChan
@@ -47,8 +46,8 @@ func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(cont
 	nacos.DeInit()
 	dblite.DeInit()
 
-	if will != nil {
-		will(sig)
+	if len(shutdown) > 0 && shutdown[0].WillHandler != nil {
+		shutdown[0].WillHandler(sig)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -61,7 +60,7 @@ func (receiver enter) ShutdownWhenExitSignal(will func(os.Signal), did func(cont
 		}
 	}
 
-	if did != nil {
-		did(ctx)
+	if len(shutdown) > 0 && shutdown[0].DidHandler != nil {
+		shutdown[0].DidHandler(ctx)
 	}
 }

@@ -1,9 +1,7 @@
 package ezgin
 
 import (
-	"context"
-	"github.com/gin-gonic/gin"
-	engineDefine "github.com/loebfly/ezgin/engine"
+	appDefine "github.com/loebfly/ezgin/app"
 	"github.com/loebfly/ezgin/internal/app"
 	"github.com/loebfly/ezgin/internal/cache"
 	"github.com/loebfly/ezgin/internal/call"
@@ -13,66 +11,27 @@ import (
 	"github.com/loebfly/ezgin/internal/i18n"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
-	"os"
 )
 
 const (
-	Config = config.Enter // 配置
-	Nacos  = nacos.Enter  // nacos
-	Engine = engine.Enter // gin引擎
-	Cache  = cache.Enter  // 缓存
-	Logs   = logs.Enter   // 日志
-	DBLite = dblite.Enter // 数据库
-	Call   = call.Enter   // 微服务调用
-	I18n   = i18n.Enter   // 国际化
+	Config = config.Enter // 配置模块
+	Nacos  = nacos.Enter  // nacos模块
+	Engine = engine.Enter // gin模块
+	Cache  = cache.Enter  // 缓存模块
+	Logs   = logs.Enter   // 日志模块
+	DBLite = dblite.Enter // 数据库模块
+	Call   = call.Enter   // 微服务调用模块
+	I18n   = i18n.Enter   // 国际化模块
 )
 
-// Start 完整参数启动服务
-// @param ymlPath yml配置文件路径, 为空时默认为当前程序所在目录的同名yml文件, 程序执行时可通过 -f 指定yml配置文件名
-// @param engine gin引擎, 传nil则使用gin默认引擎
-// @param recoveryFunc 异常回调, 传nil则使用gin默认回调
-func Start(ymlPath string, engine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
-	app.StartWithEngine(ymlPath, engine, recoveryFunc)
-}
-
-func StartWithDefault() {
-	app.StartWithEngine("", nil, nil)
-}
-
-// StartWithRecover 启动服务, 并捕获异常
-// @param recoveryFunc 异常回调, 传nil则使用gin默认回调
-func StartWithRecover(recoveryFunc engineDefine.RecoveryFunc) {
-	app.StartWithEngine("", nil, recoveryFunc)
-}
-
-// StartWithEngine 启动服务
-// @param engine gin引擎, 传nil则使用gin默认引擎
-func StartWithEngine(engine *gin.Engine) {
-	app.StartWithEngine("", engine, nil)
-}
-
-// StartWithYml 启动服务
-// @param ymlPath yml配置文件路径, 为空时默认为当前程序所在目录的同名yml文件
-func StartWithYml(ymlPath string) {
-	app.StartWithEngine(ymlPath, nil, nil)
+// Start 启动服务
+// @param start 启动配置
+func Start(start ...appDefine.Start) {
+	app.Start(start...)
 }
 
 // ShutdownWhenExitSignal 服务异常退出时 优雅关闭服务
-func ShutdownWhenExitSignal(will func(os.Signal), did func(context.Context)) {
-	app.ShutdownWhenExitSignalWithCallBack(will, did)
-}
-
-// ShutdownWhenExitSignalWithDefault 服务异常退出时 优雅关闭服务
-func ShutdownWhenExitSignalWithDefault() {
-	app.ShutdownWhenExitSignalWithCallBack(nil, nil)
-}
-
-// ShutdownWhenExitSignalWithWill 服务异常退出时 优雅关闭服务
-func ShutdownWhenExitSignalWithWill(will func(os.Signal)) {
-	app.ShutdownWhenExitSignalWithCallBack(will, nil)
-}
-
-// ShutdownWhenExitSignalWithDid 服务异常退出时 优雅关闭服务
-func ShutdownWhenExitSignalWithDid(did func(context.Context)) {
-	app.ShutdownWhenExitSignalWithCallBack(nil, did)
+// shutdown 退出配置
+func ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
+	app.ShutdownWhenExitSignal(shutdown...)
 }

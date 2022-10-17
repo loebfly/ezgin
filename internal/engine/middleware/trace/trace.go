@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/internal/cache"
+	"math/rand"
 	"runtime"
 	"strconv"
 	"time"
@@ -15,9 +16,24 @@ const (
 )
 
 func (receiver enter) Middleware(c *gin.Context) {
-	requestId := c.GetHeader(HeaderXRequestId)
+	requestId := receiver.getRequestId(c)
 	routineId := receiver.getRoutineId()
 	cache.Enter.Table(CacheTable).Add(routineId, requestId, 5*time.Minute)
+}
+
+func (receiver enter) getRequestId(c *gin.Context) string {
+	requestId := c.GetHeader(HeaderXRequestId)
+	if requestId == "" {
+		source := "0123456789abcdef"
+		bytes := []byte(source)
+		result := []byte{}
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		for i := 0; i < 16; i++ {
+			result = append(result, bytes[r.Intn(len(bytes))])
+		}
+		return string(result)
+	}
+	return requestId
 }
 
 // GetRoutineId 获取当前协程Id

@@ -1,21 +1,18 @@
 package app
 
 import (
-	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/loebfly/ezgin/engine"
-	"os"
+	appDefine "github.com/loebfly/ezgin/app"
 )
 
 type enter int
 
 const Enter = enter(0)
 
-func StartWithEngine(ymlPath string, engine *gin.Engine, recoveryFunc engine.RecoveryFunc) {
-	Enter.Start(ymlPath, engine, recoveryFunc)
+func Start(start ...appDefine.Start) {
+	Enter.Start(start...)
 }
 
-// ShutdownWhenExitSignalWithCallBack 服务异常退出时 优雅关闭服务
-func ShutdownWhenExitSignalWithCallBack(will func(os.Signal), did func(context.Context)) {
-	Enter.ShutdownWhenExitSignal(will, did)
+// ShutdownWhenExitSignal 服务异常退出时 优雅关闭服务
+func ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
+	Enter.ShutdownWhenExitSignal(shutdown...)
 }

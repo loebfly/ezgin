@@ -15,7 +15,9 @@ const (
 	Options HttpMethod = "OPTIONS"
 )
 
-type HandlerFunc func(ctx *gin.Context) Result
+type MiddlewareFunc func(c *gin.Context)
+
+type HandlerFunc func(c *gin.Context) Result
 
 type RecoveryFunc func(c *gin.Context, err interface{})
 

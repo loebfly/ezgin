@@ -3,10 +3,13 @@ package reqlogs
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
 	"github.com/loebfly/ezgin/internal/logs"
 	"io/ioutil"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -36,7 +39,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 	if err != nil {
 		logs.Enter.CError("GIN", "GetRawData error:{}", err.Error())
 	}
-
+	var reqHeaders = c.Request.Header.Clone()
 	// 关键点 重置请求体
 	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(rawData))
 
@@ -77,12 +80,21 @@ func (receiver enter) Middleware(c *gin.Context) {
 	uri := c.Request.RequestURI
 
 	logs.Enter.CDebug("GIN", "|{}|{}|{}|{}|{}ms", method, uri, c.ClientIP(), respTime, ttl)
-	logs.Enter.CDebug("GIN", "请求参数:{}", reqParams)
-	logs.Enter.CDebug("GIN", "接口返回:{}", respParams)
+	if reqHeaders != nil {
+		logs.Enter.CDebug("GIN", "请求头:{}", reqHeaders)
+	}
+	if reqParams != nil {
+		if receiver.argToString(reqParams) != "" {
+			logs.Enter.CDebug("GIN", "请求参数:"+receiver.argToString(reqParams))
+		}
+	}
+
+	logs.Enter.CDebug("GIN", "响应结果:{}", respParams)
 
 	ctx := ReqCtx{
 		RequestId:   trace.Enter.GetCurReqId(),
 		ReqTime:     reqTime,
+		ReqHeaders:  reqHeaders,
 		ReqParams:   reqParams,
 		RespTime:    respTime,
 		RespParams:  respParams,
@@ -122,4 +134,42 @@ func (receiver enter) GetFormParams(ctx *gin.Context) map[string]string {
 		}
 		return params
 	}
+}
+
+// ConvToString 任意类型转换为字符串
+func (receiver enter) argToString(iFace interface{}) string {
+	switch val := iFace.(type) {
+	case []byte:
+		return string(val)
+	case string:
+		return val
+	}
+	v := reflect.ValueOf(iFace)
+	switch v.Kind() {
+	case reflect.Invalid:
+		return ""
+	case reflect.Bool:
+		return strconv.FormatBool(v.Bool())
+	case reflect.String:
+		return v.String()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return strconv.FormatInt(v.Int(), 10)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return strconv.FormatUint(v.Uint(), 10)
+	case reflect.Float64:
+		return strconv.FormatFloat(v.Float(), 'f', -1, 64)
+	case reflect.Float32:
+		return strconv.FormatFloat(v.Float(), 'f', -1, 32)
+	case reflect.Ptr, reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
+		b, err := json.Marshal(v.Interface())
+		if err != nil {
+			return ""
+		}
+		str := string(b)
+		if v.Kind() == reflect.Map && str == "{}" {
+			return "{ }"
+		}
+		return str
+	}
+	return fmt.Sprintf("%v", iFace)
 }

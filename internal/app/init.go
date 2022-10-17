@@ -3,7 +3,7 @@ package app
 import (
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	appDefine "github.com/loebfly/ezgin/app"
 	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
@@ -24,6 +24,10 @@ import (
 	"strings"
 )
 
+var (
+	StartCfg *appDefine.Start
+)
+
 // getLocalYml 获取yml配置文件路径
 func (receiver enter) getYml() string {
 	var fileName string
@@ -37,21 +41,22 @@ func (receiver enter) getYml() string {
 }
 
 // initPath 初始化所有组件入口
-func (receiver enter) initEZGin(ymlPath string, ginEngine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
-	receiver.initConfig(ymlPath)
-	receiver.initLogs()
-	receiver.initNacos()
-	receiver.initDBLite()
-	receiver.initI18n()
-	receiver.initEngine(ginEngine, recoveryFunc)
-	receiver.initServer()
+func (receiver enter) initEZGin(start ...appDefine.Start) {
+	if len(start) > 0 {
+		StartCfg = &start[0]
+	}
+	receiver.initConfig()
 }
 
-func (receiver enter) initConfig(ymlPath string) {
-	if ymlPath == "" {
+func (receiver enter) initConfig() {
+	ymlPath := ""
+	if StartCfg != nil && StartCfg.YmlPath != "" {
+		ymlPath = StartCfg.YmlPath
+	} else {
 		ymlPath = receiver.getYml()
 	}
 	config.InitPath(ymlPath)
+	receiver.initLogs()
 }
 
 // initLogs 初始化日志模块
@@ -66,35 +71,7 @@ func (receiver enter) initLogs() {
 		File: file,
 	}
 	logs.InitObj(yml)
-}
-
-// initServer 初始化服务
-func (receiver enter) initServer() {
-	ez := config.EZGin()
-
-	if ez.App.Port > 0 {
-		// HTTP 端口
-		servers = append(servers, &http.Server{
-			Addr:    ":" + strconv.Itoa(ez.App.Port),
-			Handler: engine.Enter.GetOriEngine(),
-		})
-		go func() {
-			listenErr := servers[0].ListenAndServe()
-			logs.Enter.CWarn("APP", "ListenAndServe:{}:{}", ez.App.Port, listenErr.Error())
-		}()
-	}
-	if ez.App.PortSsl > 0 {
-		// HTTPS 端口
-		servers = append(servers, &http.Server{
-			Addr:    ":" + strconv.Itoa(ez.App.PortSsl),
-			Handler: engine.Enter.GetOriEngine(),
-		})
-		go func() {
-			path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-			listenErr := servers[1].ListenAndServeTLS(path+"/"+ez.App.Cert, path+"/"+ez.App.Key)
-			logs.Enter.CWarn("APP", "ListenAndServeTLS:{}:{}", ez.App.PortSsl, listenErr.Error())
-		}()
-	}
+	receiver.initNacos()
 }
 
 // initNacos 初始化nacos
@@ -119,6 +96,7 @@ func (receiver enter) initNacos() {
 			nacos.InitObj(yml.EZGinNacos)
 		}
 	}
+	receiver.initDBLite()
 }
 
 func (receiver enter) initDBLite() {
@@ -168,10 +146,11 @@ func (receiver enter) initDBLite() {
 		}
 	}
 	dblite.InitDB(mongoObjs, mysqlObjs, redisObjs)
+	receiver.initEngine()
 }
 
 // initEngine 初始化gin引擎
-func (receiver enter) initEngine(ginEngine *gin.Engine, recoveryFunc engineDefine.RecoveryFunc) {
+func (receiver enter) initEngine() {
 	ez := config.EZGin()
 
 	logMongoTag := ez.Gin.MwLogs.MongoTag
@@ -217,11 +196,52 @@ func (receiver enter) initEngine(ginEngine *gin.Engine, recoveryFunc engineDefin
 	yml := engine.Yml{
 		Mode:         ez.Gin.Mode,
 		Middleware:   ez.Gin.Middleware,
-		Engine:       ginEngine,
+		Engine:       StartCfg.GinCfg.Engine,
 		LogChan:      logChan,
-		RecoveryFunc: recoveryFunc,
+		RecoveryFunc: engineDefine.RecoveryFunc(StartCfg.GinCfg.RecoveryHandler),
 	}
 	engine.InitObj(yml)
+
+	receiver.initServer()
+
+	// 初始化404路由
+	if StartCfg != nil && StartCfg.GinCfg.NoRouteHandler != nil {
+		engine.Enter.GetOriGin().NoRoute(StartCfg.GinCfg.NoRouteHandler)
+	}
+	// 初始化文档路由
+	if StartCfg != nil && StartCfg.GinCfg.SwaggerRelativePath != "" && StartCfg.GinCfg.SwaggerHandler != nil {
+		engine.Enter.GetOriGin().GET(StartCfg.GinCfg.SwaggerRelativePath, StartCfg.GinCfg.SwaggerHandler)
+	}
+}
+
+// initServer 初始化服务
+func (receiver enter) initServer() {
+	ez := config.EZGin()
+
+	if ez.App.Port > 0 {
+		// HTTP 端口
+		servers = append(servers, &http.Server{
+			Addr:    ":" + strconv.Itoa(ez.App.Port),
+			Handler: engine.Enter.GetOriGin(),
+		})
+		go func() {
+			listenErr := servers[0].ListenAndServe()
+			logs.Enter.CWarn("APP", "ListenAndServe:{}:{}", ez.App.Port, listenErr.Error())
+		}()
+	}
+	if ez.App.PortSsl > 0 {
+		// HTTPS 端口
+		servers = append(servers, &http.Server{
+			Addr:    ":" + strconv.Itoa(ez.App.PortSsl),
+			Handler: engine.Enter.GetOriGin(),
+		})
+		go func() {
+			path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+			listenErr := servers[1].ListenAndServeTLS(path+"/"+ez.App.Cert, path+"/"+ez.App.Key)
+			logs.Enter.CWarn("APP", "ListenAndServeTLS:{}:{}", ez.App.PortSsl, listenErr.Error())
+		}()
+	}
+	receiver.initI18n()
 }
 
 func (receiver enter) initI18n() {

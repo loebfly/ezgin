@@ -7,10 +7,18 @@ import (
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
 	"github.com/loebfly/ezgin/internal/logs"
 	"net/http"
+	"path"
 	"strings"
 )
 
 var ctl = new(control)
+
+type EZRouter interface {
+	Use(middleware ...engine.MiddlewareFunc) EZRouter
+	Group(relativePath string) EZRouter
+	Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) EZRouter
+	FreeRouters(methodPathHandlers map[engine.HttpMethod]map[string]engine.HandlerFunc) EZRouter
+}
 
 type control struct {
 	engine  *gin.Engine
@@ -24,25 +32,25 @@ func (receiver *control) initEngine() {
 
 	if config.Gin.Middleware != "-" {
 		if strings.Contains(config.Gin.Middleware, "cors") {
-			receiver.Use(middleware.Cors)
+			receiver.engine.Use(middleware.Cors)
 		}
 		if strings.Contains(config.Gin.Middleware, "trace") {
-			receiver.Use(middleware.Trace)
+			receiver.engine.Use(middleware.Trace)
 			logs.Use(func(category, level string) map[string]int {
 				requestId := trace.Enter.GetCurReqId()
 				if requestId != "" {
 					return map[string]int{
-						requestId: 2,
+						"[" + requestId + "]": 1,
 					}
 				}
 				return nil
 			})
 		}
 		if strings.Contains(config.Gin.Middleware, "logs") {
-			receiver.Use(middleware.Logs(config.Gin.LogChan))
+			receiver.engine.Use(middleware.Logs(config.Gin.LogChan))
 		}
 		if strings.Contains(config.Gin.Middleware, "xlang") {
-			receiver.Use(middleware.XLang)
+			receiver.engine.Use(middleware.XLang)
 		}
 		if strings.Contains(config.Gin.Middleware, "recover") {
 			if config.Gin.RecoveryFunc != nil {
@@ -50,65 +58,9 @@ func (receiver *control) initEngine() {
 					c.AbortWithStatus(http.StatusInternalServerError)
 				}
 			}
-			receiver.Use(middleware.Recover(config.Gin.RecoveryFunc))
+			receiver.engine.Use(middleware.Recover(config.Gin.RecoveryFunc))
 		}
 	}
-}
-
-func (receiver *control) Use(middleware ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.Use(middleware...)
-}
-
-func (receiver *control) Handle(httpMethod, relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.Handle(httpMethod, relativePath, handlers...)
-}
-
-func (receiver *control) Any(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.Any(relativePath, handlers...)
-}
-
-func (receiver *control) GET(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.GET(relativePath, handlers...)
-}
-
-func (receiver *control) POST(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.POST(relativePath, handlers...)
-}
-
-func (receiver *control) DELETE(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.DELETE(relativePath, handlers...)
-}
-
-func (receiver *control) PATCH(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.PATCH(relativePath, handlers...)
-}
-
-func (receiver *control) PUT(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.PUT(relativePath, handlers...)
-}
-
-func (receiver *control) OPTIONS(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.OPTIONS(relativePath, handlers...)
-}
-
-func (receiver *control) HEAD(relativePath string, handlers ...gin.HandlerFunc) gin.IRoutes {
-	return receiver.engine.HEAD(relativePath, handlers...)
-}
-
-func (receiver *control) StaticFile(relativePath, filepath string) gin.IRoutes {
-	return receiver.engine.StaticFile(relativePath, filepath)
-}
-
-func (receiver *control) StaticFileFS(relativePath, filepath string, fs http.FileSystem) gin.IRoutes {
-	return receiver.engine.StaticFileFS(relativePath, filepath, fs)
-}
-
-func (receiver *control) Static(relativePath, root string) gin.IRoutes {
-	return receiver.engine.Static(relativePath, root)
-}
-
-func (receiver *control) StaticFS(relativePath string, fs http.FileSystem) gin.IRoutes {
-	return receiver.engine.StaticFS(relativePath, fs)
 }
 
 func (receiver *control) routersHandler(ctx *gin.Context) {
@@ -123,87 +75,142 @@ func (receiver *control) routersHandler(ctx *gin.Context) {
 	}
 }
 
+func (receiver *control) Use(middleware ...engine.MiddlewareFunc) EZRouter {
+	ginHandlers := make([]gin.HandlerFunc, 0, len(middleware))
+	for _, m := range middleware {
+		ginHandlers = append(ginHandlers, gin.HandlerFunc(m))
+	}
+	receiver.engine.Use(ginHandlers...)
+	return receiver
+}
+func (receiver *control) Group(relativePath string) EZRouter {
+	basePath := ""
+	if !strings.HasPrefix(relativePath, "/") {
+		basePath += "/"
+	}
+	basePath += relativePath
+	if receiver.lastChar(basePath) != '/' {
+		basePath += "/"
+	}
+
+	return &groupControl{
+		control:     receiver,
+		basePath:    basePath,
+		groupEngine: receiver.engine.Group(relativePath),
+	}
+}
+
+func (receiver *control) lastChar(str string) uint8 {
+	if str == "" {
+		panic("The length of the string can't be 0")
+	}
+	return str[len(str)-1]
+}
+
 // Routers 批量生成路由
-func (receiver *control) Routers(method engine.HttpMethod, routers map[string]engine.HandlerFunc) gin.IRoutes {
-	for path, handler := range routers {
+func (receiver *control) Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) EZRouter {
+	for relativePath, handler := range pathHandler {
 		key := ""
-		if !strings.HasPrefix(path, "/") {
+		if !strings.HasPrefix(relativePath, "/") {
 			key += "/"
 		}
-		key += path
+		key += relativePath
 		receiver.routers[key] = handler
 		switch method {
 		case engine.Get:
-			receiver.engine.GET(path, receiver.routersHandler)
+			receiver.engine.GET(relativePath, receiver.routersHandler)
 		case engine.Post:
-			receiver.engine.POST(path, receiver.routersHandler)
+			receiver.engine.POST(relativePath, receiver.routersHandler)
 		case engine.Delete:
-			receiver.engine.DELETE(path, receiver.routersHandler)
+			receiver.engine.DELETE(relativePath, receiver.routersHandler)
 		case engine.Patch:
-			receiver.engine.PATCH(path, receiver.routersHandler)
+			receiver.engine.PATCH(relativePath, receiver.routersHandler)
 		case engine.Put:
-			receiver.engine.PUT(path, receiver.routersHandler)
+			receiver.engine.PUT(relativePath, receiver.routersHandler)
 		default:
-			receiver.engine.Any(path, receiver.routersHandler)
+			receiver.engine.Any(relativePath, receiver.routersHandler)
 		}
 	}
-
-	return receiver.engine
+	return receiver
 }
 
-// GroupRoutes 批量生成路由组
-func (receiver *control) GroupRoutes(method engine.HttpMethod, group string, routers map[string]engine.HandlerFunc) gin.IRoutes {
-	groupRouter := receiver.engine.Group(group)
-	for path, handler := range routers {
-		key := ""
-		if !strings.HasPrefix(group, "/") {
-			key += "/"
-		}
-		key += group
-		if !strings.HasPrefix(path, "/") {
-			key += "/"
-		}
-		key += path
-		receiver.routers[key] = handler
+// FreeRouters 批量生成自由路由 map[请求方法]map[接口地址]处理函数
+func (receiver *control) FreeRouters(methodPathHandlers map[engine.HttpMethod]map[string]engine.HandlerFunc) EZRouter {
+	for method, pathHandler := range methodPathHandlers {
+		receiver.Routers(method, pathHandler)
+	}
+	return receiver
+}
+
+/*** groupControl ****/
+
+type groupControl struct {
+	control     *control
+	basePath    string
+	groupEngine *gin.RouterGroup
+}
+
+func (receiver *groupControl) Use(middleware ...engine.MiddlewareFunc) EZRouter {
+	ginHandlers := make([]gin.HandlerFunc, 0, len(middleware))
+	for _, m := range middleware {
+		ginHandlers = append(ginHandlers, gin.HandlerFunc(m))
+	}
+	receiver.groupEngine.Use(ginHandlers...)
+	return receiver
+}
+
+func (receiver *groupControl) Group(relativePath string) EZRouter {
+	return &groupControl{
+		control:     receiver.control,
+		basePath:    receiver.joinPaths(relativePath),
+		groupEngine: receiver.groupEngine.Group(relativePath),
+	}
+}
+
+func (receiver *groupControl) Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) EZRouter {
+	for relativePath, handler := range pathHandler {
+		key := receiver.basePath + relativePath
+		receiver.control.routers[key] = handler
 		switch method {
 		case engine.Get:
-			groupRouter.GET(path, receiver.routersHandler)
+			receiver.groupEngine.GET(relativePath, receiver.control.routersHandler)
 		case engine.Post:
-			groupRouter.POST(path, receiver.routersHandler)
+			receiver.groupEngine.POST(relativePath, receiver.control.routersHandler)
 		case engine.Delete:
-			groupRouter.DELETE(path, receiver.routersHandler)
+			receiver.groupEngine.DELETE(relativePath, receiver.control.routersHandler)
 		case engine.Patch:
-			groupRouter.PATCH(path, receiver.routersHandler)
+			receiver.groupEngine.PATCH(relativePath, receiver.control.routersHandler)
 		case engine.Put:
-			groupRouter.PUT(path, receiver.routersHandler)
+			receiver.groupEngine.PUT(relativePath, receiver.control.routersHandler)
 		default:
-			groupRouter.Any(path, receiver.routersHandler)
+			receiver.groupEngine.Any(relativePath, receiver.control.routersHandler)
 		}
 	}
-
-	return groupRouter
+	return receiver
 }
 
-// FreeRoutes 批量生成自由路由 map[请求方法]map[接口地址]处理函数
-func (receiver *control) FreeRoutes(routers map[engine.HttpMethod]map[string]engine.HandlerFunc) gin.IRoutes {
-	for method, router := range routers {
-		receiver.Routers(method, router)
+func (receiver *groupControl) FreeRouters(methodPathHandlers map[engine.HttpMethod]map[string]engine.HandlerFunc) EZRouter {
+	for method, pathHandler := range methodPathHandlers {
+		receiver.Routers(method, pathHandler)
 	}
-	return receiver.engine
+	return receiver
 }
 
-// FreeGroupRoutes 批量生成自由路由组 map[路由组]map[请求方法]map[接口地址]处理函数
-func (receiver *control) FreeGroupRoutes(routers map[string]map[engine.HttpMethod]map[string]engine.HandlerFunc) []gin.IRoutes {
-	var groupIR = make([]gin.IRoutes, 0)
-	for group, groupRouter := range routers {
-		for method, router := range groupRouter {
-			groupIR = append(groupIR, receiver.GroupRoutes(method, group, router))
-		}
+func (receiver *groupControl) joinPaths(relativePath string) string {
+	finalPath := ""
+	if receiver.basePath == "" {
+		relativePath += "/"
 	}
-	return groupIR
+	finalPath = path.Join(receiver.basePath, relativePath)
+	if receiver.lastChar(finalPath) != '/' {
+		finalPath += "/"
+	}
+	return finalPath
 }
 
-// NoRoute adds handlers for NoRoute. It returns a 404 code by default.
-func (receiver *control) NoRoute(handlers ...gin.HandlerFunc) {
-	receiver.engine.NoRoute(handlers...)
+func (receiver *groupControl) lastChar(str string) uint8 {
+	if str == "" {
+		panic("The length of the string can't be 0")
+	}
+	return str[len(str)-1]
 }
