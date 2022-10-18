@@ -1,10 +1,21 @@
 package eztools
 
 import (
+	"database/sql/driver"
+	"fmt"
+	"gopkg.in/mgo.v2/bson"
+	"strconv"
 	"strings"
 	"time"
 )
 
+// Time 是一个时间类型
+/*
+	使用说明：
+		1. Time 是一个时间类型，用于替代 time.Time
+		2. 已适配 json、bson、sql 的序列化和反序列化
+		3. 提供了一些常用的时间操作方法
+*/
 type Time time.Time
 
 func (t Time) OriVal() time.Time {
@@ -134,4 +145,48 @@ func (t Time) Format(format string) string {
 	newFmt = strings.Replace(newFmt, "ZZZ", "MST", -1)
 	newFmt = strings.Replace(newFmt, "Z", "Z07:00", -1)
 	return t.OriVal().Format(newFmt)
+}
+
+/*** Json、mysql、mongo 适配器接口实现 ***/
+
+func (t Time) MarshalJSON() ([]byte, error) {
+	stamp := fmt.Sprintf("%d", time.Time(t).UnixMilli())
+	return []byte(stamp), nil
+}
+
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	var ts int64
+	ts, err = strconv.ParseInt(string(data), 10, 64)
+	if err != nil {
+		return err
+	}
+	theTime := time.UnixMilli(ts)
+	*t = Time(theTime)
+	return nil
+}
+
+func (t Time) Value() (driver.Value, error) {
+	return time.Time(t), nil
+}
+
+func (t *Time) Scan(v interface{}) error {
+	value, ok := v.(time.Time)
+	if ok {
+		*t = Time(value)
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to timestamp", v)
+}
+
+func (t Time) GetBSON() (interface{}, error) {
+	return time.Time(t).UnixMilli(), nil
+}
+
+func (t *Time) SetBSON(raw bson.Raw) error {
+	var val int64
+	if err := raw.Unmarshal(&val); err != nil {
+		return err
+	}
+	*t = Time(time.UnixMilli(val))
+	return nil
 }

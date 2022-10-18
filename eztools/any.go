@@ -8,7 +8,13 @@ import (
 	"strings"
 )
 
-// Any 转换为操作对象
+// Any 转换为可操作对象
+/*
+	使用说明:
+		1. ToString() 转换为字符串
+		2. ToJson() 转换为json字符串
+		3. ToObject(obj interface{}) 转换为对象
+*/
 func Any(v interface{}) *object {
 	return &object{v}
 }

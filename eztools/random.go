@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+// RandomStr 是一个随机字符串类型
+/*
+	使用说明:
+		Get 随机获取指定长度字符串
+*/
 type RandomStr string
 
 const (

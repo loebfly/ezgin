@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+// UUID 是一个UUID工具类
+/*
+	使用说明:
+		1. NewV1 基于时间和MAC地址生成的UUID
+		2. NewV4 基于随机数生成的UUID
+		3. New 获取去除"-"基于随机数生成的UUID
+*/
 func UUID() *uuidT {
 	return &uuidT{}
 }
