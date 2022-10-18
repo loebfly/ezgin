@@ -1,7 +1,10 @@
-package eztool
+package eztools
 
 import (
+	"regexp"
 	"strconv"
+	"strings"
+	"unicode"
 )
 
 type Str string
@@ -10,6 +13,8 @@ type Str string
 func (receiver Str) OriVal() string {
 	return string(receiver)
 }
+
+/******* - Convert - *******/
 
 // ToBool 数字字符串转换为bool, 当转换失败时有默认值返回第一个默认值否则返回false
 func (receiver Str) ToBool(defaultBool ...bool) bool {
@@ -191,4 +196,166 @@ func (receiver Str) ToComplex128(defaultComplex128 ...complex128) complex128 {
 		}
 	}
 	return num
+}
+
+/****************************/
+
+/******* - Verify - *******/
+
+// IsCNMobile 判断是否是中国大陆手机号
+func (receiver Str) IsCNMobile() bool {
+	reg, _ := regexp.Compile(`^1[3456789]\d{9}$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+// IsEmail 判断是否是邮箱
+func (receiver Str) IsEmail() bool {
+	reg, _ := regexp.Compile(`^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+// IsIDCard 判断是否是身份证号
+func (receiver Str) IsIDCard() bool {
+	reg, _ := regexp.Compile(`^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+// IsURL 判断是否是URL
+func (receiver Str) IsURL() bool {
+	reg, _ := regexp.Compile(`^http[s]?://[\w.]+[\w/]$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+// IsNumber 判断是否是数字
+func (receiver Str) IsNumber() bool {
+	reg, _ := regexp.Compile(`^[0-9]+$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+// IsEnglish 判断是否是英文
+func (receiver Str) IsEnglish() bool {
+	reg, _ := regexp.Compile(`^[a-zA-Z]+$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+// IsChinese 判断是否是中文
+func (receiver Str) IsChinese() bool {
+	for _, r := range receiver.OriVal() {
+		if !unicode.Is(unicode.Han, r) {
+			return false
+		}
+	}
+	return true
+}
+
+// IsLowerCase 判断是否是小写
+func (receiver Str) IsLowerCase() bool {
+	reg, _ := regexp.Compile(`^[a-z]+$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+// IsUpperCase 判断是否是大写
+func (receiver Str) IsUpperCase() bool {
+	reg, _ := regexp.Compile(`^[A-Z]+$`)
+	return reg.MatchString(receiver.OriVal())
+}
+
+/****************************/
+
+/******* - Other - *******/
+
+// CharSub 以char的方式进行字符串截取
+// start:开始位置，strLength:截取长度
+// 如果 start < 0, 则从字符串末尾开始计算
+// 如果 strLength <= 0, 则截取到字符串末尾
+func (receiver Str) CharSub(start int, length ...int) Str {
+	charList := []rune(receiver.OriVal())
+	l := len(charList)
+	step := 0
+	end := 0
+
+	if len(length) == 0 {
+		step = l
+	} else {
+		step = length[0]
+	}
+
+	if start < 0 {
+		start = l + start
+	}
+	end = start + step
+
+	if start > end {
+		start, end = end, start
+	}
+
+	if start < 0 {
+		start = 0
+	}
+
+	if start > l {
+		start = l
+	}
+
+	if end < 0 {
+		end = 0
+	}
+
+	if end > l {
+		end = l
+	}
+	return Str(charList[start:end])
+}
+
+// CharLen 返回char字符串长度
+func (receiver Str) CharLen() int {
+	return len([]rune(receiver.OriVal()))
+}
+
+// Before 获取某个字符串第一个出现位置之前的字符串，如果不存在返回源字符串
+func (receiver Str) Before(target string) Str {
+	if target == "" {
+		return receiver
+	}
+	i := strings.Index(receiver.OriVal(), target)
+	if i != -1 {
+		return Str(receiver.OriVal()[:i])
+	}
+	return receiver
+}
+
+// BeforeLast 获取某个字符串最后出现位置之前的字符串，如果不存在返回源字符串
+func (receiver Str) BeforeLast(target string) Str {
+	if target == "" {
+		return receiver
+	}
+	i := strings.LastIndex(receiver.OriVal(), target)
+	if i != -1 {
+		return Str(receiver.OriVal()[:i])
+	}
+	return receiver
+}
+
+// After 获取某个字符串第一个出现位置之后的字符串，如果不存在返回源字符串
+func (receiver Str) After(target string) Str {
+	if target == "" {
+		return receiver
+	}
+	i := strings.Index(receiver.OriVal(), target)
+	if i != -1 {
+		return Str(receiver.OriVal()[i+len(target):])
+	}
+	return receiver
+}
+
+// AfterLast 获取某个字符串最后出现位置之后的字符串，如果不存在返回源字符串
+func (receiver Str) AfterLast(target string) Str {
+	if target == "" {
+		return receiver
+	}
+	i := strings.LastIndex(receiver.OriVal(), target)
+	if i != -1 {
+		return Str(receiver.OriVal()[i+len(target):])
+	}
+	return receiver
 }

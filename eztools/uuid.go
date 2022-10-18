@@ -1,4 +1,4 @@
-package eztool
+package eztools
 
 import (
 	"github.com/nacos-group/nacos-sdk-go/inner/uuid"

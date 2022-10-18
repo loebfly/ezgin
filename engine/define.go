@@ -40,6 +40,13 @@ type Page struct {
 	Total int `json:"total"`
 }
 
+func ErrorRes(status int, message string) Result {
+	return Result{
+		Status:  status,
+		Message: message,
+	}
+}
+
 const (
 	ContentTypeFormUrlEncode = "application/x-www-form-urlencoded"
 	ContentTypeFormMultipart = "multipart/form-data"

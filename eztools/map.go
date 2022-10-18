@@ -1,4 +1,4 @@
-package eztool
+package eztools
 
 import "reflect"
 

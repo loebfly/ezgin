@@ -1,21 +1,12 @@
-package eztool
+package eztools
 
 import (
 	"encoding/json"
 	"strings"
 )
 
-// ToObj 将字符串转换为对象
-func (receiver Str) ToObj(obj interface{}) bool {
-	err := json.Unmarshal([]byte(receiver.OriVal()), &obj)
-	if err != nil {
-		return false
-	}
-	return true
-}
-
-// Obj 转换为操作对象
-func Obj(v interface{}) *object {
+// Any 转换为操作对象
+func Any(v interface{}) *object {
 	return &object{v}
 }
 
@@ -28,7 +19,16 @@ func (receiver *object) OriVal() interface{} {
 	return receiver.obj
 }
 
-// ToJson 将对象转换为json字符串
+// ToObject 转换为对象
+func (receiver *object) ToObject(obj interface{}) bool {
+	err := json.Unmarshal([]byte(receiver.ToJson()), &obj)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// ToJson 转换为json字符串
 func (receiver *object) ToJson() string {
 	b, err := json.Marshal(receiver.OriVal())
 	if err != nil {
