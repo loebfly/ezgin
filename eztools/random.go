@@ -1,0 +1,27 @@
+package eztools
+
+import (
+	"math/rand"
+	"time"
+)
+
+type RandomStr string
+
+const (
+	RandomStrHex  RandomStr = "0123456789abcdef"
+	RandomStrNum  RandomStr = "0123456789"
+	RandomStrEn   RandomStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	RandomStrEnU  RandomStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	RandomStrEnL  RandomStr = "abcdefghijklmnopqrstuvwxyz"
+	RandomStrCase RandomStr = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&_="
+)
+
+func (receiver RandomStr) Get(length int) string {
+	bytes := []byte(receiver)
+	result := make([]byte, length)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < length; i++ {
+		result[i] = bytes[r.Intn(len(bytes))]
+	}
+	return string(result)
+}
