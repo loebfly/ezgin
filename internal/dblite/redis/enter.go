@@ -10,7 +10,7 @@ func InitObjs(objs []EZGinRedis) {
 	config.InitObjs(objs)
 	err := ctl.initConnect()
 	if err != nil {
-		logs.Enter.CError("REDIS", "初始化失败: %s", err.Error())
+		logs.Enter.CError("REDIS", "初始化失败: {}", err.Error())
 	}
 	ctl.addCheckTicker()
 }

@@ -47,6 +47,31 @@ func ErrorRes(status int, message string) Result {
 	}
 }
 
+func SuccessRes(data interface{}, message ...string) Result {
+	msg := "success"
+	if len(message) > 0 {
+		msg = message[0]
+	}
+	return Result{
+		Status:  1,
+		Message: msg,
+		Data:    data,
+	}
+}
+
+func SuccessPageRes(data interface{}, page Page, message ...string) Result {
+	msg := "success"
+	if len(message) > 0 {
+		msg = message[0]
+	}
+	return Result{
+		Status:  1,
+		Message: msg,
+		Data:    data,
+		Page:    &page,
+	}
+}
+
 const (
 	ContentTypeFormUrlEncode = "application/x-www-form-urlencoded"
 	ContentTypeFormMultipart = "multipart/form-data"

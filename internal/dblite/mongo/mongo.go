@@ -67,7 +67,7 @@ func (c *control) retry() {
 	for k := range c.dbMap {
 		err := c.tryConnect(k)
 		if err != nil {
-			logs.Enter.CError("MONGO", "%s对应的Mysql数据库重连失败, %s", k, err.Error())
+			logs.Enter.CError("MONGO", "{} 对应的Mysql数据库重连失败, {}", k, err.Error())
 		}
 	}
 }
@@ -88,7 +88,11 @@ func (c *control) addCheckTicker() {
 func (c *control) getDB(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
 	key := ""
 	if len(tag) == 0 {
-		key = config.Objs[0].Tag
+		if len(config.Objs) > 0 {
+			key = config.Objs[0].Tag
+		} else {
+			return nil, c.returnDB, errors.New("未配置Mongo数据库")
+		}
 	} else {
 		key = tag[0]
 	}

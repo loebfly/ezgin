@@ -31,6 +31,38 @@ func (enter) GetCurXLang() string {
 	return xlang.Enter.GetCurXLang()
 }
 
+func (enter) Any(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Any, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (enter) Get(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Get, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (enter) Post(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Post, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (enter) Delete(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Delete, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (enter) Patch(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Patch, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (enter) Put(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Put, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (enter) Head(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Head, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (enter) Options(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return ctl.Routers(engine.Options, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
 func (enter) Use(middleware ...engine.MiddlewareFunc) EZRouter {
 	return ctl.Use(middleware...)
 }

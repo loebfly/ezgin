@@ -63,16 +63,58 @@ func (receiver *control) initEngine() {
 	}
 }
 
-func (receiver *control) routersHandler(ctx *gin.Context) {
-	if handler, ok := receiver.routers[ctx.Request.URL.Path]; ok {
-		result := handler(ctx)
-		ctx.JSON(http.StatusOK, result)
-	} else {
-		ctx.JSON(http.StatusNotFound, engine.Result{
-			Status:  -1,
-			Message: "404 not found",
-		})
+func (receiver *control) lastChar(str string) uint8 {
+	if str == "" {
+		panic("The length of the string can't be 0")
 	}
+	return str[len(str)-1]
+}
+
+func (receiver *control) routersHandler(ctx *gin.Context) {
+	for relativePath, handler := range receiver.routers {
+		if strings.Contains(relativePath, ":") {
+			for _, p := range ctx.Params {
+				relativePath = strings.Replace(relativePath, ":"+p.Key, p.Value, -1)
+			}
+		}
+		if ctx.Request.URL.Path == relativePath {
+			ctx.JSON(http.StatusOK, handler(ctx))
+			return
+		}
+	}
+
+	ctx.JSON(http.StatusNotFound, engine.Result{
+		Status:  -1,
+		Message: "404 not found",
+	})
+}
+
+func (receiver *control) Get(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Get, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *control) Post(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Post, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *control) Delete(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Delete, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *control) Patch(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Patch, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *control) Put(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Put, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *control) Head(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Head, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *control) Options(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Options, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
 func (receiver *control) Use(middleware ...engine.MiddlewareFunc) EZRouter {
@@ -83,6 +125,7 @@ func (receiver *control) Use(middleware ...engine.MiddlewareFunc) EZRouter {
 	receiver.engine.Use(ginHandlers...)
 	return receiver
 }
+
 func (receiver *control) Group(relativePath string) EZRouter {
 	basePath := ""
 	if !strings.HasPrefix(relativePath, "/") {
@@ -98,13 +141,6 @@ func (receiver *control) Group(relativePath string) EZRouter {
 		basePath:    basePath,
 		groupEngine: receiver.engine.Group(relativePath),
 	}
-}
-
-func (receiver *control) lastChar(str string) uint8 {
-	if str == "" {
-		panic("The length of the string can't be 0")
-	}
-	return str[len(str)-1]
 }
 
 // Routers 批量生成路由
@@ -148,6 +184,34 @@ type groupControl struct {
 	control     *control
 	basePath    string
 	groupEngine *gin.RouterGroup
+}
+
+func (receiver *groupControl) Get(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Get, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *groupControl) Post(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Post, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *groupControl) Delete(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Delete, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *groupControl) Patch(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Patch, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *groupControl) Put(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Put, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *groupControl) Head(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Head, map[string]engine.HandlerFunc{relativePath: handler})
+}
+
+func (receiver *groupControl) Options(relativePath string, handler engine.HandlerFunc) EZRouter {
+	return receiver.Routers(engine.Options, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
 func (receiver *groupControl) Use(middleware ...engine.MiddlewareFunc) EZRouter {

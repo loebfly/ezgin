@@ -92,7 +92,7 @@ func (c *control) retry() {
 	for k := range c.dbMap {
 		err := c.tryConnect(k)
 		if err != nil {
-			logs.Enter.CError("MYSQL", "%s对应的Mysql数据库重连失败: %s", k, err.Error())
+			logs.Enter.CError("MYSQL", "{} 对应的Mysql数据库重连失败: {}", k, err.Error())
 		}
 	}
 }
@@ -110,7 +110,12 @@ func (c *control) addCheckTicker() {
 func (c *control) getDB(findName ...string) (*gorm.DB, error) {
 	key := ""
 	if len(findName) == 0 {
-		key = config.Objs[0].Tag
+		if len(config.Objs) > 0 {
+			key = config.Objs[0].Tag
+		} else {
+			return nil, errors.New("未配置Mysql数据库")
+		}
+
 	} else {
 		key = findName[0]
 	}

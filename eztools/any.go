@@ -24,7 +24,14 @@ func (receiver *object) OriVal() interface{} {
 
 // ToObject 转换为对象
 func (receiver *object) ToObject(obj interface{}) bool {
-	err := json.Unmarshal([]byte(receiver.ToJson()), &obj)
+	if receiver.OriVal() == nil {
+		return false
+	}
+	jsonStr := receiver.ToJson()
+	if jsonStr == "" {
+		return false
+	}
+	err := json.Unmarshal([]byte(jsonStr), &obj)
 	if err != nil {
 		return false
 	}
@@ -33,16 +40,29 @@ func (receiver *object) ToObject(obj interface{}) bool {
 
 // ToJson 转换为json字符串
 func (receiver *object) ToJson() string {
-	b, err := json.Marshal(receiver.OriVal())
-	if err != nil {
-		return "{}"
-	} else {
-		result := string(b)
-		result = strings.Replace(result, "\\u003c", "<", -1)
-		result = strings.Replace(result, "\\u003e", ">", -1)
-		result = strings.Replace(result, "\\u0026", "&", -1)
-		return result
+	switch val := receiver.OriVal().(type) {
+	case []byte:
+		return string(val)
+	case string:
+		return val
 	}
+	v := reflect.ValueOf(receiver.OriVal())
+	switch v.Kind() {
+	case reflect.Ptr, reflect.Struct, reflect.Map, reflect.Array, reflect.Slice:
+		b, err := json.Marshal(receiver.OriVal())
+		if err != nil {
+			return ""
+		} else {
+			result := string(b)
+			result = strings.Replace(result, "\\u003c", "<", -1)
+			result = strings.Replace(result, "\\u003e", ">", -1)
+			result = strings.Replace(result, "\\u0026", "&", -1)
+			return result
+		}
+	default:
+		return ""
+	}
+
 }
 
 // ToString 转换为字符串

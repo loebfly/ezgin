@@ -3,6 +3,7 @@ package app
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	appDefine "github.com/loebfly/ezgin/app"
 	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/config"
@@ -179,26 +180,31 @@ func (receiver enter) initEngine() {
 				}
 
 				if err != nil {
-					logs.Enter.CError("MIDDLEWARE", "写入日志失败, 获取数据库失败: %s", err.Error())
+					logs.Enter.CError("MIDDLEWARE", "写入日志失败, 获取数据库失败: {}", err.Error())
 					return
 				}
 				ctx.Id = bson.NewObjectId()
 				err = db.C(tableName).Insert(ctx)
 				if err != nil {
-					logs.Enter.CError("MIDDLEWARE", "写入日志失败: %s", err.Error())
+					logs.Enter.CError("MIDDLEWARE", "写入日志失败: {}", err.Error())
 					returnDB(db)
 				}
 				returnDB(db)
 			}
 		}(logMongoTag, logTable)
 	}
-
+	var ginEngine *gin.Engine
+	var recoveryFunc engineDefine.RecoveryFunc
+	if StartCfg != nil {
+		ginEngine = StartCfg.GinCfg.Engine
+		recoveryFunc = engineDefine.RecoveryFunc(StartCfg.GinCfg.RecoveryHandler)
+	}
 	yml := engine.Yml{
 		Mode:         ez.Gin.Mode,
 		Middleware:   ez.Gin.Middleware,
-		Engine:       StartCfg.GinCfg.Engine,
+		Engine:       ginEngine,
 		LogChan:      logChan,
-		RecoveryFunc: engineDefine.RecoveryFunc(StartCfg.GinCfg.RecoveryHandler),
+		RecoveryFunc: recoveryFunc,
 	}
 	engine.InitObj(yml)
 

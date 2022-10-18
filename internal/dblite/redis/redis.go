@@ -97,7 +97,7 @@ func (c *control) retry() {
 	for k := range c.dbMap {
 		err := c.tryConnect(k)
 		if err != nil {
-			logs.Enter.CError("REDIS", "%s对应的Redis数据库重连失败: %s", k, err.Error())
+			logs.Enter.CError("REDIS", "{} 对应的Redis数据库重连失败: {}", k, err.Error())
 		}
 	}
 }
@@ -115,7 +115,11 @@ func (c *control) addCheckTicker() {
 func (c *control) getDB(tag ...string) (*redis.Client, error) {
 	key := ""
 	if len(tag) == 0 {
-		key = config.Objs[0].Tag
+		if len(config.Objs) > 0 {
+			key = config.Objs[0].Tag
+		} else {
+			return nil, errors.New("未配置Redis数据库")
+		}
 	} else {
 		key = tag[0]
 	}

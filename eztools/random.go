@@ -8,14 +8,17 @@ import (
 type RandomStr string
 
 const (
-	RandomStrHex  RandomStr = "0123456789abcdef"
-	RandomStrNum  RandomStr = "0123456789"
-	RandomStrEn   RandomStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	RandomStrEnU  RandomStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	RandomStrEnL  RandomStr = "abcdefghijklmnopqrstuvwxyz"
-	RandomStrCase RandomStr = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&_="
+	RandomStrHex    RandomStr = "0123456789abcdef"
+	RandomStrNum    RandomStr = "0123456789"
+	RandomStrEn     RandomStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	RandomStrEnU    RandomStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	RandomStrEnL    RandomStr = "abcdefghijklmnopqrstuvwxyz"
+	RandomStrCase   RandomStr = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&_="
+	RandomStrNumEnL RandomStr = "0123456789abcdefghijklmnopqrstuvwxyz"
+	RandomStrNumEnU RandomStr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 
+// Get 随机获取字符串, length: 长度
 func (receiver RandomStr) Get(length int) string {
 	bytes := []byte(receiver)
 	result := make([]byte, length)
