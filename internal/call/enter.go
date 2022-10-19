@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/levigross/grequests"
 	"github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/internal/logs"
 )
 
 type enter int
@@ -107,6 +108,7 @@ func (receiver enter) toResult(resp string, err error) engine.Result {
 	var result engine.Result
 	err = json.Unmarshal([]byte(resp), &result)
 	if err != nil {
+		logs.Enter.Error("resp:{}, 返回结果序列化失败: {}", resp, err)
 		return engine.Result{
 			Status:  engine.ErrorCodeResUnmarshalFailure,
 			Message: err.Error(),
