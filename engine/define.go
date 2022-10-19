@@ -28,7 +28,7 @@ type RecoveryFunc func(c *gin.Context, err interface{})
 
 type Result struct {
 	Status  int         `json:"status"`
-	Message string      `json:"message"`
+	Message string      `json:"msg"`
 	Data    interface{} `json:"data"`
 	Page    *Page       `json:"page"`
 }
