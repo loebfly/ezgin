@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/engine/middleware"
@@ -53,9 +54,9 @@ func (receiver *control) initEngine() {
 			receiver.engine.Use(middleware.XLang)
 		}
 		if strings.Contains(config.Gin.Middleware, "recover") {
-			if config.Gin.RecoveryFunc != nil {
+			if config.Gin.RecoveryFunc == nil {
 				config.Gin.RecoveryFunc = func(c *gin.Context, err interface{}) {
-					c.AbortWithStatus(http.StatusInternalServerError)
+					c.JSON(http.StatusInternalServerError, engine.ErrorRes(-1, fmt.Sprintf("%v", err)))
 				}
 			}
 			receiver.engine.Use(middleware.Recover(config.Gin.RecoveryFunc))
