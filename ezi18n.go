@@ -114,7 +114,8 @@ func (receiver I18nStringId) ErrorResWithStatusAndArgs(status int, args ...inter
 // key 参数名
 func (receiver I18nStringId) CheckRes(params map[string]string, key ...string) engine.Result {
 	for _, param := range key {
-		if _, ok := params[param]; !ok {
+		val := params[param]
+		if val == "" {
 			return receiver.ErrorResWithArgs(param, 1003)
 		}
 	}
