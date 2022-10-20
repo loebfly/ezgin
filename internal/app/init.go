@@ -62,14 +62,16 @@ func (receiver enter) initConfig() {
 
 // initLogs 初始化日志模块
 func (receiver enter) initLogs() {
+	level := config.EZGin().Logs.Level
 	out := config.EZGin().Logs.Out
 	file := config.EZGin().Logs.File
 	if file == "" {
 		file = "/opt/logs/" + config.EZGin().App.Name
 	}
 	yml := logs.Yml{
-		Out:  out,
-		File: file,
+		Level: level,
+		Out:   out,
+		File:  file,
 	}
 	logs.InitObj(yml)
 	receiver.initNacos()

@@ -49,6 +49,25 @@ func (logger Logger) Error(format string, args ...interface{}) {
 }
 
 func (logger Logger) outPut(format string, args ...interface{}) {
+	if Config.Logs.Level == "-" {
+		return
+	}
+	switch strings.ToUpper(Config.Logs.Level) {
+	case LevelDebug:
+		break
+	case LevelInfo:
+		if logger.level == LevelDebug {
+			return
+		}
+	case LevelWarn:
+		if logger.level == LevelDebug || logger.level == LevelInfo {
+			return
+		}
+	case LevelError:
+		if logger.level != LevelError {
+			return
+		}
+	}
 	// Determine caller func
 	createdAt := "[" + time.Now().Format("2006-01-02 15:04:05") + "]"
 	skip := 3

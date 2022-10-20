@@ -20,12 +20,13 @@ ezgin:
 
   gin: # gin配置
     mode: debug # gin模式, debug, release
-    middleware: cors,trace,logs,xlang,recover # gin中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
+    middleware: cors,trace,logs,xlang,recover # gin中间件, 用逗号分隔, 不填则默认全部开启, - 表示不开启
     logs: # gin日志中间件配置
       mongo_tag: ezgin-tag # 需要与Nacos.Yml.Mongo中配置文件名中的tag一致, 默认为Nacos.Yml.Mongo中第一个配置文件的tag, - 表示不开启
       table: EZGinAPIRequestLogs # mongo中的表名, 默认为${App.Name}APIRequestLogs
 
   logs: # 日志配置
+    level: debug # 日志级别, debug > info > warn > error, 默认debug即全部输出, - 表示不开启
     out: console,file #日志输出方式, 可选值: console, file 默认 console
     file: /opt/logs/ezgin # 日志文件路径, 如果Out包含file, 不填默认/opt/logs/${App.Name}, 生成的文件会带上.$(Date +%F).log
 

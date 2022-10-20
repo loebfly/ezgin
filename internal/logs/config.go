@@ -12,6 +12,9 @@ func (cfg *ymlConfig) initObj(obj Yml) {
 }
 
 func (cfg *ymlConfig) fillNull() {
+	if cfg.Logs.Level == "" {
+		cfg.Logs.Level = "debug"
+	}
 	if cfg.Logs.Out == "" {
 		cfg.Logs.Out = OutConsole
 	}
