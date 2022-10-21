@@ -12,6 +12,7 @@ func InitObjs(objs []EZGinMysql) {
 	if err != nil {
 		logs.Enter.CError("MYSQL", "初始化失败: {}", err.Error())
 	}
+	logs.Enter.CInfo("MYSQL", "初始化成功")
 	ctl.addCheckTicker()
 }
 

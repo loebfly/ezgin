@@ -12,6 +12,7 @@ func InitObjs(objs []EZGinMongo) {
 	if err != nil {
 		logs.Enter.CError("MONGO", "初始化失败: {}", err.Error())
 	}
+	logs.Enter.CInfo("MONGO", "初始化成功")
 	ctl.addCheckTicker()
 }
 

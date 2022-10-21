@@ -134,7 +134,6 @@ func (c *control) register() bool {
 // Unregister 注销Nacos客户端
 func (c *control) unregister() {
 	if c.client == nil {
-		logs.Enter.CError("NACOS", "客户端未注册, 无法注销")
 		return
 	}
 	logs.Enter.CWarn("NACOS", "正在注销客户端")

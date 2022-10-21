@@ -12,6 +12,7 @@ func InitObjs(objs []EZGinRedis) {
 	if err != nil {
 		logs.Enter.CError("REDIS", "初始化失败: {}", err.Error())
 	}
+	logs.Enter.CDebug("REDIS", "初始化成功")
 	ctl.addCheckTicker()
 }
 
