@@ -110,8 +110,12 @@ func (receiver I18nStringId) ErrorResWithStatusAndArgs(status int, args ...inter
 }
 
 // CheckRes 检查参数是否丢失, 丢失则返回 status为1003 错误, 否则返回status为1的engine.Result
-// params 参数
-// key 参数名
+/*
+	使用说明:
+		receiver 的翻译字符串需要带{},如果丢失用于key替换后作为Message，例如:参数{}丢失
+		params 参数列表
+		key 参数名
+*/
 func (receiver I18nStringId) CheckRes(params map[string]string, key ...string) engine.Result {
 	for _, param := range key {
 		val := params[param]
