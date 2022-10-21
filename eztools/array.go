@@ -5,6 +5,14 @@ import (
 	"reflect"
 )
 
+// Array 转换为可操作对象
+/*
+	使用说明:
+		1. IsExist(value interface{}) 判断切片是否存在某个值
+		2. IsNil(index int) 判断切片是否为空
+		3. Len() 获取切片的长度
+		4. ForEach(fn func(index int)) 遍历切片
+*/
 func Array(v interface{}) *array {
 	return &array{v}
 }

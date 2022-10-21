@@ -5,6 +5,14 @@ import (
 	"reflect"
 )
 
+// Map 转换为可操作对象
+/*
+	使用说明:
+		1. IsExist(key interface{}) 判断map是否存在某个key
+		2. IsNil(key interface{}) 判断map的值是否为空
+		3. Len() 获取map的长度
+		4. ForEach(fn func(key, value interface{})) 遍历map
+*/
 func Map(v interface{}) *mapT {
 	return &mapT{v}
 }

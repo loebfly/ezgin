@@ -13,7 +13,7 @@ import (
 /*
 	使用说明：
 		1. Time 是一个时间类型，用于替代 time.Time
-		2. 已适配 json、bson、sql 的序列化和反序列化
+		2. 已适配 json、bson、sql 的序列化和反序列化, 序列化为时间戳，反序列化为时间对象
 		3. 提供了一些常用的时间操作方法
 */
 type Time time.Time
