@@ -14,11 +14,6 @@ import (
 	"time"
 )
 
-const (
-	ContentTypeFormUrlEncode = "application/x-www-form-urlencoded"
-	ContentTypeFormMultipart = "multipart/form-data"
-)
-
 func (receiver enter) Middleware(c *gin.Context) {
 	// 不记录静态文件和根目录请求
 	if strings.Contains(c.Request.RequestURI, "/docs") || c.Request.RequestURI == "/" {
@@ -47,15 +42,15 @@ func (receiver enter) Middleware(c *gin.Context) {
 	c.Next()
 
 	var reqParams interface{}
-	if strings.Contains(c.ContentType(), "application/json") {
+	if strings.Contains(c.ContentType(), gin.MIMEJSON) {
 		var params = make(map[string]interface{})
 		err = json.Unmarshal(rawData, &reqParams)
 		if err != nil {
 			logs.Enter.CError("GIN", "reqParams json.unmarshal error:{}", err.Error())
 		}
 		reqParams = params
-	} else if strings.Contains(c.ContentType(), "application/x-www-form-urlencoded") ||
-		strings.Contains(c.ContentType(), "multipart/form-rawData") {
+	} else if strings.Contains(c.ContentType(), gin.MIMEPOSTForm) ||
+		strings.Contains(c.ContentType(), gin.MIMEMultipartPOSTForm) {
 		reqParams = receiver.GetFormParams(c)
 	} else {
 		reqParams = string(rawData)
@@ -109,8 +104,8 @@ func (receiver enter) Middleware(c *gin.Context) {
 func (receiver enter) GetFormParams(ctx *gin.Context) map[string]string {
 	params := make(map[string]string)
 	cType := ctx.ContentType()
-	if cType != ContentTypeFormUrlEncode &&
-		cType != ContentTypeFormMultipart {
+	if !strings.Contains(cType, gin.MIMEPOSTForm) &&
+		!strings.Contains(cType, gin.MIMEMultipartPOSTForm) {
 		return params
 	}
 	if ctx.Request == nil {
