@@ -41,14 +41,20 @@ func (receiver formCall) request(method, service, uri string, header, params map
 		logs.Enter.CDebug("CALL",
 			"FORM - {} 微服务开始请求 -- url: {}, params: {}, header: {}",
 			method, url, params, header)
-		var options = &grequests.RequestOptions{
-			Data:               params,
-			Headers:            header,
-			InsecureSkipVerify: true,
-		}
+
 		if method == "GET" {
+			var options = &grequests.RequestOptions{
+				Params:             params,
+				Headers:            header,
+				InsecureSkipVerify: true,
+			}
 			resp, err = grequests.Get(url, options)
 		} else {
+			var options = &grequests.RequestOptions{
+				Data:               params,
+				Headers:            header,
+				InsecureSkipVerify: true,
+			}
 			resp, err = grequests.Post(url, options)
 		}
 		if err != nil {
