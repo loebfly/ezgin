@@ -80,7 +80,8 @@ const (
 func GetFormParams(ctx *gin.Context) map[string]string {
 	params := make(map[string]string)
 	cType := ctx.ContentType()
-	if cType != ContentTypeFormUrlEncode &&
+	// bugfix: ctx.ContentType() 可能为空，导致无法获取参数
+	if cType != "" && cType != ContentTypeFormUrlEncode &&
 		cType != ContentTypeFormMultipart {
 		return params
 	}
