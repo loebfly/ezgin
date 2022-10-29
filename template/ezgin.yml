@@ -24,6 +24,7 @@ ezgin:
     logs: # gin日志中间件配置
       mongo_tag: ezgin-tag # 需要与Nacos.Yml.Mongo中配置文件名中的tag一致, 默认为Nacos.Yml.Mongo中第一个配置文件的tag, - 表示不开启
       table: EZGinAPIRequestLogs # mongo中的表名, 默认为${App.Name}APIRequestLogs
+      kafka: ezgin # kafka 消息主题, 默认为${App.Name}, - 表示不开启
 
   logs: # 日志配置
     level: debug # 日志级别, debug > info > warn > error, 默认debug即全部输出, - 表示不开启
