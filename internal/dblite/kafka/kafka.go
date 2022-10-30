@@ -68,7 +68,7 @@ func (c *control) disconnect() {
 	if c.client != nil {
 		err := c.client.Close()
 		if err != nil {
-			logs.Enter.CError("kAFKA", "断开连接错误: {}", err.Error())
+			logs.Enter.CError("KAFKA", "断开连接错误: {}", err.Error())
 		}
 	}
 }
@@ -76,7 +76,7 @@ func (c *control) disconnect() {
 func (c *control) retry() {
 	err := c.tryConnect()
 	if err != nil {
-		logs.Enter.CError("kAFKA", "重试连接失败: {}", err.Error())
+		logs.Enter.CError("KAFKA", "重试连接失败: {}", err.Error())
 	}
 }
 
@@ -105,7 +105,7 @@ func (h msgConsumerGroupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, 
 		//fmt.Printf("Message topic:%q partition:%d offset:%d\n", msg.Topic, msg.Partition, msg.Offset)
 		err := h.handler(string(msg.Value))
 		if err != nil {
-			logs.Enter.CError("kAFKA", "消费消息失败: {}", err.Error())
+			logs.Enter.CError("KAFKA", "消费消息失败: {}", err.Error())
 		}
 		sess.MarkMessage(msg, "")
 	}

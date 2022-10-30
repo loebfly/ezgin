@@ -25,11 +25,11 @@ func (receiver enter) getRequestId(c *gin.Context) string {
 	requestId := c.GetHeader(HeaderXRequestId)
 	if requestId == "" {
 		source := "0123456789abcdef"
-		bytes := []byte(source)
-		result := []byte{}
+		b := []byte(source)
+		var result []byte
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		for i := 0; i < 16; i++ {
-			result = append(result, bytes[r.Intn(len(bytes))])
+			result = append(result, b[r.Intn(len(b))])
 		}
 		return string(result)
 	}

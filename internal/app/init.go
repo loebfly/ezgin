@@ -13,7 +13,6 @@ import (
 	"github.com/loebfly/ezgin/internal/dblite/mysql"
 	"github.com/loebfly/ezgin/internal/dblite/redis"
 	"github.com/loebfly/ezgin/internal/engine"
-	"github.com/loebfly/ezgin/internal/engine/middleware/reqlogs"
 	"github.com/loebfly/ezgin/internal/i18n"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
@@ -180,9 +179,9 @@ func (receiver enter) initEngine() {
 		logKafkaTopic = ez.App.Name
 	}
 
-	var logChan chan reqlogs.ReqCtx
+	var logChan chan engineDefine.ReqCtx
 	if logMongoTag != "-" || logKafkaTopic != "-" {
-		logChan = make(chan reqlogs.ReqCtx, 1000)
+		logChan = make(chan engineDefine.ReqCtx, 1000)
 		go func(mongoTag, mongoTable, kafkaTopic string) {
 			for ctx := range logChan {
 				if mongoTag != "-" {

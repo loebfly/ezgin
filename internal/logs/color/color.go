@@ -13,7 +13,7 @@ var (
 	NoColor = noColorExists() || os.Getenv("TERM") == "dumb" ||
 		(!isatty.IsTerminal(os.Stdout.Fd()) && !isatty.IsCygwinTerminal(os.Stdout.Fd()))
 
-	// Output defines the standard output of the print functions. By default
+	// Output defines the standard output of the print functions. By default,
 	// os.Stdout is used.
 	Output = colorable.NewColorableStdout()
 )
@@ -115,14 +115,14 @@ func (c *Color) wrap(s string) string {
 		return s
 	}
 
-	return c.format() + s + c.unformat()
+	return c.format() + s + c.unFormat()
 }
 
 func (c *Color) format() string {
 	return fmt.Sprintf("%s[%sm", escape, c.sequence())
 }
 
-func (c *Color) unformat() string {
+func (c *Color) unFormat() string {
 	return fmt.Sprintf("%s[%dm", escape, Reset)
 }
 

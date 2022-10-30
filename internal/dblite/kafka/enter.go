@@ -87,7 +87,7 @@ func (c Client) CreateTopic(topic string) error {
 		ReplicationFactor: 1,
 	}, false)
 	if err != nil {
-		logs.Enter.CError("kAFKA", "创建topic失败: {}", err.Error())
+		logs.Enter.CError("KAFKA", "创建topic失败: {}", err.Error())
 		return err
 	}
 	return nil
@@ -126,7 +126,7 @@ func (c Client) ListenTopicForGroupId(topic, groupId string, handler func(msg st
 		handler: handler,
 	})
 	if err != nil {
-		logs.Enter.CError("kAFKA", "监听{}组的{}主题失败: {}", groupId, topic, err.Error())
+		logs.Enter.CError("KAFKA", "监听{}组的{}主题失败: {}", groupId, topic, err.Error())
 		return err
 	}
 

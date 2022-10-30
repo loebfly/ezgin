@@ -16,10 +16,6 @@ func InitObjs(objs []EZGinMongo) {
 	ctl.addCheckTicker()
 }
 
-func IsExistTag(tag string) bool {
-	return config.isExistTag(tag)
-}
-
 func GetDB(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
 	return ctl.getDB(tag...)
 }
