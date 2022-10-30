@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
 	"github.com/loebfly/ezgin/internal/logs"
 	"io/ioutil"
@@ -34,7 +35,10 @@ func (receiver enter) Middleware(c *gin.Context) {
 	if err != nil {
 		logs.Enter.CError("GIN", "GetRawData error:{}", err.Error())
 	}
-	var reqHeaders = c.Request.Header.Clone()
+	var reqHeaders = make(map[string]string)
+	for k, v := range c.Request.Header {
+		reqHeaders[k] = v[0]
+	}
 	// 关键点 重置请求体
 	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(rawData))
 
@@ -74,7 +78,12 @@ func (receiver enter) Middleware(c *gin.Context) {
 	contentType := c.ContentType()
 	uri := c.Request.RequestURI
 
-	logs.Enter.CDebug("GIN", "|{}|{}|{}|{}|{}ms", method, uri, c.ClientIP(), respTime, ttl)
+	clientIP := c.Request.Header.Get("X-Forward-For")
+	if clientIP == "" {
+		clientIP = c.ClientIP()
+	}
+
+	logs.Enter.CDebug("GIN", "|{}|{}|{}|{}|{}ms", method, uri, clientIP, respTime, ttl)
 	if reqHeaders != nil {
 		logs.Enter.CDebug("GIN", "请求头:{}", reqHeaders)
 	}
@@ -87,16 +96,20 @@ func (receiver enter) Middleware(c *gin.Context) {
 	logs.Enter.CDebug("GIN", "响应结果:{}", respParams)
 
 	ctx := ReqCtx{
-		RequestId:   trace.Enter.GetCurReqId(),
 		ReqTime:     reqTime,
-		ReqHeaders:  reqHeaders,
-		ReqParams:   reqParams,
+		RequestId:   trace.Enter.GetCurReqId(),
 		RespTime:    respTime,
-		RespParams:  respParams,
 		TTL:         ttl,
+		AppName:     config.EZGin().App.Name,
+		ApiName:     "",
 		Method:      method,
 		ContentType: contentType,
 		URI:         uri,
+		ClientIP:    clientIP,
+		ReqHeaders:  reqHeaders,
+		ReqParams:   reqParams,
+		ResponseStr: respStr,
+		RespParams:  respParams,
 	}
 	logChan <- ctx
 }

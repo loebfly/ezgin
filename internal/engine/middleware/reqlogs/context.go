@@ -7,17 +7,21 @@ import (
 )
 
 type ReqCtx struct {
-	Id          bson.ObjectId       `bson:"_id"`
-	RequestId   string              `bson:"request_id"`      // 请求id
-	ReqTime     string              `bson:"request_time"`    // 请求时间
-	ReqHeaders  map[string][]string `bson:"request_headers"` // 请求头
-	ReqParams   interface{}         `bson:"request_params"`  // 请求参数
-	RespTime    string              `bson:"response_time"`   // 响应时间
-	RespParams  interface{}         `bson:"response_params"` // 响应参数
-	TTL         int                 `bson:"ttl"`             // 请求耗时
-	Method      string              `bson:"method"`          // 请求方法
-	ContentType string              `bson:"content_type"`    // 请求类型
-	URI         string              `bson:"uri"`             // 请求URI
+	Id          bson.ObjectId     `json:"-" bson:"_id"`
+	ReqTime     string            `json:"time" bson:"time"`                   // 请求时间
+	RequestId   string            `json:"requestId" bson:"requestId"`         // 请求id
+	RespTime    string            `json:"responseTime" bson:"responseTime"`   // 响应时间
+	TTL         int               `json:"ttl" bson:"ttl"`                     // 请求耗时
+	AppName     string            `json:"appName" bson:"appName"`             // 应用名称
+	ApiName     string            `json:"apiName" bson:"apiName"`             // 接口名称
+	Method      string            `json:"method" bson:"method"`               // 请求方法
+	ContentType string            `json:"contentType" bson:"contentType"`     // 请求类型
+	URI         string            `json:"uri" bson:"uri"`                     // 请求URI
+	ClientIP    string            `json:"clientIP" bson:"clientIP"`           // 客户端IP
+	ReqHeaders  map[string]string `json:"requestHeader" bson:"requestHeader"` // 请求头
+	ReqParams   interface{}       `json:"requestParam" bson:"requestParam"`   // 请求参数
+	ResponseStr string            `json:"responseStr" bson:"responseStr"`     // 响应内容字符串
+	RespParams  interface{}       `json:"responseMap" bson:"responseMap"`     // 响应参数
 }
 
 func (ctx ReqCtx) ToJson() string {

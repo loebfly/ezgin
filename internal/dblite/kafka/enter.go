@@ -9,9 +9,7 @@ import (
 
 var client = Client{}
 
-type Client struct {
-	consumerGroups map[string]sarama.ConsumerGroup
-}
+type Client struct{}
 
 func InitObj(obj EZGinKafka) {
 	logs.Enter.CDebug("KAFKA", "初始化")
@@ -29,15 +27,6 @@ func GetDB() Client {
 }
 
 func Disconnect() {
-	if len(client.consumerGroups) > 0 {
-		for groupId, group := range client.consumerGroups {
-			err := group.Close()
-			if err != nil {
-				logs.Enter.CError("kAFKA", "关闭{}消费者组失败: {}", groupId, err.Error())
-				return
-			}
-		}
-	}
 	ctl.disconnect()
 }
 
@@ -92,12 +81,6 @@ func (c Client) CreateTopic(topic string) error {
 	if err != nil {
 		return err
 	}
-	defer func(admin sarama.ClusterAdmin) {
-		closeErr := admin.Close()
-		if closeErr != nil {
-			logs.Enter.CError("kAFKA", "关闭ClusterAdmin失败: {}", closeErr.Error())
-		}
-	}(admin)
 
 	err = admin.CreateTopic(topic, &sarama.TopicDetail{
 		NumPartitions:     1,
@@ -119,12 +102,6 @@ func (c Client) InputMsgForTopic(topic string, message ...string) error {
 	if err != nil {
 		return err
 	}
-	defer func(producer sarama.SyncProducer) {
-		closeErr := producer.Close()
-		if closeErr != nil {
-			logs.Enter.CError("kAFKA", "关闭SyncProducer失败: {}", closeErr.Error())
-		}
-	}(producer)
 
 	for _, msg := range message {
 		_, _, err = producer.SendMessage(&sarama.ProducerMessage{
@@ -144,11 +121,6 @@ func (c Client) ListenTopicForGroupId(topic, groupId string, handler func(msg st
 	if err != nil {
 		return err
 	}
-
-	if c.consumerGroups == nil {
-		c.consumerGroups = make(map[string]sarama.ConsumerGroup)
-	}
-	c.consumerGroups[groupId] = consumerGroup
 
 	err = consumerGroup.Consume(context.Background(), []string{topic}, &msgConsumerGroupHandler{
 		handler: handler,
