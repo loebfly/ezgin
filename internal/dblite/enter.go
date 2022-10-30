@@ -38,11 +38,6 @@ func DeInit() {
 	kafkaDB.Disconnect()
 }
 
-// IsExistMongoTag 判断是否存在mongo标签
-func IsExistMongoTag(tag string) bool {
-	return mongoDB.IsExistTag(tag)
-}
-
 // Mysql 获取mysql数据库
 func (enter) Mysql(tag ...string) (db *gorm.DB, err error) {
 	return mysqlDB.GetDB(tag...)
