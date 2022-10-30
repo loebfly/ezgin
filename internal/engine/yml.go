@@ -2,14 +2,13 @@ package engine
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/loebfly/ezgin/engine"
-	"github.com/loebfly/ezgin/internal/engine/middleware/reqlogs"
+	engineDefine "github.com/loebfly/ezgin/engine"
 )
 
 type Yml struct {
-	Mode         string              // gin模式 debug, release
-	Middleware   string              // 中间件, 用逗号分隔, 暂时支持cors,trace,logs,recover,xlang, 不填则默认全部开启, - 表示不开启
-	LogChan      chan reqlogs.ReqCtx // 日志通道
-	Engine       *gin.Engine         // gin引擎
-	RecoveryFunc engine.RecoveryFunc // 异常回调
+	Mode         string                    // gin模式 debug, release
+	Middleware   string                    // 中间件, 用逗号分隔, 暂时支持cors,trace,logs,recover,xlang, 不填则默认全部开启, - 表示不开启
+	LogChan      chan engineDefine.ReqCtx  // 日志通道
+	Engine       *gin.Engine               // gin引擎
+	RecoveryFunc engineDefine.RecoveryFunc // 异常回调
 }

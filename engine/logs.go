@@ -1,4 +1,4 @@
-package reqlogs
+package engine
 
 import (
 	"encoding/json"
@@ -13,14 +13,12 @@ type ReqCtx struct {
 	RespTime    string            `json:"responseTime" bson:"responseTime"`   // 响应时间
 	TTL         int               `json:"ttl" bson:"ttl"`                     // 请求耗时
 	AppName     string            `json:"appName" bson:"appName"`             // 应用名称
-	ApiName     string            `json:"apiName" bson:"apiName"`             // 接口名称
 	Method      string            `json:"method" bson:"method"`               // 请求方法
 	ContentType string            `json:"contentType" bson:"contentType"`     // 请求类型
 	URI         string            `json:"uri" bson:"uri"`                     // 请求URI
 	ClientIP    string            `json:"clientIP" bson:"clientIP"`           // 客户端IP
 	ReqHeaders  map[string]string `json:"requestHeader" bson:"requestHeader"` // 请求头
 	ReqParams   interface{}       `json:"requestParam" bson:"requestParam"`   // 请求参数
-	ResponseStr string            `json:"responseStr" bson:"responseStr"`     // 响应内容字符串
 	RespParams  interface{}       `json:"responseMap" bson:"responseMap"`     // 响应参数
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
 	"github.com/loebfly/ezgin/internal/logs"
@@ -95,20 +96,18 @@ func (receiver enter) Middleware(c *gin.Context) {
 
 	logs.Enter.CDebug("GIN", "响应结果:{}", respParams)
 
-	ctx := ReqCtx{
+	ctx := engineDefine.ReqCtx{
 		ReqTime:     reqTime,
 		RequestId:   trace.Enter.GetCurReqId(),
 		RespTime:    respTime,
 		TTL:         ttl,
 		AppName:     config.EZGin().App.Name,
-		ApiName:     "",
 		Method:      method,
 		ContentType: contentType,
 		URI:         uri,
 		ClientIP:    clientIP,
 		ReqHeaders:  reqHeaders,
 		ReqParams:   reqParams,
-		ResponseStr: respStr,
 		RespParams:  respParams,
 	}
 	logChan <- ctx
