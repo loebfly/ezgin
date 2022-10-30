@@ -17,14 +17,14 @@ ezgin:
       mysql: mysql-ezgin # mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mysql,则不需要配置
       mongo: mongo-ezgin # mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mongo,则不需要配置
       redis: redis-ezgin # redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要redis,则不需要配置
-
+      kafka: kafka-ezgin # kafka配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 不支持多个配置文件
   gin: # gin配置
     mode: debug # gin模式, debug, release
     middleware: cors,trace,logs,xlang,recover # gin中间件, 用逗号分隔, 不填则默认全部开启, - 表示不开启
-    logs: # gin日志中间件配置
+    mw_logs: # gin日志中间件配置
       mongo_tag: ezgin-tag # 需要与Nacos.Yml.Mongo中配置文件名中的tag一致, 默认为Nacos.Yml.Mongo中第一个配置文件的tag, - 表示不开启
-      table: EZGinAPIRequestLogs # mongo中的表名, 默认为${App.Name}APIRequestLogs
-      kafka: ezgin # kafka 消息主题, 默认为${App.Name}, - 表示不开启
+      mongo_table: EZGinAPIRequestLogs # mongo中的表名, 默认为${App.Name}APIRequestLogs
+      kafka_topic: ezgin # kafka 消息主题, 默认为${App.Name}, - 表示不开启
 
   logs: # 日志配置
     level: debug # 日志级别, debug > info > warn > error, 默认debug即全部输出, - 表示不开启

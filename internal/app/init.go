@@ -8,6 +8,7 @@ import (
 	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
+	"github.com/loebfly/ezgin/internal/dblite/kafka"
 	"github.com/loebfly/ezgin/internal/dblite/mongo"
 	"github.com/loebfly/ezgin/internal/dblite/mysql"
 	"github.com/loebfly/ezgin/internal/dblite/redis"
@@ -148,7 +149,19 @@ func (receiver enter) initDBLite() {
 			redisObjs[i] = yml.EZGinRedis
 		}
 	}
-	dblite.InitDB(mongoObjs, mysqlObjs, redisObjs)
+	var kafkaObjs []kafka.EZGinKafka
+	if ez.Nacos.Yml.Kafka != "" {
+		name := ez.Nacos.Yml.Kafka
+		kafkaObjs = make([]kafka.EZGinKafka, 1)
+		var yml kafka.Yml
+		nacosUrl := ez.GetNacosUrl(name)
+		err := config.Enter.GetYmlObj(nacosUrl, &yml)
+		if err != nil {
+			panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
+		}
+		kafkaObjs[0] = yml.EZGinKafka
+	}
+	dblite.InitDB(mongoObjs, mysqlObjs, redisObjs, kafkaObjs)
 	receiver.initEngine()
 }
 
@@ -157,43 +170,52 @@ func (receiver enter) initEngine() {
 	ez := config.EZGin()
 
 	logMongoTag := ez.Gin.MwLogs.MongoTag
-	if logMongoTag != "-" && logMongoTag != "" {
-		if !dblite.IsExistMongoTag(logMongoTag) {
-			panic(fmt.Errorf("mongo_tag:%s不存在", logMongoTag))
-		}
+	logMongoTable := ez.Gin.MwLogs.MongoTable
+	if logMongoTable == "" {
+		logMongoTable = ez.App.Name + "APIRequestLogs"
 	}
 
-	logTable := ez.Gin.MwLogs.Table
-	if logTable == "" {
-		logTable = ez.App.Name + "APIRequestLogs"
+	logKafkaTopic := ez.Gin.MwLogs.KafkaTopic
+	if logKafkaTopic == "" {
+		logKafkaTopic = ez.App.Name
 	}
+
 	var logChan chan reqlogs.ReqCtx
-	if logMongoTag != "-" {
+	if logMongoTag != "-" || logKafkaTopic != "-" {
 		logChan = make(chan reqlogs.ReqCtx, 1000)
-		go func(tag, tableName string) {
+		go func(mongoTag, mongoTable, kafkaTopic string) {
 			for ctx := range logChan {
-				var db *mgo.Database
-				var returnDB func(db *mgo.Database)
-				var err error
-				if tag != "" {
-					db, returnDB, err = dblite.Enter.Mongo(tag)
-				} else {
-					db, returnDB, err = dblite.Enter.Mongo()
-				}
+				if mongoTag != "-" {
+					var db *mgo.Database
+					var returnDB func(db *mgo.Database)
+					var err error
+					if mongoTag != "" {
+						db, returnDB, err = dblite.Enter.Mongo(mongoTag)
+					} else {
+						db, returnDB, err = dblite.Enter.Mongo()
+					}
 
-				if err != nil {
-					logs.Enter.CError("MIDDLEWARE", "写入日志失败, 获取数据库失败: {}", err.Error())
-					return
-				}
-				ctx.Id = bson.NewObjectId()
-				err = db.C(tableName).Insert(ctx)
-				if err != nil {
-					logs.Enter.CError("MIDDLEWARE", "写入日志失败: {}", err.Error())
+					if err != nil {
+						logs.Enter.CError("MIDDLEWARE", "写入Mongo日志失败, 获取数据库失败: {}", err.Error())
+						return
+					}
+					ctx.Id = bson.NewObjectId()
+					err = db.C(mongoTable).Insert(ctx)
+					if err != nil {
+						logs.Enter.CError("MIDDLEWARE", "写入Mongo日志失败: {}", err.Error())
+						returnDB(db)
+					}
 					returnDB(db)
 				}
-				returnDB(db)
+				if kafkaTopic != "-" {
+					err := dblite.Enter.Kafka().InputMsgForTopic(kafkaTopic, ctx.ToJson())
+					if err != nil {
+						logs.Enter.CError("MIDDLEWARE", "kafka输入失败: {}", err.Error())
+					}
+				}
+
 			}
-		}(logMongoTag, logTable)
+		}(logMongoTag, logMongoTable, logKafkaTopic)
 	}
 	var ginEngine *gin.Engine
 	var recoveryFunc engineDefine.RecoveryFunc

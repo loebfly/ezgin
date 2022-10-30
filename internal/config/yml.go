@@ -24,6 +24,7 @@ type EZGinYml struct {
 			Mysql string `koanf:"mysql"` // mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔
 			Mongo string `koanf:"mongo"` // mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔
 			Redis string `koanf:"redis"` // redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔
+			Kafka string `koanf:"kafka"` // kafka配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 只支持单个配置文件
 		} `koanf:"yml"` // nacos配置文件名
 	} `koanf:"nacos"` // nacos配置
 
@@ -31,8 +32,9 @@ type EZGinYml struct {
 		Mode       string `koanf:"mode"`       // gin模式 debug, release
 		Middleware string `koanf:"middleware"` // gin中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
 		MwLogs     struct {
-			MongoTag string `koanf:"mongo_tag"`  // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
-			Table    string `koanf:"table_name"` // 日志表名, 默认为${App.Name}APIRequestLogs
+			MongoTag   string `koanf:"mongo_tag"`   // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
+			MongoTable string `koanf:"mongo_table"` // 日志表名, 默认为${App.Name}APIRequestLogs
+			KafkaTopic string `koanf:"kafka_topic"` // kafka topic, 默认为${App.Name}, - 表示不开启
 		} `koanf:"mw_logs"` // 日志中间件数据库配置
 	} `yaml:"gin"` // gin配置
 

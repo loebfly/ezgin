@@ -1,6 +1,10 @@
 package reqlogs
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"encoding/json"
+	"gopkg.in/mgo.v2/bson"
+	"strings"
+)
 
 type ReqCtx struct {
 	Id          bson.ObjectId       `bson:"_id"`
@@ -14,4 +18,16 @@ type ReqCtx struct {
 	Method      string              `bson:"method"`          // 请求方法
 	ContentType string              `bson:"content_type"`    // 请求类型
 	URI         string              `bson:"uri"`             // 请求URI
+}
+
+func (ctx ReqCtx) ToJson() string {
+	b, err := json.Marshal(ctx)
+	if err != nil {
+		return ""
+	}
+	result := string(b)
+	result = strings.Replace(result, "\\u003c", "<", -1)
+	result = strings.Replace(result, "\\u003e", ">", -1)
+	result = strings.Replace(result, "\\u0026", "&", -1)
+	return result
 }
