@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/engine/middleware/cors"
 	"github.com/loebfly/ezgin/internal/engine/middleware/ginrecover"
 	"github.com/loebfly/ezgin/internal/engine/middleware/reqlogs"
@@ -18,7 +19,7 @@ func Trace(ctx *gin.Context) {
 	trace.Enter.Middleware(ctx)
 }
 
-func Logs(logChan chan reqlogs.ReqCtx) func(ctx *gin.Context) {
+func Logs(logChan chan engineDefine.ReqCtx) func(ctx *gin.Context) {
 	reqlogs.Enter.SetLogChan(logChan)
 	return func(ctx *gin.Context) {
 		reqlogs.Enter.Middleware(ctx)
