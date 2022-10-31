@@ -34,7 +34,7 @@ type EZGinYml struct {
 		MwLogs     struct {
 			MongoTag   string `koanf:"mongo_tag"`   // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
 			MongoTable string `koanf:"mongo_table"` // 日志表名, 默认为${App.Name}APIRequestLogs
-			KafkaTopic string `koanf:"kafka_topic"` // kafka topic, 默认为${App.Name}, - 表示不开启
+			KafkaTopic string `koanf:"kafka_topic"` // # kafka 消息主题, 默认为${App.Name}, 多个主题用逗号分隔, - 表示不开启
 		} `koanf:"mw_logs"` // 日志中间件数据库配置
 	} `yaml:"gin"` // gin配置
 

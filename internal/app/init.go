@@ -207,12 +207,14 @@ func (receiver enter) initEngine() {
 					returnDB(db)
 				}
 				if kafkaTopic != "-" {
-					err := dblite.Enter.Kafka().InputMsgForTopic(kafkaTopic, ctx.ToJson())
-					if err != nil {
-						logs.Enter.CError("MIDDLEWARE", "kafka输入失败: {}", err.Error())
+					topicList := strings.Split(kafkaTopic, ",")
+					for _, topic := range topicList {
+						err := dblite.Enter.Kafka().InputMsgForTopic(topic, ctx.ToJson())
+						if err != nil {
+							logs.Enter.CError("MIDDLEWARE", "kafka输入失败: {}", err.Error())
+						}
 					}
 				}
-
 			}
 		}(logMongoTag, logMongoTable, logKafkaTopic)
 	}
