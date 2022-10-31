@@ -206,7 +206,7 @@ func (receiver enter) initEngine() {
 					}
 					returnDB(db)
 				}
-				if kafkaTopic != "-" {
+				if kafkaTopic != "-" && dblite.Enter.Kafka().GetClient() != nil {
 					topicList := strings.Split(kafkaTopic, ",")
 					for _, topic := range topicList {
 						err := dblite.Enter.Kafka().InputMsgForTopic(topic, ctx.ToJson())
