@@ -81,7 +81,11 @@ func (receiver enter) Middleware(c *gin.Context) {
 
 	clientIP := c.Request.Header.Get("X-Forward-For")
 	if clientIP == "" {
-		clientIP = c.ClientIP()
+		if c.GetHeader("X-Real-IP") != "" {
+			clientIP = c.GetHeader("X-Real-IP")
+		} else {
+			clientIP = c.ClientIP()
+		}
 	}
 
 	logs.Enter.CDebug("GIN", "|{}|{}|{}|{}|{}ms", method, uri, clientIP, respTime, ttl)
