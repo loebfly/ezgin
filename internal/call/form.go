@@ -80,11 +80,19 @@ func (receiver formCall) getReqUrlAndHeader(service, uri string, header map[stri
 	if header == nil {
 		header = make(map[string]string)
 	}
-	reqId := engine.Enter.GetCurReqId()
+	reqId := engine.MWTrace.GetCurReqId()
 	if reqId != "" {
 		header["X-Request-Id"] = reqId
 	}
-	xLang := engine.Enter.GetCurXLang()
+	realIp := engine.MWTrace.GetCurClientIP()
+	if realIp != "" {
+		header["X-Real-Ip"] = realIp
+	}
+	userAgent := engine.MWTrace.GetCurUserAgent()
+	if userAgent != "" {
+		header["X-User-Agent"] = userAgent
+	}
+	xLang := engine.MWXLang.GetCurXLang()
 	if xLang != "" {
 		header["X-Lang"] = xLang
 	}

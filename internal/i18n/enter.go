@@ -14,12 +14,12 @@ func InitObj(obj Yml) {
 }
 
 func (enter) String(messageId string) string {
-	lang := engine.Enter.GetCurXLang()
+	lang := engine.MWXLang.GetCurXLang()
 	return ctl.getString(lang, messageId)
 }
 
 func (enter) StringFormat(messageId string, args ...interface{}) string {
-	lang := engine.Enter.GetCurXLang()
+	lang := engine.MWXLang.GetCurXLang()
 	return ctl.getString(lang, messageId, args...)
 }
 

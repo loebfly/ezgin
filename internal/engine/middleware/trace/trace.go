@@ -11,14 +11,37 @@ import (
 )
 
 const (
-	HeaderXRequestId = "X-Request-Id"
-	CacheTable       = "Middleware_Trace"
+	HeaderXRequestId    = "X-Request-Id"
+	HeaderXRealIP       = "X-Real-IP"
+	HeaderXForwardedFor = "X-Forwarded-For"
+	HeaderXUserAgent    = "X-User-Agent"
+
+	XRequestIdTable = "XRequestIdTable"
+	XClientIPTable  = "XClientIPTable"
+	XUserAgentTable = "XUserAgentTable"
+
+	CacheDuration = 5 * time.Minute
 )
 
 func (receiver enter) Middleware(c *gin.Context) {
 	requestId := receiver.getRequestId(c)
 	routineId := receiver.getRoutineId()
-	cache.Enter.Table(CacheTable).Add(routineId, requestId, 5*time.Minute)
+	cache.Enter.Table(XRequestIdTable).Add(routineId, requestId, CacheDuration)
+
+	clientIP := c.ClientIP()
+	if c.GetHeader(HeaderXRealIP) != "" {
+		clientIP = c.GetHeader(HeaderXRealIP)
+	}
+	if c.GetHeader(HeaderXForwardedFor) != "" {
+		clientIP = c.GetHeader(HeaderXForwardedFor)
+	}
+	cache.Enter.Table(XClientIPTable).Add(routineId, clientIP, CacheDuration)
+
+	userAgent := c.GetHeader(HeaderXUserAgent)
+	if userAgent == "" {
+		userAgent = c.Request.UserAgent()
+	}
+	cache.Enter.Table(XUserAgentTable).Add(routineId, userAgent, CacheDuration)
 }
 
 func (receiver enter) getRequestId(c *gin.Context) string {
@@ -48,7 +71,25 @@ func (receiver enter) getRoutineId() string {
 
 // GetCurReqId 获取当前请求Id
 func (receiver enter) GetCurReqId() string {
-	value, exist := cache.Enter.Table(CacheTable).Get(receiver.getRoutineId())
+	value, exist := cache.Enter.Table(XRequestIdTable).Get(receiver.getRoutineId())
+	if exist {
+		return value.(string)
+	}
+	return ""
+}
+
+// GetCurClientIP 获取当前客户端IP
+func (receiver enter) GetCurClientIP() string {
+	value, exist := cache.Enter.Table(XClientIPTable).Get(receiver.getRoutineId())
+	if exist {
+		return value.(string)
+	}
+	return ""
+}
+
+// GetCurUserAgent 获取当前客户端UserAgent
+func (receiver enter) GetCurUserAgent() string {
+	value, exist := cache.Enter.Table(XUserAgentTable).Get(receiver.getRoutineId())
 	if exist {
 		return value.(string)
 	}
