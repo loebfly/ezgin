@@ -326,7 +326,7 @@ func (c *control) getLocalIPV4() []string {
 		return ips
 	}
 	for _, addr := range addrList {
-		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+		if ipNet, ok := addr.(*net.IPNet); ok && ipNet.IP.IsGlobalUnicast() && ipNet.IP.To4() != nil {
 			if ipNet.IP.IsPrivate() {
 				lanIps = append(lanIps, ipNet.IP.String())
 				if Config.Nacos.Lan &&
