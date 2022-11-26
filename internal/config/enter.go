@@ -3,9 +3,11 @@ package config
 import (
 	"github.com/knadh/koanf"
 	kYaml "github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/levigross/grequests"
 	"github.com/loebfly/ezgin/internal/logs"
+	"strings"
 )
 
 type enter int
@@ -33,27 +35,44 @@ func (enter) GetYmlData(confUrl string) (*koanf.Koanf, error) {
 }
 
 // GetYmlObj 以结构体获取配置数据，结构体tag必须包含json
-func (enter) GetYmlObj(confUrl string, obj interface{}) error {
-	resp, err := grequests.Get(confUrl, nil)
-	if err != nil {
-		logs.Enter.Error(confUrl + "配置下载失败! " + err.Error())
-		return err
+func (enter) GetYmlObj(confUrlOrPath string, obj interface{}) error {
+	// 判断confUrl是否是本地路径
+	if strings.HasPrefix(confUrlOrPath, "http") {
+		resp, err := grequests.Get(confUrlOrPath, nil)
+		if err != nil {
+			logs.Enter.Error(confUrlOrPath + "配置下载失败! " + err.Error())
+			return err
+		}
+		if resp.StatusCode != 200 {
+			logs.Enter.Error(confUrlOrPath + "配置下载失败! " + resp.String())
+			return err
+		}
+		conf := koanf.New(".")
+		err = conf.Load(rawbytes.Provider([]byte(resp.String())), kYaml.Parser())
+		if err != nil {
+			logs.Enter.Error(confUrlOrPath + "配置格式解析错误:" + err.Error())
+			return err
+		}
+		err = conf.Unmarshal("", &obj)
+		if err != nil {
+			logs.Enter.Error(confUrlOrPath + "配置格式解析错误:" + err.Error())
+			return err
+		}
+	} else {
+		conf := koanf.New(".")
+		f := file.Provider(confUrlOrPath)
+		err := conf.Load(f, kYaml.Parser())
+		if err != nil {
+			logs.Enter.Error(confUrlOrPath + "配置格式解析错误:" + err.Error())
+			return err
+		}
+		err = conf.Unmarshal("", &obj)
+		if err != nil {
+			logs.Enter.Error(confUrlOrPath + "配置格式解析错误:" + err.Error())
+			return err
+		}
 	}
-	if resp.StatusCode != 200 {
-		logs.Enter.Error(confUrl + "配置下载失败! " + resp.String())
-		return err
-	}
-	conf := koanf.New(".")
-	err = conf.Load(rawbytes.Provider([]byte(resp.String())), kYaml.Parser())
-	if err != nil {
-		logs.Enter.Error(confUrl + "配置格式解析错误:" + err.Error())
-		return err
-	}
-	err = conf.Unmarshal("", &obj)
-	if err != nil {
-		logs.Enter.Error(confUrl + "配置格式解析错误:" + err.Error())
-		return err
-	}
+
 	return nil
 }
 

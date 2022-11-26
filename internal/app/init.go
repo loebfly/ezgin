@@ -83,7 +83,7 @@ func (receiver enter) initNacos() {
 	if ez.Nacos.Server != "" && ez.Nacos.Yml.Nacos != "" {
 		nacosPrefix := ez.Nacos.Yml.Nacos
 		if nacosPrefix != "" {
-			nacosUrl := ez.GetNacosUrl(nacosPrefix)
+			nacosUrl := ez.GetYmlUrlOrPath(nacosPrefix)
 			var yml nacos.Yml
 			err := config.Enter.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
@@ -111,7 +111,7 @@ func (receiver enter) initDBLite() {
 		mongoObjs = make([]mongo.EZGinMongo, len(names))
 		for i, name := range names {
 			var yml mongo.Yml
-			nacosUrl := ez.GetNacosUrl(name)
+			nacosUrl := ez.GetYmlUrlOrPath(name)
 			err := config.Enter.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
@@ -126,7 +126,7 @@ func (receiver enter) initDBLite() {
 		mysqlObjs = make([]mysql.EZGinMysql, len(names))
 		for i, name := range names {
 			var yml mysql.Yml
-			nacosUrl := ez.GetNacosUrl(name)
+			nacosUrl := ez.GetYmlUrlOrPath(name)
 			err := config.Enter.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
@@ -140,7 +140,7 @@ func (receiver enter) initDBLite() {
 		redisObjs = make([]redis.EZGinRedis, len(names))
 		for i, name := range names {
 			var yml redis.Yml
-			nacosUrl := ez.GetNacosUrl(name)
+			nacosUrl := ez.GetYmlUrlOrPath(name)
 			err := config.Enter.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
@@ -153,7 +153,7 @@ func (receiver enter) initDBLite() {
 		name := ez.Nacos.Yml.Kafka
 		kafkaObjs = make([]kafka.EZGinKafka, 1)
 		var yml kafka.Yml
-		nacosUrl := ez.GetNacosUrl(name)
+		nacosUrl := ez.GetYmlUrlOrPath(name)
 		err := config.Enter.GetYmlObj(nacosUrl, &yml)
 		if err != nil {
 			panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))

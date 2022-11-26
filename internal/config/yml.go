@@ -1,5 +1,10 @@
 package config
 
+import (
+	"os"
+	"path/filepath"
+)
+
 type Yml struct {
 	EZGin EZGinYml `koanf:"ezgin"`
 }
@@ -20,7 +25,10 @@ type EZGinYml struct {
 	Nacos struct {
 		Server string `koanf:"server"` // nacos服务地址
 		Yml    struct {
-			Nacos string `koanf:"nacos"` // nacos配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 如果不需要nacos配置文件,则不需要配置
+			// yml支持本地&nacos配置, 如果本地配置文件存在，则使用本地配置文件, 否则从nacos中读取
+			// yml只需要配置文件的前缀，内部会自动拼接-$Env.yml, 例如: nacos-ezgin -> nacos-ezgin-test.yml
+			// 配置模版参考: template/nacos-ezgin-test.yml
+			Nacos string `koanf:"nacos"` // nacos配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 只支持单个配置文件, 如果不需要nacos配置文件,则不需要配置
 			Mysql string `koanf:"mysql"` // mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mysql配置文件,则不需要配置
 			Mongo string `koanf:"mongo"` // mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mongo配置文件,则不需要配置
 			Redis string `koanf:"redis"` // redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要redis配置文件,则不需要配置
@@ -30,7 +38,7 @@ type EZGinYml struct {
 
 	Gin struct {
 		Mode       string `koanf:"mode"`       // gin模式 debug, release
-		Middleware string `koanf:"middleware"` // gin中间件, 用逗号分隔, 暂时支持cors, trace, logs 不填则默认全部开启, - 表示不开启
+		Middleware string `koanf:"middleware"` // gin中间件, 用逗号分隔, 暂时支持 cors,trace,logs,xlang,recover 不填则默认全部开启, - 表示不开启
 		MwLogs     struct {
 			MongoTag   string `koanf:"mongo_tag"`   // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
 			MongoTable string `koanf:"mongo_table"` // 日志表名, 默认为${App.Name}APIRequestLogs
@@ -53,7 +61,14 @@ type EZGinYml struct {
 	} `koanf:"i18n"` // i18n配置
 }
 
-// GetNacosUrl 根据配置文件前缀获取nacos配置文件完整地址
-func (yml EZGinYml) GetNacosUrl(prefix string) string {
-	return yml.Nacos.Server + "nacos/v1/cs/configs?group=DEFAULT_GROUP&dataId=" + prefix + "-" + yml.App.Env + ".yml"
+// GetYmlUrlOrPath 根据配置文件前缀获取nacos配置文件完整地址
+func (yml EZGinYml) GetYmlUrlOrPath(prefix string) string {
+	ymlName := prefix + "-" + yml.App.Env + ".yml"
+	// 判断程序同级目录是否存在配置文件
+	path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	ymlPath := filepath.Join(path, ymlName)
+	if _, err := os.Stat(ymlPath); err == nil {
+		return ymlPath
+	}
+	return yml.Nacos.Server + "nacos/v1/cs/configs?group=DEFAULT_GROUP&dataId=" + ymlName
 }
