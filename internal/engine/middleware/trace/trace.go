@@ -24,8 +24,8 @@ const (
 )
 
 func (receiver enter) Middleware(c *gin.Context) {
-	requestId := receiver.getRequestId(c)
-	routineId := receiver.getRoutineId()
+	requestId := receiver.newRequestId(c)
+	routineId := receiver.GetCurRoutineId()
 	cache.Enter.Table(XRequestIdTable).Add(routineId, requestId, CacheDuration)
 
 	clientIP := c.ClientIP()
@@ -44,7 +44,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 	cache.Enter.Table(XUserAgentTable).Add(routineId, userAgent, CacheDuration)
 }
 
-func (receiver enter) getRequestId(c *gin.Context) string {
+func (receiver enter) newRequestId(c *gin.Context) string {
 	requestId := c.GetHeader(HeaderXRequestId)
 	if requestId == "" {
 		source := "0123456789abcdef"
@@ -59,8 +59,8 @@ func (receiver enter) getRequestId(c *gin.Context) string {
 	return requestId
 }
 
-// GetRoutineId 获取当前协程Id
-func (receiver enter) getRoutineId() string {
+// GetCurRoutineId 获取当前协程Id
+func (receiver enter) GetCurRoutineId() string {
 	b := make([]byte, 64)
 	b = b[:runtime.Stack(b, false)]
 	b = bytes.TrimPrefix(b, []byte("goroutine "))
@@ -71,27 +71,58 @@ func (receiver enter) getRoutineId() string {
 
 // GetCurReqId 获取当前请求Id
 func (receiver enter) GetCurReqId() string {
-	value, exist := cache.Enter.Table(XRequestIdTable).Get(receiver.getRoutineId())
+	value, exist := cache.Enter.Table(XRequestIdTable).Get(receiver.GetCurRoutineId())
 	if exist {
 		return value.(string)
 	}
 	return ""
+}
+
+// CopyPreReqIdToCurRoutine 复制上一个协程的请求Id到当前协程
+func (receiver enter) CopyPreReqIdToCurRoutine(preRoutineId string) {
+	value, exist := cache.Enter.Table(XRequestIdTable).Get(preRoutineId)
+	if exist {
+		cache.Enter.Table(XRequestIdTable).Add(receiver.GetCurRoutineId(), value, CacheDuration)
+	}
 }
 
 // GetCurClientIP 获取当前客户端IP
 func (receiver enter) GetCurClientIP() string {
-	value, exist := cache.Enter.Table(XClientIPTable).Get(receiver.getRoutineId())
+	value, exist := cache.Enter.Table(XClientIPTable).Get(receiver.GetCurRoutineId())
 	if exist {
 		return value.(string)
 	}
 	return ""
 }
 
+// CopyPreClientIPToCurRoutine 复制上一个协程的客户端IP到当前协程
+func (receiver enter) CopyPreClientIPToCurRoutine(preRoutineId string) {
+	value, exist := cache.Enter.Table(XClientIPTable).Get(preRoutineId)
+	if exist {
+		cache.Enter.Table(XClientIPTable).Add(receiver.GetCurRoutineId(), value, CacheDuration)
+	}
+}
+
 // GetCurUserAgent 获取当前客户端UserAgent
 func (receiver enter) GetCurUserAgent() string {
-	value, exist := cache.Enter.Table(XUserAgentTable).Get(receiver.getRoutineId())
+	value, exist := cache.Enter.Table(XUserAgentTable).Get(receiver.GetCurRoutineId())
 	if exist {
 		return value.(string)
 	}
 	return ""
+}
+
+// CopyPreUserAgentToCurRoutine 复制上一个协程的客户端UserAgent到当前协程
+func (receiver enter) CopyPreUserAgentToCurRoutine(preRoutineId string) {
+	value, exist := cache.Enter.Table(XUserAgentTable).Get(preRoutineId)
+	if exist {
+		cache.Enter.Table(XUserAgentTable).Add(receiver.GetCurRoutineId(), value, CacheDuration)
+	}
+}
+
+// CopyPreAllToCurRoutine 复制上一个协程的所有信息到当前协程
+func (receiver enter) CopyPreAllToCurRoutine(preRoutineId string) {
+	receiver.CopyPreReqIdToCurRoutine(preRoutineId)
+	receiver.CopyPreClientIPToCurRoutine(preRoutineId)
+	receiver.CopyPreUserAgentToCurRoutine(preRoutineId)
 }

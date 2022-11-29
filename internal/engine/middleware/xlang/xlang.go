@@ -18,12 +18,12 @@ func (receiver enter) Middleware(c *gin.Context) {
 	if lang == "" {
 		lang = "zh-cn"
 	}
-	routineId := receiver.getRoutineId()
+	routineId := receiver.GetCurRoutineId()
 	cache.Enter.Table(CacheTable).Add(routineId, lang, 5*time.Minute)
 }
 
-// GetRoutineId 获取当前协程Id
-func (receiver enter) getRoutineId() string {
+// GetCurRoutineId 获取当前协程Id
+func (receiver enter) GetCurRoutineId() string {
 	b := make([]byte, 64)
 	b = b[:runtime.Stack(b, false)]
 	b = bytes.TrimPrefix(b, []byte("goroutine "))
@@ -34,9 +34,17 @@ func (receiver enter) getRoutineId() string {
 
 // GetCurXLang 获取当前语言
 func (receiver enter) GetCurXLang() string {
-	value, exist := cache.Enter.Table(CacheTable).Get(receiver.getRoutineId())
+	value, exist := cache.Enter.Table(CacheTable).Get(receiver.GetCurRoutineId())
 	if exist {
 		return value.(string)
 	}
 	return ""
+}
+
+// CopyPreXLangToCurRoutine 复制上一个请求的语言
+func (receiver enter) CopyPreXLangToCurRoutine(preRoutineId string) {
+	value, exist := cache.Enter.Table(CacheTable).Get(preRoutineId)
+	if exist {
+		cache.Enter.Table(CacheTable).Add(receiver.GetCurRoutineId(), value, 5*time.Minute)
+	}
 }
