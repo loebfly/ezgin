@@ -79,6 +79,28 @@ const (
 
 // Start 启动服务
 // @param start 启动配置
+/*
+	示例:
+import (
+	"github.com/loebfly/ezgin/app"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+)
+func main() {
+	ezgin.Start(app.Start{
+		GinCfg: app.GinCfg{
+			RecoveryHandler: func(c *gin.Context, err interface{}) {
+				c.JSON(http.StatusOK, i18n.SystemError.ErrorRes())
+			},
+			NoRouteHandler: func(c *gin.Context) {
+				c.JSON(http.StatusOK, i18n.UrlNotFound.ErrorRes())
+			},
+			SwaggerRelativePath: "/docs/*any",
+			SwaggerHandler:      ginSwagger.WrapHandler(swaggerFiles.Handler),
+		},
+	})
+}
+*/
 func Start(start ...appDefine.Start) {
 	app.Start(start...)
 }
