@@ -9,13 +9,9 @@ import (
 // DynamicArgsFunc 动态参数函数
 /*
 	示例:
-	// 1. 定义一个安全的协程调用
-	var safeGo DynamicArgsFunc = func(args ...interface{}) {
+	DynamicArgsFunc(func(args ...interface{}) {
 		// do something
-	}
-
-	// 2. 调用
-	safeGo.SafeGoExec(func(preRoutineId string) {
+	}).SafeGoExec(func(preRoutineId string) {
 		// do something in will call
 	}, "hello", "world")
 */
