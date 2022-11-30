@@ -1,9 +1,9 @@
 package ezgin
 
 import (
+	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/loebfly/ezgin/internal/engine"
-	"github.com/loebfly/ezgin/internal/logs"
 )
 
 // DynamicArgsFunc 动态参数函数
@@ -27,10 +27,9 @@ func (receiver DynamicArgsFunc) SafeGoExec(will func(preRoutineId string), args 
 	go func(r DynamicArgsFunc, preRoutineId string, gArgs ...interface{}) {
 		defer func() {
 			if err := recover(); err != nil {
-				goErr := errors.Wrap(err, 3)
+				goErr := errors.Wrap(err, 2)
 				reset := string([]byte{27, 91, 48, 109})
-				logs.Enter.CError("MIDDLEWARE",
-					"[Nice Recovery] panic recovered:\n\n{}{}\n\n{}{}",
+				fmt.Printf("[SafeGo] panic recovered:\n\n%s%s\n\n%s",
 					goErr.Error(), goErr.Stack(), reset)
 			}
 		}()
