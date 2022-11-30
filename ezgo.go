@@ -15,9 +15,8 @@ import (
 	}
 
 	// 2. 调用
-	safeGo.Exec(func(preRoutineId string) {
+	safeGo.SafeGoExec(func(preRoutineId string) {
 		// do something in will call
-		engine.CopyPreAllMwDataToCurRoutine(preRoutineId)
 	}, "hello", "world")
 */
 type DynamicArgsFunc func(args ...interface{})
