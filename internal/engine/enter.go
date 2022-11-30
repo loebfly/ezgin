@@ -21,6 +21,12 @@ func InitObj(obj Yml) {
 	ctl.initEngine()
 }
 
+// CopyPreAllMwDataToCurRoutine 复制前一个中间件的数据到当前协程
+func CopyPreAllMwDataToCurRoutine(preRoutineId string) {
+	MWTrace.CopyPreAllToCurRoutine(preRoutineId)
+	MWXLang.CopyPreXLangToCurRoutine(preRoutineId)
+}
+
 // GetOriGin 获取原生gin.Engine
 func (enter) GetOriGin() *gin.Engine {
 	return ctl.engine
