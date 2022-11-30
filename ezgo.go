@@ -3,24 +3,53 @@ package ezgin
 import (
 	"fmt"
 	"github.com/go-errors/errors"
-	"github.com/loebfly/ezgin/internal/engine"
 )
 
-// DynamicArgsFunc 动态参数函数
+type safeGo struct {
+	argsF       func(args ...interface{})           // 动态参数函数
+	goBeforeF   func() map[string]interface{}       // 协程前的处理函数
+	callBeforeF func(params map[string]interface{}) // 调用前的处理函数
+}
+
+// NewSafeGo 创建一个安全的协程调用
 /*
 	示例:
-	DynamicArgsFunc(func(args ...interface{}) {
-		// do something
-	}).SafeGoExec(func(preRoutineId string) {
-		// do something in will call
-	}, "hello", "world")
-*/
-type DynamicArgsFunc func(args ...interface{})
+	safeGo := NewSafeGo(func(args ...interface{}) {
 
-// SafeGoExec 安全的协程调用
-func (receiver DynamicArgsFunc) SafeGoExec(will func(preRoutineId string), args ...interface{}) {
-	routineId := engine.MWTrace.GetCurRoutineId()
-	go func(r DynamicArgsFunc, preRoutineId string, gArgs ...interface{}) {
+	})
+	safeGo.SetGoBeforeHandler(func() map[string]interface{} {
+		routineId := engine.MWTrace.GetCurRoutineId()
+		return map[string]interface{}{
+			"preRoutineId": routineId,
+		}
+	})
+	safeGo.SetCallBeforeHandler(func(params map[string]interface{}) {
+		engine.CopyPreAllMwDataToCurRoutine(preRoutineId)
+	})
+	safeGo.Run("hello", "world")
+*/
+func NewSafeGo(argsF func(args ...interface{})) *safeGo {
+	return &safeGo{
+		argsF: argsF,
+	}
+}
+
+// SetGoBeforeHandler 设置协程前的处理函数
+func (receiver *safeGo) SetGoBeforeHandler(goBeforeF func() map[string]interface{}) *safeGo {
+	receiver.goBeforeF = goBeforeF
+	return receiver
+}
+
+// SetCallBeforeHandler 设置调用前的处理函数
+func (receiver *safeGo) SetCallBeforeHandler(callBeforeF func(params map[string]interface{})) *safeGo {
+	receiver.callBeforeF = callBeforeF
+	return receiver
+}
+
+// Run 运行
+func (receiver *safeGo) Run(args ...interface{}) {
+	preRoutineId := receiver.goBeforeF()
+	go func() {
 		defer func() {
 			if err := recover(); err != nil {
 				goErr := errors.Wrap(err, 2)
@@ -29,9 +58,7 @@ func (receiver DynamicArgsFunc) SafeGoExec(will func(preRoutineId string), args 
 					goErr.Error(), goErr.Stack(), reset)
 			}
 		}()
-		if will != nil {
-			will(preRoutineId)
-		}
-		r(gArgs...)
-	}(receiver, routineId, args...)
+		receiver.callBeforeF(preRoutineId)
+		receiver.argsF(args...)
+	}()
 }
