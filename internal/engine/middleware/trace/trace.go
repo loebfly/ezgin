@@ -103,7 +103,11 @@ func (receiver enter) GetCurXLang() string {
 func (receiver enter) GetCurHeader() map[string]string {
 	value, exist := cache.Enter.Table(XHeaderTable).Get(receiver.GetCurRoutineId())
 	if exist {
-		return value.(map[string]string)
+		var headers = make(map[string]string)
+		for k, v := range value.(map[string]string) {
+			headers[k] = v
+		}
+		return headers
 	}
 	return map[string]string{}
 }
