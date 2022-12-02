@@ -11,52 +11,63 @@ import (
 )
 
 const (
-	HeaderXRequestId    = "X-Request-Id"
-	HeaderXRealIP       = "X-Real-IP"
-	HeaderXForwardedFor = "X-Forwarded-For"
-	HeaderXUserAgent    = "X-User-Agent"
+	HeaderXRequestIdKey = "X-Request-Id"
+	HeaderXRealIPKey    = "X-Real-IP"
+	HeaderXUserAgentKey = "X-User-Agent"
+	HeaderXLangKey      = "X-Lang"
 
-	XRequestIdTable = "XRequestIdTable"
-	XClientIPTable  = "XClientIPTable"
-	XUserAgentTable = "XUserAgentTable"
+	XHeaderTable = "XHeaderTable"
 
 	CacheDuration = 5 * time.Minute
 )
 
 func (receiver enter) Middleware(c *gin.Context) {
-	requestId := receiver.newRequestId(c)
 	routineId := receiver.GetCurRoutineId()
-	cache.Enter.Table(XRequestIdTable).Add(routineId, requestId, CacheDuration)
+	headers := make(map[string]string)
+	for k, v := range c.Request.Header {
+		if len(v) > 0 {
+			headers[k] = v[0]
+		}
+	}
 
-	clientIP := c.ClientIP()
-	if c.GetHeader(HeaderXRealIP) != "" {
-		clientIP = c.GetHeader(HeaderXRealIP)
+	if headers[HeaderXRequestIdKey] == "" {
+		// 如果请求头中没有X-Request-Id，则生成一个
+		headers[HeaderXRequestIdKey] = receiver.newRequestId()
 	}
-	if c.GetHeader(HeaderXForwardedFor) != "" {
-		clientIP = c.GetHeader(HeaderXForwardedFor)
-	}
-	cache.Enter.Table(XClientIPTable).Add(routineId, clientIP, CacheDuration)
 
-	userAgent := c.GetHeader(HeaderXUserAgent)
-	if userAgent == "" {
-		userAgent = c.Request.UserAgent()
+	if headers[HeaderXRealIPKey] == "" {
+		// 如果请求头中没有X-Real-IP，则从X-Forwarded-For中获取,如果X-Forwarded-For也没有，则从RemoteAddr中获取
+		headerXForwardedForKey := "X-Forwarded-For"
+		if headers[headerXForwardedForKey] != "" {
+			headers[HeaderXRealIPKey] = headers[headerXForwardedForKey]
+		} else {
+			headers[HeaderXRealIPKey] = c.ClientIP()
+		}
 	}
-	cache.Enter.Table(XUserAgentTable).Add(routineId, userAgent, CacheDuration)
+
+	if headers[HeaderXUserAgentKey] == "" {
+		// 如果请求头中没有X-User-Agent，则从RemoteAddr中获取
+		headers[HeaderXUserAgentKey] = c.Request.UserAgent()
+	}
+
+	if headers[HeaderXLangKey] == "" {
+		// 如果请求头中没有X-Lang, 则默认为zh-cn
+		headers[HeaderXLangKey] = "zh-cn"
+	}
+
+	// 将请求头信息存入缓存
+	cache.Enter.Table(XHeaderTable).Add(routineId, headers, CacheDuration)
 }
 
-func (receiver enter) newRequestId(c *gin.Context) string {
-	requestId := c.GetHeader(HeaderXRequestId)
-	if requestId == "" {
-		source := "0123456789abcdef"
-		b := []byte(source)
-		var result []byte
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		for i := 0; i < 16; i++ {
-			result = append(result, b[r.Intn(len(b))])
-		}
-		return string(result)
+func (receiver enter) newRequestId() string {
+	source := "0123456789abcdef"
+	b := []byte(source)
+	var result []byte
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < 16; i++ {
+		result = append(result, b[r.Intn(len(b))])
 	}
-	return requestId
+	return string(result)
 }
 
 // GetCurRoutineId 获取当前协程Id
@@ -71,58 +82,36 @@ func (receiver enter) GetCurRoutineId() string {
 
 // GetCurReqId 获取当前请求Id
 func (receiver enter) GetCurReqId() string {
-	value, exist := cache.Enter.Table(XRequestIdTable).Get(receiver.GetCurRoutineId())
-	if exist {
-		return value.(string)
-	}
-	return ""
-}
-
-// CopyPreReqIdToCurRoutine 复制上一个协程的请求Id到当前协程
-func (receiver enter) CopyPreReqIdToCurRoutine(preRoutineId string) {
-	value, exist := cache.Enter.Table(XRequestIdTable).Get(preRoutineId)
-	if exist {
-		cache.Enter.Table(XRequestIdTable).Add(receiver.GetCurRoutineId(), value, CacheDuration)
-	}
+	return receiver.GetCurHeader()[HeaderXRequestIdKey]
 }
 
 // GetCurClientIP 获取当前客户端IP
 func (receiver enter) GetCurClientIP() string {
-	value, exist := cache.Enter.Table(XClientIPTable).Get(receiver.GetCurRoutineId())
-	if exist {
-		return value.(string)
-	}
-	return ""
-}
-
-// CopyPreClientIPToCurRoutine 复制上一个协程的客户端IP到当前协程
-func (receiver enter) CopyPreClientIPToCurRoutine(preRoutineId string) {
-	value, exist := cache.Enter.Table(XClientIPTable).Get(preRoutineId)
-	if exist {
-		cache.Enter.Table(XClientIPTable).Add(receiver.GetCurRoutineId(), value, CacheDuration)
-	}
+	return receiver.GetCurHeader()[HeaderXRealIPKey]
 }
 
 // GetCurUserAgent 获取当前客户端UserAgent
 func (receiver enter) GetCurUserAgent() string {
-	value, exist := cache.Enter.Table(XUserAgentTable).Get(receiver.GetCurRoutineId())
-	if exist {
-		return value.(string)
-	}
-	return ""
+	return receiver.GetCurHeader()[HeaderXUserAgentKey]
 }
 
-// CopyPreUserAgentToCurRoutine 复制上一个协程的客户端UserAgent到当前协程
-func (receiver enter) CopyPreUserAgentToCurRoutine(preRoutineId string) {
-	value, exist := cache.Enter.Table(XUserAgentTable).Get(preRoutineId)
-	if exist {
-		cache.Enter.Table(XUserAgentTable).Add(receiver.GetCurRoutineId(), value, CacheDuration)
-	}
+// GetCurXLang 获取当前语言
+func (receiver enter) GetCurXLang() string {
+	return receiver.GetCurHeader()[HeaderXLangKey]
 }
 
-// CopyPreAllToCurRoutine 复制上一个协程的所有信息到当前协程
-func (receiver enter) CopyPreAllToCurRoutine(preRoutineId string) {
-	receiver.CopyPreReqIdToCurRoutine(preRoutineId)
-	receiver.CopyPreClientIPToCurRoutine(preRoutineId)
-	receiver.CopyPreUserAgentToCurRoutine(preRoutineId)
+func (receiver enter) GetCurHeader() map[string]string {
+	value, exist := cache.Enter.Table(XHeaderTable).Get(receiver.GetCurRoutineId())
+	if exist {
+		return value.(map[string]string)
+	}
+	return map[string]string{}
+}
+
+// CopyPreHeaderToCurRoutine 复制上一个协程的所有信息到当前协程
+func (receiver enter) CopyPreHeaderToCurRoutine(preRoutineId string) {
+	value, exist := cache.Enter.Table(XHeaderTable).Get(preRoutineId)
+	if exist {
+		cache.Enter.Table(XHeaderTable).Add(receiver.GetCurRoutineId(), value, 5*time.Minute)
+	}
 }

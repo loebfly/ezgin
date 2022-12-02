@@ -7,7 +7,6 @@ import (
 	"github.com/loebfly/ezgin/internal/engine/middleware/ginrecover"
 	"github.com/loebfly/ezgin/internal/engine/middleware/reqlogs"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
-	"github.com/loebfly/ezgin/internal/engine/middleware/xlang"
 )
 
 // Cors 跨域中间件
@@ -24,10 +23,6 @@ func Logs(logChan chan engineDefine.ReqCtx) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		reqlogs.Enter.Middleware(ctx)
 	}
-}
-
-func XLang(ctx *gin.Context) {
-	xlang.Enter.Middleware(ctx)
 }
 
 func Recover(recoverFunc func(c *gin.Context, err interface{})) func(ctx *gin.Context) {

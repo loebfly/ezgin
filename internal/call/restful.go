@@ -66,26 +66,16 @@ func (receiver restfulCall) getReqUrlAndHeader(service, uri string, path, header
 	for k, v := range path {
 		uri = strings.ReplaceAll(uri, "{"+k+"}", v)
 	}
-
 	url := host + uri
+	traceHeader := engine.MWTrace.GetCurHeader()
 	if header == nil {
-		header = make(map[string]string)
-	}
-	reqId := engine.MWTrace.GetCurReqId()
-	if reqId != "" {
-		header["X-Request-Id"] = reqId
-	}
-	realIp := engine.MWTrace.GetCurClientIP()
-	if realIp != "" {
-		header["X-Real-Ip"] = realIp
-	}
-	userAgent := engine.MWTrace.GetCurUserAgent()
-	if userAgent != "" {
-		header["X-User-Agent"] = userAgent
-	}
-	xLang := engine.MWXLang.GetCurXLang()
-	if xLang != "" {
-		header["X-Lang"] = xLang
+		header = traceHeader
+	} else {
+		for k, v := range traceHeader {
+			if _, ok := header[k]; !ok {
+				header[k] = v
+			}
+		}
 	}
 	header["Content-Type"] = "application/json"
 	return url, header, nil

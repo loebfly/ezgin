@@ -4,12 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
-	"github.com/loebfly/ezgin/internal/engine/middleware/xlang"
 )
 
 const (
 	MWTrace = trace.Enter
-	MWXLang = xlang.Enter
 )
 
 type enter int
@@ -19,12 +17,6 @@ const Enter = enter(0)
 func InitObj(obj Yml) {
 	config.initObj(obj)
 	ctl.initEngine()
-}
-
-// CopyPreAllMwDataToCurRoutine 复制前一个中间件的数据到当前协程
-func CopyPreAllMwDataToCurRoutine(preRoutineId string) {
-	MWTrace.CopyPreAllToCurRoutine(preRoutineId)
-	MWXLang.CopyPreXLangToCurRoutine(preRoutineId)
 }
 
 // GetOriGin 获取原生gin.Engine

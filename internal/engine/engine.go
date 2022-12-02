@@ -50,9 +50,6 @@ func (receiver *control) initEngine() {
 		if strings.Contains(config.Gin.Middleware, "logs") {
 			receiver.engine.Use(middleware.Logs(config.Gin.LogChan))
 		}
-		if strings.Contains(config.Gin.Middleware, "xlang") {
-			receiver.engine.Use(middleware.XLang)
-		}
 		if strings.Contains(config.Gin.Middleware, "recover") {
 			if config.Gin.RecoveryFunc == nil {
 				config.Gin.RecoveryFunc = func(c *gin.Context, err interface{}) {

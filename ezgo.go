@@ -14,17 +14,14 @@ type safeGo struct {
 // NewSafeGo 创建一个安全的协程调用
 /*
 	示例:
-	safeGo := NewSafeGo(func(args ...interface{}) {
+	safeGo := ezgin.NewSafeGo(func(args ...interface{}) {
 
 	})
 	safeGo.SetGoBeforeHandler(func() map[string]interface{} {
-		routineId := engine.MWTrace.GetCurRoutineId()
-		return map[string]interface{}{
-			"preRoutineId": routineId,
-		}
+		return engine.MWTrace.GetCurHeader()
 	})
 	safeGo.SetCallBeforeHandler(func(params map[string]interface{}) {
-		engine.CopyPreAllMwDataToCurRoutine(preRoutineId)
+		engine.MWTrace.CopyPreHeaderToCurRoutine(preRoutineId)
 	})
 	safeGo.Run("hello", "world")
 */

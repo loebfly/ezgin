@@ -69,24 +69,15 @@ func (receiver jsonCall) getReqUrlAndHeader(service, uri string, header map[stri
 		return "", nil, err
 	}
 	url := host + uri
+	traceHeader := engine.MWTrace.GetCurHeader()
 	if header == nil {
-		header = make(map[string]string)
-	}
-	reqId := engine.MWTrace.GetCurReqId()
-	if reqId != "" {
-		header["X-Request-Id"] = reqId
-	}
-	realIp := engine.MWTrace.GetCurClientIP()
-	if realIp != "" {
-		header["X-Real-Ip"] = realIp
-	}
-	userAgent := engine.MWTrace.GetCurUserAgent()
-	if userAgent != "" {
-		header["X-User-Agent"] = userAgent
-	}
-	xLang := engine.MWXLang.GetCurXLang()
-	if xLang != "" {
-		header["X-Lang"] = xLang
+		header = traceHeader
+	} else {
+		for k, v := range traceHeader {
+			if _, ok := header[k]; !ok {
+				header[k] = v
+			}
+		}
 	}
 	header["Content-Type"] = "application/json"
 	return url, header, nil
