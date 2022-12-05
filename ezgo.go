@@ -15,13 +15,13 @@ type safeGo struct {
 /*
 	示例:
 	safeGo := ezgin.NewSafeGo(func(args ...interface{}) {
-
+		fmt.Println(args)
 	})
 	safeGo.SetGoBeforeHandler(func() map[string]interface{} {
-		return engine.MWTrace.GetCurHeader()
+		return map[string]interface{}{"preRoutineId": ezgin.Engine.GetMWTraceCurRoutineId()}
 	})
 	safeGo.SetCallBeforeHandler(func(params map[string]interface{}) {
-		engine.MWTrace.CopyPreHeaderToCurRoutine(preRoutineId)
+		ezgin.Engine.CopyMWTracePreHeaderToCurRoutine(params["preRoutineId"].(string))
 	})
 	safeGo.Run("hello", "world")
 */

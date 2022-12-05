@@ -24,6 +24,46 @@ func (enter) GetOriGin() *gin.Engine {
 	return ctl.engine
 }
 
+// GetMWTraceCurHeaders 获取当前请求的所有header
+func (enter) GetMWTraceCurHeaders() map[string]string {
+	return MWTrace.GetCurHeader()
+}
+
+// GetMWTraceCurHeaderValueFor 获取当前请求的指定header值
+func (enter) GetMWTraceCurHeaderValueFor(key string) string {
+	return MWTrace.GetCurHeader()[key]
+}
+
+// CopyMWTracePreHeaderToCurRoutine 复制上一个请求的header到当前请求
+func (enter) CopyMWTracePreHeaderToCurRoutine(preRoutineId string) {
+	MWTrace.CopyPreHeaderToCurRoutine(preRoutineId)
+}
+
+// GetMWTraceCurRoutineId 获取当前请求的routineId
+func (enter) GetMWTraceCurRoutineId() string {
+	return MWTrace.GetCurRoutineId()
+}
+
+// GetMWTraceCurReqId 获取当前请求的reqId
+func (enter) GetMWTraceCurReqId() string {
+	return MWTrace.GetCurReqId()
+}
+
+// GetMWTraceCurClientIP 获取当前请求的客户端IP
+func (enter) GetMWTraceCurClientIP() string {
+	return MWTrace.GetCurClientIP()
+}
+
+// GetMWTraceCurUserAgent 获取当前请求的UserAgent
+func (receiver enter) GetMWTraceCurUserAgent() string {
+	return MWTrace.GetCurUserAgent()
+}
+
+// GetMWTraceCurXLang 获取当前请求的XLang
+func (receiver enter) GetMWTraceCurXLang() string {
+	return MWTrace.GetCurXLang()
+}
+
 func (enter) Any(relativePath string, handler engine.HandlerFunc) EZRouter {
 	return ctl.Routers(engine.Any, map[string]engine.HandlerFunc{relativePath: handler})
 }
