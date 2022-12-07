@@ -6,9 +6,9 @@ import (
 )
 
 type safeGo struct {
-	argsF       func(args ...interface{})           // 动态参数函数
-	goBeforeF   func() map[string]interface{}       // 协程前的处理函数
-	callBeforeF func(params map[string]interface{}) // 调用前的处理函数
+	argsF     func(args ...interface{})           // 动态参数函数
+	goBeforeF func() map[string]interface{}       // 开启协程前的处理函数
+	goAfterF  func(params map[string]interface{}) // 开启协程后的处理函数
 }
 
 // NewSafeGo 创建一个安全的协程调用
@@ -20,7 +20,7 @@ type safeGo struct {
 	safeGo.SetGoBeforeHandler(func() map[string]interface{} {
 		return map[string]interface{}{"preRoutineId": ezgin.Engine.GetMWTraceCurRoutineId()}
 	})
-	safeGo.SetCallBeforeHandler(func(params map[string]interface{}) {
+	safeGo.SetGoAfterHandler(func(params map[string]interface{}) {
 		ezgin.Engine.CopyMWTracePreHeaderToCurRoutine(params["preRoutineId"].(string))
 	})
 	safeGo.Run("hello", "world")
@@ -37,15 +37,15 @@ func (receiver *safeGo) SetGoBeforeHandler(goBeforeF func() map[string]interface
 	return receiver
 }
 
-// SetCallBeforeHandler 设置调用前的处理函数
-func (receiver *safeGo) SetCallBeforeHandler(callBeforeF func(params map[string]interface{})) *safeGo {
-	receiver.callBeforeF = callBeforeF
+// SetGoAfterHandler 设置协程后的处理函数
+func (receiver *safeGo) SetGoAfterHandler(callBeforeF func(params map[string]interface{})) *safeGo {
+	receiver.goAfterF = callBeforeF
 	return receiver
 }
 
 // Run 运行
 func (receiver *safeGo) Run(args ...interface{}) {
-	preRoutineId := receiver.goBeforeF()
+	goBeforeParams := receiver.goBeforeF()
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
@@ -55,7 +55,7 @@ func (receiver *safeGo) Run(args ...interface{}) {
 					goErr.Error(), goErr.Stack(), reset)
 			}
 		}()
-		receiver.callBeforeF(preRoutineId)
+		receiver.goAfterF(goBeforeParams)
 		receiver.argsF(args...)
 	}()
 }
