@@ -25,7 +25,8 @@ type control struct {
 }
 
 const (
-	CacheTableService = "nacos_service"
+	CacheTableService   = "nacos_service"
+	CacheTableSubscribe = "nacos_subscribe"
 )
 
 // GetClient 获取Nacos客户端
@@ -253,11 +254,13 @@ func (c *control) getService(name string) (url string, err error) {
 	}
 
 	// 订阅服务，回调中更新缓存
-	subErr := c.subscribeService(name, group)
-	if subErr != nil {
-		logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
+	if !cache.Enter.Table(CacheTableSubscribe).IsExist(name) {
+		subErr := c.subscribeService(name, group)
+		if subErr != nil {
+			logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
+		}
+		cache.Enter.Table(CacheTableSubscribe).Add(name, true, 5*time.Minute)
 	}
-
 	return url, err
 }
 
