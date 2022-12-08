@@ -116,6 +116,10 @@ func (receiver enter) GetCurHeader() map[string]string {
 func (receiver enter) CopyPreHeaderToCurRoutine(preRoutineId string) {
 	value, exist := cache.Enter.Table(XHeaderTable).Get(preRoutineId)
 	if exist {
-		cache.Enter.Table(XHeaderTable).Add(receiver.GetCurRoutineId(), value, 5*time.Minute)
+		var headers = make(map[string]string)
+		for k, v := range value.(map[string]string) {
+			headers[k] = v
+		}
+		cache.Enter.Table(XHeaderTable).Add(receiver.GetCurRoutineId(), headers, CacheDuration)
 	}
 }

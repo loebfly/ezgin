@@ -45,7 +45,10 @@ func (receiver *safeGo) SetGoAfterHandler(callBeforeF func(params map[string]int
 
 // Run 运行
 func (receiver *safeGo) Run(args ...interface{}) {
-	goBeforeParams := receiver.goBeforeF()
+	var goBeforeParams map[string]interface{}
+	if receiver.goBeforeF != nil {
+		goBeforeParams = receiver.goBeforeF()
+	}
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
@@ -55,7 +58,11 @@ func (receiver *safeGo) Run(args ...interface{}) {
 					goErr.Error(), goErr.Stack(), reset)
 			}
 		}()
-		receiver.goAfterF(goBeforeParams)
-		receiver.argsF(args...)
+		if receiver.goAfterF != nil {
+			receiver.goAfterF(goBeforeParams)
+		}
+		if receiver.argsF != nil {
+			receiver.argsF(args...)
+		}
 	}()
 }
