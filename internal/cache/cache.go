@@ -1,21 +1,21 @@
 package cache
 
 import (
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/muesli/cache2go"
 	"time"
 )
 
 type Memory struct {
-	table *cache2go.CacheTable
+	Table *cache2go.CacheTable
 }
 
 func (receiver Memory) Add(key string, value any, lifeSpan time.Duration) {
-	receiver.table.Add(key, lifeSpan, value)
+	receiver.Table.Add(key, lifeSpan, value)
 }
 
 func (receiver Memory) Get(key string) (value any, isExist bool) {
-	item, err := receiver.table.Value(key)
+	item, err := receiver.Table.Value(key)
 	if err != nil {
 		return nil, false
 	}
@@ -23,20 +23,20 @@ func (receiver Memory) Get(key string) (value any, isExist bool) {
 }
 
 func (receiver Memory) Delete(key string) {
-	_, err := receiver.table.Delete(key)
+	_, err := receiver.Table.Delete(key)
 	if err != nil {
-		logs.Enter.CError("cache", "delete cache error", err)
+		ezlogs.CError("cache", "delete cache error", err)
 	}
 }
 
 func (receiver Memory) IsExist(key string) bool {
-	return receiver.table.Exists(key)
+	return receiver.Table.Exists(key)
 }
 
 func (receiver Memory) Clear() {
-	receiver.table.Flush()
+	receiver.Table.Flush()
 }
 
 func (receiver Memory) Size() int {
-	return receiver.table.Count()
+	return receiver.Table.Count()
 }

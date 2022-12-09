@@ -3,7 +3,7 @@ package trace
 import (
 	"bytes"
 	"github.com/gin-gonic/gin"
-	"github.com/loebfly/ezgin/internal/cache"
+	"github.com/loebfly/ezgin/ezcache"
 	"math/rand"
 	"runtime"
 	"strconv"
@@ -56,7 +56,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 	}
 
 	// 将请求头信息存入缓存
-	cache.Enter.Table(XHeaderTable).Add(routineId, headers, CacheDuration)
+	ezcache.Table(XHeaderTable).Add(routineId, headers, CacheDuration)
 }
 
 func (receiver enter) newRequestId() string {
@@ -101,7 +101,7 @@ func (receiver enter) GetCurXLang() string {
 }
 
 func (receiver enter) GetCurHeader() map[string]string {
-	value, exist := cache.Enter.Table(XHeaderTable).Get(receiver.GetCurRoutineId())
+	value, exist := ezcache.Table(XHeaderTable).Get(receiver.GetCurRoutineId())
 	if exist {
 		var headers = make(map[string]string)
 		for k, v := range value.(map[string]string) {
@@ -114,12 +114,12 @@ func (receiver enter) GetCurHeader() map[string]string {
 
 // CopyPreHeaderToCurRoutine 复制上一个协程的所有信息到当前协程
 func (receiver enter) CopyPreHeaderToCurRoutine(preRoutineId string) {
-	value, exist := cache.Enter.Table(XHeaderTable).Get(preRoutineId)
+	value, exist := ezcache.Table(XHeaderTable).Get(preRoutineId)
 	if exist {
 		var headers = make(map[string]string)
 		for k, v := range value.(map[string]string) {
 			headers[k] = v
 		}
-		cache.Enter.Table(XHeaderTable).Add(receiver.GetCurRoutineId(), headers, CacheDuration)
+		ezcache.Table(XHeaderTable).Add(receiver.GetCurRoutineId(), headers, CacheDuration)
 	}
 }

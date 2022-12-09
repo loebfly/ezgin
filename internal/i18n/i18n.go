@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/loebfly/ezgin/ezcache"
 	"github.com/loebfly/ezgin/ezcall"
-	"github.com/loebfly/ezgin/internal/cache"
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 	"reflect"
 	"strconv"
 	"strings"
@@ -39,10 +39,10 @@ func (ctl *control) refreshCache() {
 	for _, appName := range config.I18n.AppName {
 		lastVersion, err := ctl.getAppXLangLastVersion(appName)
 		if err != nil {
-			logs.Enter.CError("I18N", "获取应用多语言版本号失败", err)
+			ezlogs.CError("I18N", "获取应用多语言版本号失败", err)
 			continue
 		}
-		value, isExist := cache.Enter.Table(CacheTableXLangVersion).Get(appName + "-" + CacheKeyXLangVersion)
+		value, isExist := ezcache.Table(CacheTableXLangVersion).Get(appName + "-" + CacheKeyXLangVersion)
 		if isExist {
 			cacheVersion := value.(string)
 			if lastVersion != cacheVersion {
@@ -58,15 +58,15 @@ func (ctl *control) refreshCache() {
 func (ctl *control) cacheAppXlangData(appName, version string) {
 	data, err := ctl.getLastAppXlangData(appName)
 	if err != nil {
-		logs.Enter.CError("I18N", "获取应用多语言数据失败", err)
+		ezlogs.CError("I18N", "获取应用多语言数据失败", err)
 		return
 	}
 
 	for key, value := range data {
-		cache.Enter.Table(CacheTableXLang).Add(key, value, 0)
+		ezcache.Table(CacheTableXLang).Add(key, value, 0)
 	}
 
-	cache.Enter.Table(CacheTableXLangVersion).Add(appName+"-"+CacheKeyXLangVersion, version, 0)
+	ezcache.Table(CacheTableXLangVersion).Add(appName+"-"+CacheKeyXLangVersion, version, 0)
 }
 
 // getAppXLangLastVersion 获取应用最新的多语言版本号
@@ -105,7 +105,7 @@ func (ctl *control) getLastAppXlangData(appName string) (map[string]string, erro
 
 // getString 获取多语言字符串
 func (ctl *control) getString(lang, strId string, args ...any) string {
-	value, isExist := cache.Enter.Table(CacheTableXLang).Get(fmt.Sprintf("%s:%s", strId, lang))
+	value, isExist := ezcache.Table(CacheTableXLang).Get(fmt.Sprintf("%s:%s", strId, lang))
 	if isExist {
 		format := value.(string)
 		// args 填充 format

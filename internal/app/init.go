@@ -6,6 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	appDefine "github.com/loebfly/ezgin/app"
 	engineDefine "github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/ezcfg"
+	"github.com/loebfly/ezgin/ezdb"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/dblite/kafka"
@@ -85,7 +88,7 @@ func (receiver enter) initNacos() {
 		if nacosPrefix != "" {
 			nacosUrl := ez.GetYmlUrlOrPath(nacosPrefix)
 			var yml nacos.Yml
-			err := config.Enter.GetYmlObj(nacosUrl, &yml)
+			err := ezcfg.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("nacos配置文件获取失败: %s", err.Error()))
 			}
@@ -112,7 +115,7 @@ func (receiver enter) initDBLite() {
 		for i, name := range names {
 			var yml mongo.Yml
 			nacosUrl := ez.GetYmlUrlOrPath(name)
-			err := config.Enter.GetYmlObj(nacosUrl, &yml)
+			err := ezcfg.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
 			}
@@ -127,7 +130,7 @@ func (receiver enter) initDBLite() {
 		for i, name := range names {
 			var yml mysql.Yml
 			nacosUrl := ez.GetYmlUrlOrPath(name)
-			err := config.Enter.GetYmlObj(nacosUrl, &yml)
+			err := ezcfg.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
 			}
@@ -141,7 +144,7 @@ func (receiver enter) initDBLite() {
 		for i, name := range names {
 			var yml redis.Yml
 			nacosUrl := ez.GetYmlUrlOrPath(name)
-			err := config.Enter.GetYmlObj(nacosUrl, &yml)
+			err := ezcfg.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
 			}
@@ -154,7 +157,7 @@ func (receiver enter) initDBLite() {
 		kafkaObjs = make([]kafka.EZGinKafka, 1)
 		var yml kafka.Yml
 		nacosUrl := ez.GetYmlUrlOrPath(name)
-		err := config.Enter.GetYmlObj(nacosUrl, &yml)
+		err := ezcfg.GetYmlObj(nacosUrl, &yml)
 		if err != nil {
 			panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
 		}
@@ -189,29 +192,29 @@ func (receiver enter) initEngine() {
 					var returnDB func(db *mgo.Database)
 					var err error
 					if mongoTag != "" {
-						db, returnDB, err = dblite.Enter.Mongo(mongoTag)
+						db, returnDB, err = ezdb.Mongo(mongoTag)
 					} else {
-						db, returnDB, err = dblite.Enter.Mongo()
+						db, returnDB, err = ezdb.Mongo()
 					}
 
 					if err != nil {
-						logs.Enter.CError("MIDDLEWARE", "写入Mongo日志失败, 获取数据库失败: {}", err.Error())
+						ezlogs.CError("MIDDLEWARE", "写入Mongo日志失败, 获取数据库失败: {}", err.Error())
 						return
 					}
 					ctx.Id = bson.NewObjectId()
 					err = db.C(mongoTable).Insert(ctx)
 					if err != nil {
-						logs.Enter.CError("MIDDLEWARE", "写入Mongo日志失败: {}", err.Error())
+						ezlogs.CError("MIDDLEWARE", "写入Mongo日志失败: {}", err.Error())
 						returnDB(db)
 					}
 					returnDB(db)
 				}
-				if kafkaTopic != "-" && dblite.Enter.Kafka().GetClient() != nil {
+				if kafkaTopic != "-" && ezdb.Kafka().GetClient() != nil {
 					topicList := strings.Split(kafkaTopic, ",")
 					for _, topic := range topicList {
-						err := dblite.Enter.Kafka().InputMsgForTopic(topic, ctx.ToJson())
+						err := ezdb.Kafka().InputMsgForTopic(topic, ctx.ToJson())
 						if err != nil {
-							logs.Enter.CError("MIDDLEWARE", "kafka输入失败: {}", err.Error())
+							ezlogs.CError("MIDDLEWARE", "kafka输入失败: {}", err.Error())
 						}
 					}
 				}
@@ -257,7 +260,7 @@ func (receiver enter) initServer() {
 		})
 		go func() {
 			listenErr := servers[0].ListenAndServe()
-			logs.Enter.CWarn("APP", "ListenAndServe:{}:{}", ez.App.Port, listenErr.Error())
+			ezlogs.CWarn("APP", "ListenAndServe:{}:{}", ez.App.Port, listenErr.Error())
 		}()
 	}
 	if ez.App.PortSsl > 0 {
@@ -269,7 +272,7 @@ func (receiver enter) initServer() {
 		go func() {
 			path, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 			listenErr := servers[1].ListenAndServeTLS(path+"/"+ez.App.Cert, path+"/"+ez.App.Key)
-			logs.Enter.CWarn("APP", "ListenAndServeTLS:{}:{}", ez.App.PortSsl, listenErr.Error())
+			ezlogs.CWarn("APP", "ListenAndServeTLS:{}:{}", ez.App.PortSsl, listenErr.Error())
 		}()
 	}
 	receiver.initI18n()

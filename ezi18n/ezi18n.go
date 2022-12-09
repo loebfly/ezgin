@@ -1,36 +1,37 @@
-package ezgin
+package ezi18n
 
 import (
 	"errors"
 	"fmt"
 	"github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/internal/i18n"
 )
 
-type I18nStringId string
+type StringId string
 
-func (receiver I18nStringId) string() string {
+func (receiver StringId) string() string {
 	return string(receiver)
 }
 
 // Error 返回自身翻译后字符串的error
-func (receiver I18nStringId) Error() error {
-	return errors.New(I18n.String(receiver.string()))
+func (receiver StringId) Error() error {
+	return errors.New(i18n.Enter.String(receiver.string()))
 }
 
 // ErrorWithMsg 返回自身翻译后字符串+:+消息的error
-func (receiver I18nStringId) ErrorWithMsg(msg string) error {
-	return errors.New(fmt.Sprintf("%s: %s", I18n.String(receiver.string()), msg))
+func (receiver StringId) ErrorWithMsg(msg string) error {
+	return errors.New(fmt.Sprintf("%s: %s", i18n.Enter.String(receiver.string()), msg))
 }
 
 // ErrorWithArgs 用于自身翻译后的字符串替换{}参数的error
-func (receiver I18nStringId) ErrorWithArgs(args ...any) error {
-	return errors.New(I18n.StringFormat(receiver.string(), args...))
+func (receiver StringId) ErrorWithArgs(args ...any) error {
+	return errors.New(i18n.Enter.StringFormat(receiver.string(), args...))
 }
 
 // ErrorJoinStrId 返回自身翻译后字符串与I18nStringId翻译后的字符串拼接的error
 // split 分隔符
 // strId 错误ID
-func (receiver I18nStringId) ErrorJoinStrId(split string, strId ...I18nStringId) error {
+func (receiver StringId) ErrorJoinStrId(split string, strId ...StringId) error {
 	message := ""
 	for _, id := range strId {
 		if message == "" {
@@ -44,10 +45,10 @@ func (receiver I18nStringId) ErrorJoinStrId(split string, strId ...I18nStringId)
 
 // Result 返回 status 为 1 的 engine.Result, 用于返回成功的结果
 // data 数据
-func (receiver I18nStringId) Result(data any) engine.Result[any] {
+func (receiver StringId) Result(data any) engine.Result[any] {
 	return engine.Result[any]{
 		Status:  1,
-		Message: I18n.String(receiver.string()),
+		Message: i18n.Enter.String(receiver.string()),
 		Data:    data,
 	}
 }
@@ -55,10 +56,10 @@ func (receiver I18nStringId) Result(data any) engine.Result[any] {
 // ResultWithPage 返回 status 为 1 的 engine.Result, 用于返回带分页的成功结果
 // data 数据
 // page 分页信息
-func (receiver I18nStringId) ResultWithPage(data any, page engine.Page) engine.Result[any] {
+func (receiver StringId) ResultWithPage(data any, page engine.Page) engine.Result[any] {
 	return engine.Result[any]{
 		Status:  1,
-		Message: I18n.String(receiver.string()),
+		Message: i18n.Enter.String(receiver.string()),
 		Data:    data,
 		Page:    &page,
 	}
@@ -66,46 +67,46 @@ func (receiver I18nStringId) ResultWithPage(data any, page engine.Page) engine.R
 
 // ErrorRes 返回自身翻译后字符串用于Message的engine.Result
 // status 状态码, 默认为-1
-func (receiver I18nStringId) ErrorRes(status ...int) engine.Result[any] {
+func (receiver StringId) ErrorRes(status ...int) engine.Result[any] {
 	targetStatus := -1
 	if len(status) > 0 {
 		targetStatus = status[0]
 	}
 	return engine.Result[any]{
 		Status:  targetStatus,
-		Message: I18n.String(receiver.string()),
+		Message: i18n.Enter.String(receiver.string()),
 	}
 }
 
 // ErrorResWithMsg 返回自身翻译后字符串与msg字符串拼接作为message的engine.Result
 // msg 分隔符
 // status 状态码, 默认为-1
-func (receiver I18nStringId) ErrorResWithMsg(msg string, status ...int) engine.Result[any] {
+func (receiver StringId) ErrorResWithMsg(msg string, status ...int) engine.Result[any] {
 	targetStatus := -1
 	if len(status) > 0 {
 		targetStatus = status[0]
 	}
 	return engine.Result[any]{
 		Status:  targetStatus,
-		Message: I18n.String(receiver.string()) + ": " + msg,
+		Message: i18n.Enter.String(receiver.string()) + ": " + msg,
 	}
 }
 
 // ErrorResWithArgs 返回自身翻译后字符串并替换{}参数用于Message, status=-1的engine.Result
-func (receiver I18nStringId) ErrorResWithArgs(args ...any) engine.Result[any] {
+func (receiver StringId) ErrorResWithArgs(args ...any) engine.Result[any] {
 	return engine.Result[any]{
 		Status:  -1,
-		Message: I18n.StringFormat(receiver.string(), args...),
+		Message: i18n.Enter.StringFormat(receiver.string(), args...),
 	}
 }
 
 // ErrorResWithStatusAndArgs 返回自身翻译后字符串并替换{}参数用于Message的engine.Result
 // status 状态码, 默认为-1
 // args 参数
-func (receiver I18nStringId) ErrorResWithStatusAndArgs(status int, args ...any) engine.Result[any] {
+func (receiver StringId) ErrorResWithStatusAndArgs(status int, args ...any) engine.Result[any] {
 	return engine.Result[any]{
 		Status:  status,
-		Message: I18n.StringFormat(receiver.string(), args...),
+		Message: i18n.Enter.StringFormat(receiver.string(), args...),
 	}
 }
 
@@ -116,7 +117,7 @@ func (receiver I18nStringId) ErrorResWithStatusAndArgs(status int, args ...any) 
 		params 参数列表
 		key 参数名
 */
-func (receiver I18nStringId) CheckRes(params map[string]string, key ...string) engine.Result[any] {
+func (receiver StringId) CheckRes(params map[string]string, key ...string) engine.Result[any] {
 	for _, param := range key {
 		val := params[param]
 		if val == "" {
@@ -127,11 +128,21 @@ func (receiver I18nStringId) CheckRes(params map[string]string, key ...string) e
 }
 
 // GetTranslate 获取翻译后的字符串
-func (receiver I18nStringId) GetTranslate() string {
-	return I18n.String(receiver.string())
+func (receiver StringId) GetTranslate() string {
+	return i18n.Enter.String(receiver.string())
 }
 
 // GetTranslateWithArgs 获取翻译后的字符串, 并替换{}参数
-func (receiver I18nStringId) GetTranslateWithArgs(args ...any) string {
-	return I18n.StringFormat(receiver.string(), args...)
+func (receiver StringId) GetTranslateWithArgs(args ...any) string {
+	return i18n.Enter.StringFormat(receiver.string(), args...)
+}
+
+// GetTranslateByLang 根据语言获取翻译后的字符串
+func (receiver StringId) GetTranslateByLang(lang, messageId string, args ...any) string {
+	return i18n.Enter.StringByLang(lang, messageId, args...)
+}
+
+// GetTranslateWithArgsByLang 根据语言获取翻译后的字符串, 并替换{}参数
+func (receiver StringId) GetTranslateWithArgsByLang(lang, messageId string, args ...any) string {
+	return i18n.Enter.StringFormatByLang(lang, messageId, args...)
 }

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/levigross/grequests"
 	"github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/call"
-	"github.com/loebfly/ezgin/internal/logs"
 )
 
 /******* Form ******* */
@@ -105,7 +105,7 @@ func toResult[D any](resp *grequests.Response, err error) engine.Result[D] {
 	var result engine.Result[D]
 	err = json.Unmarshal([]byte(resp.String()), &result)
 	if err != nil {
-		logs.Enter.Error("resp:{}, 返回结果序列化失败: {}", resp, err)
+		ezlogs.Error("resp:{}, 返回结果序列化失败: {}", resp, err)
 		return engine.Result[D]{
 			Status:  engine.ErrorCodeResUnmarshalFailure,
 			Message: err.Error(),

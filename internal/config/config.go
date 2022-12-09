@@ -5,7 +5,7 @@ import (
 	"github.com/knadh/koanf"
 	kYaml "github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 )
 
 func InitPath(ymlPath string) {
-	logs.Enter.Debug("读取配置文件:" + ymlPath)
+	ezlogs.Debug("读取配置文件:" + ymlPath)
 	YmlData = koanf.New(".")
 	f := file.Provider(ymlPath)
 	err := YmlData.Load(f, kYaml.Parser())
@@ -34,4 +34,8 @@ func checkYmlObj() {
 	if YmlObj.EZGin.App.Name == "" {
 		panic("未初始化配置文件")
 	}
+}
+
+func EZGin() EZGinYml {
+	return YmlObj.EZGin
 }

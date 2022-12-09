@@ -1,17 +1,13 @@
 package cache
 
-import (
-	"github.com/muesli/cache2go"
-	"time"
-)
-
+/*
 type enter int
 
 const Enter = enter(0)
 
 func (enter) Table(name string) Memory {
 	return Memory{
-		table: cache2go.Cache(name),
+		Table: cache2go.Cache(name),
 	}
 }
 
@@ -38,3 +34,4 @@ func (receiver enter) Clear() {
 func (receiver enter) Size() int {
 	return receiver.Table("DEFAULT").Size()
 }
+*/

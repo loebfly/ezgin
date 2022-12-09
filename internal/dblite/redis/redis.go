@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 	"net"
 	"time"
 )
@@ -97,7 +97,7 @@ func (c *control) retry() {
 	for k := range c.dbMap {
 		err := c.tryConnect(k)
 		if err != nil {
-			logs.Enter.CError("REDIS", "{} 对应的Redis数据库重连失败: {}", k, err.Error())
+			ezlogs.CError("REDIS", "{} 对应的Redis数据库重连失败: {}", k, err.Error())
 		}
 	}
 }

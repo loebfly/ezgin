@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	engineDefine "github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
-	"github.com/loebfly/ezgin/internal/logs"
 	"io/ioutil"
 	"reflect"
 	"strconv"
@@ -34,7 +34,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 
 	rawData, err := c.GetRawData()
 	if err != nil {
-		logs.Enter.CError("GIN", "GetRawData error:{}", err.Error())
+		ezlogs.CError("GIN", "GetRawData error:{}", err.Error())
 	}
 	var reqHeaders = make(map[string]string)
 	for k, v := range c.Request.Header {
@@ -51,7 +51,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 		var params = make(map[string]any)
 		err = json.Unmarshal(rawData, &reqParams)
 		if err != nil {
-			logs.Enter.CError("GIN", "reqParams json.unmarshal error:{}", err.Error())
+			ezlogs.CError("GIN", "reqParams json.unmarshal error:{}", err.Error())
 		}
 		reqParams = params
 	} else if strings.Contains(c.ContentType(), gin.MIMEPOSTForm) ||
@@ -69,7 +69,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 	if respStr != "" && respStr[0:1] == "{" {
 		err = json.Unmarshal(rWriter.body.Bytes(), &respParams)
 		if err != nil {
-			logs.Enter.CError("GIN", "respParams json.Unmarshal error:{}", err.Error())
+			ezlogs.CError("GIN", "respParams json.Unmarshal error:{}", err.Error())
 		}
 	}
 
@@ -88,17 +88,17 @@ func (receiver enter) Middleware(c *gin.Context) {
 		}
 	}
 
-	logs.Enter.CDebug("GIN", "|{}|{}|{}|{}|{}ms", method, uri, clientIP, respTime, ttl)
+	ezlogs.CDebug("GIN", "|{}|{}|{}|{}|{}ms", method, uri, clientIP, respTime, ttl)
 	if reqHeaders != nil {
-		logs.Enter.CDebug("GIN", "请求头:{}", reqHeaders)
+		ezlogs.CDebug("GIN", "请求头:{}", reqHeaders)
 	}
 	if reqParams != nil {
 		if receiver.argToString(reqParams) != "" {
-			logs.Enter.CDebug("GIN", "请求参数:"+receiver.argToString(reqParams))
+			ezlogs.CDebug("GIN", "请求参数:"+receiver.argToString(reqParams))
 		}
 	}
 
-	logs.Enter.CDebug("GIN", "响应结果:{}", respParams)
+	ezlogs.CDebug("GIN", "响应结果:{}", respParams)
 
 	ctx := engineDefine.ReqCtx{
 		ReqTime:     reqTime,

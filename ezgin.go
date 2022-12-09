@@ -1,74 +1,11 @@
 package ezgin
 
 import (
+	"github.com/gin-gonic/gin"
 	appDefine "github.com/loebfly/ezgin/app"
+	engineDefine "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/internal/app"
-	"github.com/loebfly/ezgin/internal/cache"
-	"github.com/loebfly/ezgin/internal/config"
-	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/engine"
-	"github.com/loebfly/ezgin/internal/i18n"
-	"github.com/loebfly/ezgin/internal/logs"
-	"github.com/loebfly/ezgin/internal/nacos"
-)
-
-const (
-	// Config 配置模块
-	/*
-		说明: 用于获取配置信息
-			示例: Config.GetString("app.name")
-	*/
-	Config = config.Enter
-	// Nacos 注册中心模块
-	/*
-		说明: 用于获取注册中心信息
-			示例:
-				Nacos.GetClient() 获取nacos客户端
-				Nacos.GetService("ezgin") 获取微服务服务器地址和端口
-	*/
-	Nacos = nacos.Enter
-	// Engine gin引擎模块
-	/*
-		说明: 主要用于路由注册、中间件等
-			示例:
-				Engine.Use(middleware) 注册中间件
-				Engine.Group("bucket").Routers(engine.Get, map[string]engine.HandlerFunc{
-					"new": TestHandler,
-				}) 注册路由
-	*/
-	Engine = engine.Enter
-	// Cache 内存缓存模块
-	/*
-		说明: 用于内存缓存
-			示例:
-				Cache.Table("ezgin").Add("key", "value", 0) 设置缓存
-				Cache.Table("ezgin").Get("key") 获取缓存
-	*/
-	Cache = cache.Enter
-	// Logs 日志模块
-	/*
-		说明: 用于日志打印和输入
-			示例:
-				Logs.Debug("test") 打印debug日志
-				Logs.CDebug("category", "test") 打印debug日志
-	*/
-	Logs = logs.Enter
-	// DBLite 数据库模块
-	/*
-		说明: 提供Mysql、Redis、MongoDB数据库操作
-			示例:
-				DBLite.Mysql() 获取mysql数据库操作对象
-				DBLite.Redis() 获取redis数据库操作对象
-				DBLite.Mongo() 获取mongo数据库操作对象
-	*/
-	DBLite = dblite.Enter
-	// I18n 国际化模块
-	/*
-		说明: 用于获取国际化信息
-			示例:
-				I18n.String("messageId") 获取当前语言的国际化内容
-	*/
-	I18n = i18n.Enter
 )
 
 // Start 启动服务
@@ -105,6 +42,92 @@ func ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
 	app.ShutdownWhenExitSignal(shutdown...)
 }
 
-//func Call[D any]() call.Enter[D] {
-//	return call.Enter[D]{}
-//}
+// GetOriGin 获取原生gin.Engine
+func GetOriGin() *gin.Engine {
+	return engine.Enter.GetOriGin()
+}
+
+// GetMWTraceCurHeaders 获取当前请求的所有header
+func GetMWTraceCurHeaders() map[string]string {
+	return engine.Enter.GetMWTraceCurHeaders()
+}
+
+// GetMWTraceCurHeaderValueFor 获取当前请求的指定header值
+func GetMWTraceCurHeaderValueFor(key string) string {
+	return engine.Enter.GetMWTraceCurHeaderValueFor(key)
+}
+
+// CopyMWTracePreHeaderToCurRoutine 复制上一个请求的header到当前请求
+func CopyMWTracePreHeaderToCurRoutine(preRoutineId string) {
+	engine.Enter.CopyMWTracePreHeaderToCurRoutine(preRoutineId)
+}
+
+// GetMWTraceCurRoutineId 获取当前请求的routineId
+func GetMWTraceCurRoutineId() string {
+	return engine.Enter.GetMWTraceCurRoutineId()
+}
+
+// GetMWTraceCurReqId 获取当前请求的reqId
+func GetMWTraceCurReqId() string {
+	return engine.Enter.GetMWTraceCurReqId()
+}
+
+// GetMWTraceCurClientIP 获取当前请求的客户端IP
+func GetMWTraceCurClientIP() string {
+	return engine.Enter.GetMWTraceCurClientIP()
+}
+
+// GetMWTraceCurUserAgent 获取当前请求的UserAgent
+func GetMWTraceCurUserAgent() string {
+	return engine.Enter.GetMWTraceCurUserAgent()
+}
+
+// GetMWTraceCurXLang 获取当前请求的XLang
+func GetMWTraceCurXLang() string {
+	return engine.Enter.GetMWTraceCurXLang()
+}
+
+func Any(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Any(relativePath, handler)
+}
+
+func Get(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Get(relativePath, handler)
+}
+
+func Post(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Post(relativePath, handler)
+}
+
+func Delete(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Delete(relativePath, handler)
+}
+
+func Patch(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Patch(relativePath, handler)
+}
+
+func Put(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Put(relativePath, handler)
+}
+
+func Head(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Head(relativePath, handler)
+}
+
+func Options(relativePath string, handler engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Options(relativePath, handler)
+}
+
+func Use(middleware ...engineDefine.MiddlewareFunc) engine.EZRouter {
+	return engine.Enter.Use(middleware...)
+}
+func Group(relativePath string) engine.EZRouter {
+	return engine.Enter.Group(relativePath)
+}
+func Routers(method engineDefine.HttpMethod, pathHandler map[string]engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.Routers(method, pathHandler)
+}
+func FreeRouters(methodPathHandlers map[engineDefine.HttpMethod]map[string]engineDefine.HandlerFunc) engine.EZRouter {
+	return engine.Enter.FreeRouters(methodPathHandlers)
+}

@@ -1,4 +1,4 @@
-package ezgin
+package ezgo
 
 import (
 	"fmt"
@@ -11,10 +11,10 @@ type safeGo[P any] struct {
 	goAfterF  func(params P)    // 开启协程后的处理函数
 }
 
-// NewSafeGo 创建一个安全的协程调用
+// New 创建一个安全的协程调用
 /*
 	示例:
-	safeGo := ezgin.NewSafeGo[string](func(args ...any) {
+	safeGo := ezgo.New[string](func(args ...any) {
 		fmt.Println(args)
 	})
 	safeGo.SetGoBeforeHandler(func() string {
@@ -25,7 +25,7 @@ type safeGo[P any] struct {
 	})
 	safeGo.Run("hello", "world")
 */
-func NewSafeGo[P any](argsF func(args ...any)) *safeGo[P] {
+func New[P any](argsF func(args ...any)) *safeGo[P] {
 	return &safeGo[P]{
 		argsF: argsF,
 	}

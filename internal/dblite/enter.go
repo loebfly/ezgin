@@ -1,13 +1,10 @@
 package dblite
 
 import (
-	"github.com/go-redis/redis"
 	kafkaDB "github.com/loebfly/ezgin/internal/dblite/kafka"
 	mongoDB "github.com/loebfly/ezgin/internal/dblite/mongo"
 	mysqlDB "github.com/loebfly/ezgin/internal/dblite/mysql"
 	redisDB "github.com/loebfly/ezgin/internal/dblite/redis"
-	"gopkg.in/mgo.v2"
-	"gorm.io/gorm"
 )
 
 type enter int
@@ -36,24 +33,4 @@ func DeInit() {
 	mysqlDB.Disconnect()
 	redisDB.Disconnect()
 	kafkaDB.Disconnect()
-}
-
-// Mysql 获取mysql数据库
-func (enter) Mysql(tag ...string) (db *gorm.DB, err error) {
-	return mysqlDB.GetDB(tag...)
-}
-
-// Mongo 获取mongo数据库
-func (enter) Mongo(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
-	return mongoDB.GetDB(tag...)
-}
-
-// Redis 获取redis数据库
-func (enter) Redis(tag ...string) (db *redis.Client, err error) {
-	return redisDB.GetDB(tag...)
-}
-
-// Kafka 获取kafka数据库
-func (enter) Kafka() kafkaDB.Client {
-	return kafkaDB.GetDB()
 }

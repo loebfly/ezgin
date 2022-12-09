@@ -24,7 +24,7 @@ const (
 )
 
 type Logger struct {
-	category string
+	Category string
 	level    string
 }
 
@@ -96,8 +96,8 @@ func (logger Logger) outPut(format string, args ...any) {
 
 	logStack := make([]string, 0)
 	logStack = append(logStack, createdAt)
-	if logger.category != "" {
-		category := "[" + logger.category + "]"
+	if logger.Category != "" {
+		category := "[" + logger.Category + "]"
 		logStack = append(logStack, category)
 	}
 	level := "[" + logger.level + "]"
@@ -105,7 +105,7 @@ func (logger Logger) outPut(format string, args ...any) {
 
 	if len(WillOutputHandlers) > 0 {
 		for _, handler := range WillOutputHandlers {
-			extraInfo := handler(logger.category, logger.level)
+			extraInfo := handler(logger.Category, logger.level)
 			if extraInfo != nil {
 				for k, v := range extraInfo {
 					if v > len(logStack)-1 {

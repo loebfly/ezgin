@@ -2,8 +2,8 @@ package call
 
 import (
 	"github.com/levigross/grequests"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/engine"
-	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
 )
 
@@ -15,12 +15,12 @@ func (receiver formCall) Request(method, service, uri string, header, params map
 	var url string
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, header)
 	if err != nil {
-		logs.Enter.CError("CALL", "FORM - 获取{}服务地址失败:{}", service, err)
+		ezlogs.CError("CALL", "FORM - 获取{}服务地址失败:{}", service, err)
 		return
 	}
 
 	if files != nil {
-		logs.Enter.CDebug("CALL",
+		ezlogs.CDebug("CALL",
 			"FORM - FILE 微服务开始请求 -- url: {}, params: {}, header: {}",
 			url, method, params, header)
 		resp, err = grequests.Post(url, &grequests.RequestOptions{
@@ -30,13 +30,13 @@ func (receiver formCall) Request(method, service, uri string, header, params map
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
-			logs.Enter.CError("CALL",
+			ezlogs.CError("CALL",
 				"FORM - FILE 微服务请求失败 -- url: {}, params: {}, header: {}, err: {}",
 				url, params, header, err)
 			return
 		}
 	} else {
-		logs.Enter.CDebug("CALL",
+		ezlogs.CDebug("CALL",
 			"FORM - {} 微服务开始请求 -- url: {}, params: {}, header: {}",
 			method, url, params, header)
 
@@ -56,13 +56,13 @@ func (receiver formCall) Request(method, service, uri string, header, params map
 			resp, err = grequests.Post(url, options)
 		}
 		if err != nil {
-			logs.Enter.CError("CALL",
+			ezlogs.CError("CALL",
 				"FORM - {} 微服务请求失败 -- url: {}, params: {}, header: {}, err: {}",
 				method, url, params, header, err)
 			return
 		}
 	}
-	logs.Enter.CDebug("CALL",
+	ezlogs.CDebug("CALL",
 		"FORM - {} 微服务请求响应 -- url: {}, params: {}, header: {}, resp: {}",
 		method, url, params, header, resp.String())
 	return

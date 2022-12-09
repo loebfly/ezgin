@@ -1,18 +1,18 @@
 package mongo
 
 import (
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 	"gopkg.in/mgo.v2"
 )
 
 func InitObjs(objs []EZGinMongo) {
-	logs.Enter.CDebug("MONGO", "初始化")
+	ezlogs.CDebug("MONGO", "初始化")
 	config.InitObjs(objs)
 	err := ctl.initConnect()
 	if err != nil {
-		logs.Enter.CError("MONGO", "初始化失败: {}", err.Error())
+		ezlogs.CError("MONGO", "初始化失败: {}", err.Error())
 	}
-	logs.Enter.CInfo("MONGO", "初始化成功")
+	ezlogs.CInfo("MONGO", "初始化成功")
 	ctl.addCheckTicker()
 }
 

@@ -2,8 +2,8 @@ package nacos
 
 import (
 	"errors"
-	"github.com/loebfly/ezgin/internal/cache"
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezcache"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -56,25 +56,25 @@ func (c *control) register() bool {
 		})
 	}
 
-	logs.Enter.CDebug("NACOS", "服务器配置:{}", serverConfigs)
+	ezlogs.CDebug("NACOS", "服务器配置:{}", serverConfigs)
 
 	clientConfig := constant.ClientConfig{
 		UpdateCacheWhenEmpty: true,
 		LogLevel:             "error",
 	}
-	logs.Enter.CDebug("NACOS", "客户端配置:{}", clientConfig)
+	ezlogs.CDebug("NACOS", "客户端配置:{}", clientConfig)
 
 	naming, err := clients.CreateNamingClient(map[string]any{
 		"serverConfigs": serverConfigs,
 		"clientConfig":  clientConfig,
 	})
 	if err != nil {
-		logs.Enter.CError("NACOS", "客户端创建失败:{}", err)
+		ezlogs.CError("NACOS", "客户端创建失败:{}", err)
 		return false
 	}
 	c.client = naming
 
-	logs.Enter.CInfo("NACOS", "客户端创建成功")
+	ezlogs.CInfo("NACOS", "客户端创建成功")
 
 	appIp := ""
 	if Config.Nacos.App.Ip != "" {
@@ -111,7 +111,7 @@ func (c *control) register() bool {
 		Ephemeral:   true,
 	})
 	if !isSuccess {
-		logs.Enter.CError("NACOS", "客户端注册失败:{}", regErr)
+		ezlogs.CError("NACOS", "客户端注册失败:{}", regErr)
 		return false
 	}
 
@@ -121,14 +121,14 @@ func (c *control) register() bool {
 		GroupName:   Config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
-				logs.Enter.CError("NACOS", "客户端订阅错误:{}", err)
+				ezlogs.CError("NACOS", "客户端订阅错误:{}", err)
 				return
 			}
-			logs.Enter.CInfo("NACOS", "客户端订阅成功:{}", services)
+			ezlogs.CInfo("NACOS", "客户端订阅成功:{}", services)
 		},
 	})
 	if subErr != nil {
-		logs.Enter.CError("NACOS", "客户端订阅失败:{}", subErr)
+		ezlogs.CError("NACOS", "客户端订阅失败:{}", subErr)
 		return false
 	}
 	return true
@@ -139,21 +139,21 @@ func (c *control) unregister() {
 	if c.client == nil {
 		return
 	}
-	logs.Enter.CWarn("NACOS", "正在注销客户端")
+	ezlogs.CWarn("NACOS", "正在注销客户端")
 	subErr := c.client.Unsubscribe(&vo.SubscribeParam{
 		ServiceName: Config.Nacos.App.Name,
 		Clusters:    []string{Config.Nacos.ClusterName},
 		GroupName:   Config.Nacos.GroupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
 			if err != nil {
-				logs.Enter.CError("NACOS", "客户端取消订阅错误:{}", err)
+				ezlogs.CError("NACOS", "客户端取消订阅错误:{}", err)
 				return
 			}
-			logs.Enter.CDebug("NACOS", "客户端取消订阅成功:{}", services)
+			ezlogs.CDebug("NACOS", "客户端取消订阅成功:{}", services)
 		},
 	})
 	if subErr != nil {
-		logs.Enter.CError("NACOS", "客户端取消订阅失败:{}", subErr)
+		ezlogs.CError("NACOS", "客户端取消订阅失败:{}", subErr)
 	}
 
 	appIp := ""
@@ -181,16 +181,16 @@ func (c *control) unregister() {
 		Ephemeral:   true,
 	})
 	if !isSuccess {
-		logs.Enter.CError("NACOS", "客户端注销失败:{}", regErr)
+		ezlogs.CError("NACOS", "客户端注销失败:{}", regErr)
 		return
 	}
-	logs.Enter.CWarn("NACOS", "客户端注销成功")
+	ezlogs.CWarn("NACOS", "客户端注销成功")
 }
 
 // getService 获取服务
 func (c *control) getService(name string) (url string, err error) {
 	// 从缓存中获取, 有则随机返回缓存中的一个
-	if cacheUrls, isExist := cache.Enter.Table(CacheTableService).Get(name); cacheUrls != nil && isExist {
+	if cacheUrls, isExist := ezcache.Table(CacheTableService).Get(name); cacheUrls != nil && isExist {
 		if urls, ok := cacheUrls.([]string); ok {
 			if len(urls) > 0 {
 				url = urls[rand.Intn(len(urls))]
@@ -205,7 +205,7 @@ func (c *control) getService(name string) (url string, err error) {
 	// 最多尝试3次
 	for i := 0; i < 3; i++ {
 		group = Config.Nacos.GroupName
-		logs.Enter.CDebug("NACOS", "尝试从{}组中获取到服务:{}", group, name)
+		ezlogs.CDebug("NACOS", "尝试从{}组中获取到服务:{}", group, name)
 		instances, err := c.client.SelectInstances(vo.SelectInstancesParam{
 			Clusters:    []string{Config.Nacos.ClusterName, "DEFAULT"},
 			ServiceName: name,
@@ -213,9 +213,9 @@ func (c *control) getService(name string) (url string, err error) {
 			HealthyOnly: true,
 		})
 		if instances == nil || len(instances) == 0 || err != nil {
-			logs.Enter.CWarn("NACOS", "未从{}组中获取到服务:{}", group, name)
+			ezlogs.CWarn("NACOS", "未从{}组中获取到服务:{}", group, name)
 			group = "DEFAULT_GROUP"
-			logs.Enter.CDebug("NACOS", "尝试从{}组中获取服务:{}", group, name)
+			ezlogs.CDebug("NACOS", "尝试从{}组中获取服务:{}", group, name)
 			instances, err = c.client.SelectInstances(vo.SelectInstancesParam{
 				Clusters:    []string{Config.Nacos.ClusterName, "DEFAULT"},
 				ServiceName: name,
@@ -223,7 +223,7 @@ func (c *control) getService(name string) (url string, err error) {
 				HealthyOnly: true,
 			})
 			if instances == nil || len(instances) == 0 || err != nil {
-				logs.Enter.CWarn("NACOS", "未从从{}组中获取服务:{}", group, name)
+				ezlogs.CWarn("NACOS", "未从从{}组中获取服务:{}", group, name)
 				continue
 			}
 		}
@@ -242,11 +242,11 @@ func (c *control) getService(name string) (url string, err error) {
 	}
 
 	if targetInstance.InstanceId == "" {
-		logs.Enter.CError("NACOS", "未获取到服务:{}", name)
+		ezlogs.CError("NACOS", "未获取到服务:{}", name)
 		return "", errors.New("未获取到服务:" + name)
 	}
 	err = nil
-	logs.Enter.CInfo("NACOS", "获取到服务:{}", targetInstance)
+	ezlogs.CInfo("NACOS", "获取到服务:{}", targetInstance)
 	url = targetInstance.Ip + ":" + strconv.Itoa(int(targetInstance.Port))
 	if targetInstance.Metadata != nil &&
 		targetInstance.Metadata["ssl"] == "true" {
@@ -256,12 +256,12 @@ func (c *control) getService(name string) (url string, err error) {
 	}
 
 	// 订阅服务，回调中更新缓存
-	if !cache.Enter.Table(CacheTableSubscribe).IsExist(name) {
+	if !ezcache.Table(CacheTableSubscribe).IsExist(name) {
 		subErr := c.subscribeService(name, group)
 		if subErr != nil {
-			logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
+			ezlogs.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
 		}
-		cache.Enter.Table(CacheTableSubscribe).Add(name, true, CacheDuration)
+		ezcache.Table(CacheTableSubscribe).Add(name, true, CacheDuration)
 	}
 	return url, err
 }
@@ -272,13 +272,13 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 		Clusters:    []string{"DEFAULT"},
 		GroupName:   groupName,
 		SubscribeCallback: func(services []model.SubscribeService, err error) {
-			logs.Enter.CDebug("NACOS", "处理订阅服务回调:{}", services)
+			ezlogs.CDebug("NACOS", "处理订阅服务回调:{}", services)
 			if err != nil {
-				logs.Enter.CError("NACOS", "订阅回调错误:{}", err.Error())
+				ezlogs.CError("NACOS", "订阅回调错误:{}", err.Error())
 				return
 			}
 			if services == nil || len(services) == 0 {
-				logs.Enter.CError("NACOS", "订阅回调服务列表为空")
+				ezlogs.CError("NACOS", "订阅回调服务列表为空")
 				return
 			}
 			servicesMap := make(map[string][]string)
@@ -301,11 +301,11 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 				}
 			}
 			for sName, hosts := range servicesMap {
-				if cache.Enter.Table(CacheTableService).IsExist(sName) {
-					cache.Enter.Table(CacheTableService).Delete(sName)
+				if ezcache.Table(CacheTableService).IsExist(sName) {
+					ezcache.Table(CacheTableService).Delete(sName)
 				}
-				logs.Enter.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
-				cache.Enter.Table(CacheTableService).Add(sName, hosts, CacheDuration)
+				ezlogs.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
+				ezcache.Table(CacheTableService).Add(sName, hosts, CacheDuration)
 			}
 		},
 	})

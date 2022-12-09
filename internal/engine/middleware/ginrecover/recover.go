@@ -3,7 +3,7 @@ package ginrecover
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 	"net/http/httputil"
 )
 
@@ -14,7 +14,7 @@ func (receiver enter) Middleware(f func(c *gin.Context, err any)) gin.HandlerFun
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				goErr := errors.Wrap(err, 3)
 				reset := string([]byte{27, 91, 48, 109})
-				logs.Enter.CError("MIDDLEWARE",
+				ezlogs.CError("MIDDLEWARE",
 					"[Nice Recovery] panic recovered:\n\n{}{}\n\n{}{}",
 					httpRequest, goErr.Error(), goErr.Stack(), reset)
 				if f != nil {

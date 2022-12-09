@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/levigross/grequests"
 	define "github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/engine"
-	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
 	"strings"
 )
@@ -18,10 +18,10 @@ func (receiver restfulCall) Request(method define.HttpMethod, service, uri strin
 	var url string
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, path, header)
 	if err != nil {
-		logs.Enter.CError("CALL", "RESTFUL - 获取{}服务地址失败:{}", service, err)
+		ezlogs.CError("CALL", "RESTFUL - 获取{}服务地址失败:{}", service, err)
 		return
 	}
-	logs.Enter.CDebug("CALL", "RESTFUL - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}", method, url, header, query, body)
+	ezlogs.CDebug("CALL", "RESTFUL - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}", method, url, header, query, body)
 	var options = &grequests.RequestOptions{
 		Params:             query,
 		Headers:            header,
@@ -44,15 +44,15 @@ func (receiver restfulCall) Request(method define.HttpMethod, service, uri strin
 	case define.Patch:
 		resp, err = grequests.Patch(url, options)
 	default:
-		logs.Enter.CError("CALL", "RESTFUL - 不支持的请求方法:{}", method)
+		ezlogs.CError("CALL", "RESTFUL - 不支持的请求方法:{}", method)
 		err = errors.New("不支持的请求方法")
 		return
 	}
 	if err != nil {
-		logs.Enter.CError("CALL", "RESTFUL - 请求{}微服务失败:{}", service, err)
+		ezlogs.CError("CALL", "RESTFUL - 请求{}微服务失败:{}", service, err)
 		return
 	}
-	logs.Enter.CDebug("CALL", "RESTFUL - {}微服务请求结束 -- url: {}, headers: {}, query: {}, body:{}, resp: {}", method, url, header, query, body, resp.String())
+	ezlogs.CDebug("CALL", "RESTFUL - {}微服务请求结束 -- url: {}, headers: {}, query: {}, body:{}, resp: {}", method, url, header, query, body, resp.String())
 	return resp, nil
 }
 

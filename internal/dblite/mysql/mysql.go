@@ -3,7 +3,7 @@ package mysql
 import (
 	"errors"
 	"fmt"
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"time"
@@ -92,7 +92,7 @@ func (c *control) retry() {
 	for k := range c.dbMap {
 		err := c.tryConnect(k)
 		if err != nil {
-			logs.Enter.CError("MYSQL", "{} 对应的Mysql数据库重连失败: {}", k, err.Error())
+			ezlogs.CError("MYSQL", "{} 对应的Mysql数据库重连失败: {}", k, err.Error())
 		}
 	}
 }

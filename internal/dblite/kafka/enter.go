@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Shopify/sarama"
-	"github.com/loebfly/ezgin/internal/logs"
+	"github.com/loebfly/ezgin/ezlogs"
 )
 
 var client = Client{}
@@ -12,13 +12,13 @@ var client = Client{}
 type Client struct{}
 
 func InitObj(obj EZGinKafka) {
-	logs.Enter.CDebug("KAFKA", "初始化")
+	ezlogs.CDebug("KAFKA", "初始化")
 	config.initObj(obj)
 	err := ctl.initConnect()
 	if err != nil {
-		logs.Enter.CError("KAFKA", "初始化失败: {}", err.Error())
+		ezlogs.CError("KAFKA", "初始化失败: {}", err.Error())
 	}
-	logs.Enter.CInfo("KAFKA", "初始化成功")
+	ezlogs.CInfo("KAFKA", "初始化成功")
 	ctl.addCheckTicker()
 }
 
@@ -87,7 +87,7 @@ func (c Client) CreateTopic(topic string) error {
 		ReplicationFactor: 1,
 	}, false)
 	if err != nil {
-		logs.Enter.CError("KAFKA", "创建topic失败: {}", err.Error())
+		ezlogs.CError("KAFKA", "创建topic失败: {}", err.Error())
 		return err
 	}
 	return nil
@@ -126,7 +126,7 @@ func (c Client) ListenTopicForGroupId(topic, groupId string, handler func(msg st
 		handler: handler,
 	})
 	if err != nil {
-		logs.Enter.CError("KAFKA", "监听{}组的{}主题失败: {}", groupId, topic, err.Error())
+		ezlogs.CError("KAFKA", "监听{}组的{}主题失败: {}", groupId, topic, err.Error())
 		return err
 	}
 

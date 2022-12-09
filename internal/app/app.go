@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 	appDefine "github.com/loebfly/ezgin/app"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
-	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
 	"net/http"
 	"os"
@@ -24,17 +24,17 @@ func (receiver enter) Start(start ...appDefine.Start) {
 	receiver.initEZGin(start...)
 	ez := config.EZGin()
 
-	logs.Enter.CInfo("APP", "|-----------------------------------|")
-	logs.Enter.CInfo("APP", "| 服务名: {}", ez.App.Name)
-	logs.Enter.CInfo("APP", "| 版本号: {}", ez.App.Version)
-	logs.Enter.CInfo("APP", "|-----------------------------------|")
+	ezlogs.CInfo("APP", "|-----------------------------------|")
+	ezlogs.CInfo("APP", "| 服务名: {}", ez.App.Name)
+	ezlogs.CInfo("APP", "| 版本号: {}", ez.App.Version)
+	ezlogs.CInfo("APP", "|-----------------------------------|")
 	if ez.App.Port > 0 {
-		logs.Enter.CInfo("APP", "| HTTP端口: {}", ez.App.Port)
+		ezlogs.CInfo("APP", "| HTTP端口: {}", ez.App.Port)
 	}
 	if ez.App.PortSsl > 0 {
-		logs.Enter.CInfo("APP", "| HTTPS端口: {}", ez.App.PortSsl)
+		ezlogs.CInfo("APP", "| HTTPS端口: {}", ez.App.PortSsl)
 	}
-	logs.Enter.CInfo("APP", "|-----------------------------------|")
+	ezlogs.CInfo("APP", "|-----------------------------------|")
 }
 
 // ShutdownWhenExitSignal 服务异常退出时 优雅关闭服务
@@ -42,7 +42,7 @@ func (receiver enter) ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT)
 	sig := <-signalChan
-	logs.Enter.CError("APP", "收到退出信号:{}", sig.String())
+	ezlogs.CError("APP", "收到退出信号:{}", sig.String())
 	nacos.DeInit()
 	dblite.DeInit()
 
@@ -54,7 +54,7 @@ func (receiver enter) ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
 	for _, server := range servers {
 		if server != nil {
 			if err := server.Shutdown(ctx); err != nil {
-				logs.Enter.CWarn("APP", "关闭{}端口失败:{}", server.Addr, err.Error())
+				ezlogs.CWarn("APP", "关闭{}端口失败:{}", server.Addr, err.Error())
 				continue
 			}
 		}
