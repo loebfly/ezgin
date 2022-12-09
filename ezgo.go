@@ -5,10 +5,10 @@ import (
 	"github.com/go-errors/errors"
 )
 
-type safeGo struct {
-	argsF     func(args ...any)           // 动态参数函数
-	goBeforeF func() map[string]any       // 开启协程前的处理函数
-	goAfterF  func(params map[string]any) // 开启协程后的处理函数
+type safeGo[P any] struct {
+	argsF     func(args ...any) // 动态参数函数
+	goBeforeF func() P          // 开启协程前的处理函数
+	goAfterF  func(params P)    // 开启协程后的处理函数
 }
 
 // NewSafeGo 创建一个安全的协程调用
@@ -25,27 +25,27 @@ type safeGo struct {
 	})
 	safeGo.Run("hello", "world")
 */
-func NewSafeGo(argsF func(args ...any)) *safeGo {
-	return &safeGo{
+func NewSafeGo[P any](argsF func(args ...any)) *safeGo[P] {
+	return &safeGo[P]{
 		argsF: argsF,
 	}
 }
 
 // SetGoBeforeHandler 设置协程前的处理函数
-func (receiver *safeGo) SetGoBeforeHandler(goBeforeF func() map[string]any) *safeGo {
+func (receiver *safeGo[P]) SetGoBeforeHandler(goBeforeF func() P) *safeGo[P] {
 	receiver.goBeforeF = goBeforeF
 	return receiver
 }
 
 // SetGoAfterHandler 设置协程后的处理函数
-func (receiver *safeGo) SetGoAfterHandler(callBeforeF func(params map[string]any)) *safeGo {
+func (receiver *safeGo[P]) SetGoAfterHandler(callBeforeF func(params P)) *safeGo[P] {
 	receiver.goAfterF = callBeforeF
 	return receiver
 }
 
 // Run 运行
-func (receiver *safeGo) Run(args ...any) {
-	var goBeforeParams map[string]any
+func (receiver *safeGo[P]) Run(args ...any) {
+	var goBeforeParams P
 	if receiver.goBeforeF != nil {
 		goBeforeParams = receiver.goBeforeF()
 	}
