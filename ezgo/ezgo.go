@@ -12,19 +12,6 @@ type safeGo[P any] struct {
 }
 
 // New 创建一个安全的协程调用
-/*
-	示例:
-	safeGo := ezgo.New[string](func(args ...any) {
-		fmt.Println(args)
-	})
-	safeGo.SetGoBeforeHandler(func() string {
-		return ezgin.Engine.GetMWTraceCurRoutineId()
-	})
-	safeGo.SetGoAfterHandler(func(params string) {
-		ezgin.Engine.CopyMWTracePreHeaderToCurRoutine(params)
-	})
-	safeGo.Run("hello", "world")
-*/
 func New[P any](argsF func(args ...any)) *safeGo[P] {
 	return &safeGo[P]{
 		argsF: argsF,
