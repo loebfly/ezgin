@@ -4,7 +4,6 @@ import (
 	appDefine "github.com/loebfly/ezgin/app"
 	"github.com/loebfly/ezgin/internal/app"
 	"github.com/loebfly/ezgin/internal/cache"
-	"github.com/loebfly/ezgin/internal/call"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/dblite"
 	"github.com/loebfly/ezgin/internal/engine"
@@ -63,11 +62,6 @@ const (
 				DBLite.Mongo() 获取mongo数据库操作对象
 	*/
 	DBLite = dblite.Enter
-	// Call 微服务调用模块
-	/*
-		说明: 用于调用其他微服务，支持form、json、restful三种方式
-	*/
-	Call = call.Enter
 	// I18n 国际化模块
 	/*
 		说明: 用于获取国际化信息
@@ -89,7 +83,7 @@ import (
 func main() {
 	ezgin.Start(app.Start{
 		GinCfg: app.GinCfg{
-			RecoveryHandler: func(c *gin.Context, err interface{}) {
+			RecoveryHandler: func(c *gin.Context, err any) {
 				c.JSON(http.StatusOK, i18n.SystemError.ErrorRes())
 			},
 			NoRouteHandler: func(c *gin.Context) {
@@ -110,3 +104,7 @@ func Start(start ...appDefine.Start) {
 func ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
 	app.ShutdownWhenExitSignal(shutdown...)
 }
+
+//func Call[D any]() call.Enter[D] {
+//	return call.Enter[D]{}
+//}

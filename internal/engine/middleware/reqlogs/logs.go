@@ -46,9 +46,9 @@ func (receiver enter) Middleware(c *gin.Context) {
 	// 处理请求
 	c.Next()
 
-	var reqParams interface{}
+	var reqParams any
 	if strings.Contains(c.ContentType(), gin.MIMEJSON) {
-		var params = make(map[string]interface{})
+		var params = make(map[string]any)
 		err = json.Unmarshal(rawData, &reqParams)
 		if err != nil {
 			logs.Enter.CError("GIN", "reqParams json.unmarshal error:{}", err.Error())
@@ -64,7 +64,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 	endTime := time.Now()
 	respTime := endTime.Format("2006-01-02 15:04:05.012")
 
-	var respParams = make(map[string]interface{})
+	var respParams = make(map[string]any)
 	respStr := rWriter.body.String()
 	if respStr != "" && respStr[0:1] == "{" {
 		err = json.Unmarshal(rWriter.body.Bytes(), &respParams)
@@ -148,7 +148,7 @@ func (receiver enter) GetFormParams(ctx *gin.Context) map[string]string {
 }
 
 // ConvToString 任意类型转换为字符串
-func (receiver enter) argToString(iFace interface{}) string {
+func (receiver enter) argToString(iFace any) string {
 	switch val := iFace.(type) {
 	case []byte:
 		return string(val)

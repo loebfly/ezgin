@@ -11,16 +11,14 @@ type formCall int
 
 const Form = formCall(0)
 
-func (receiver formCall) request(method, service, uri string, header, params map[string]string, files []grequests.FileUpload) (string, error) {
+func (receiver formCall) Request(method, service, uri string, header, params map[string]string, files []grequests.FileUpload) (resp *grequests.Response, err error) {
 	var url string
-	var err error
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, header)
 	if err != nil {
 		logs.Enter.CError("CALL", "FORM - 获取{}服务地址失败:{}", service, err)
-		return "", err
+		return
 	}
 
-	var resp *grequests.Response
 	if files != nil {
 		logs.Enter.CDebug("CALL",
 			"FORM - FILE 微服务开始请求 -- url: {}, params: {}, header: {}",
@@ -35,7 +33,7 @@ func (receiver formCall) request(method, service, uri string, header, params map
 			logs.Enter.CError("CALL",
 				"FORM - FILE 微服务请求失败 -- url: {}, params: {}, header: {}, err: {}",
 				url, params, header, err)
-			return "", err
+			return
 		}
 	} else {
 		logs.Enter.CDebug("CALL",
@@ -61,13 +59,13 @@ func (receiver formCall) request(method, service, uri string, header, params map
 			logs.Enter.CError("CALL",
 				"FORM - {} 微服务请求失败 -- url: {}, params: {}, header: {}, err: {}",
 				method, url, params, header, err)
-			return "", err
+			return
 		}
 	}
 	logs.Enter.CDebug("CALL",
 		"FORM - {} 微服务请求响应 -- url: {}, params: {}, header: {}, resp: {}",
 		method, url, params, header, resp.String())
-	return resp.String(), nil
+	return
 
 }
 

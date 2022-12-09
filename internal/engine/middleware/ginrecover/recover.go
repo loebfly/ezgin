@@ -7,7 +7,7 @@ import (
 	"net/http/httputil"
 )
 
-func (receiver enter) Middleware(f func(c *gin.Context, err interface{})) gin.HandlerFunc {
+func (receiver enter) Middleware(f func(c *gin.Context, err any)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {

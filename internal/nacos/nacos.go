@@ -64,7 +64,7 @@ func (c *control) register() bool {
 	}
 	logs.Enter.CDebug("NACOS", "客户端配置:{}", clientConfig)
 
-	naming, err := clients.CreateNamingClient(map[string]interface{}{
+	naming, err := clients.CreateNamingClient(map[string]any{
 		"serverConfigs": serverConfigs,
 		"clientConfig":  clientConfig,
 	})

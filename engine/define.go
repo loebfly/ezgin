@@ -22,15 +22,24 @@ const (
 
 type MiddlewareFunc func(c *gin.Context)
 
-type HandlerFunc func(c *gin.Context) Result
+type HandlerFunc func(c *gin.Context) Result[any]
 
-type RecoveryFunc func(c *gin.Context, err interface{})
+type RecoveryFunc func(c *gin.Context, err any)
 
-type Result struct {
-	Status  int         `json:"status"`
-	Message string      `json:"msg"`
-	Data    interface{} `json:"data"`
-	Page    *Page       `json:"page"`
+type Result[D any] struct {
+	Status  int    `json:"status"`
+	Message string `json:"msg"`
+	Data    D      `json:"data"`
+	Page    *Page  `json:"page"`
+}
+
+func (receiver Result[D]) ToAny() Result[any] {
+	return Result[any]{
+		Status:  receiver.Status,
+		Message: receiver.Message,
+		Data:    receiver.Data,
+		Page:    receiver.Page,
+	}
 }
 
 type Page struct {
@@ -40,31 +49,31 @@ type Page struct {
 	Total int `json:"total"`
 }
 
-func ErrorRes(status int, message string) Result {
-	return Result{
+func ErrorRes(status int, message string) Result[any] {
+	return Result[any]{
 		Status:  status,
 		Message: message,
 	}
 }
 
-func SuccessRes(data interface{}, message ...string) Result {
+func SuccessRes[D any](data D, message ...string) Result[D] {
 	msg := "success"
 	if len(message) > 0 {
 		msg = message[0]
 	}
-	return Result{
+	return Result[D]{
 		Status:  1,
 		Message: msg,
 		Data:    data,
 	}
 }
 
-func SuccessPageRes(data interface{}, page Page, message ...string) Result {
+func SuccessPageRes[D any](data D, page Page, message ...string) Result[D] {
 	msg := "success"
 	if len(message) > 0 {
 		msg = message[0]
 	}
-	return Result{
+	return Result[D]{
 		Status:  1,
 		Message: msg,
 		Data:    data,

@@ -52,7 +52,7 @@ func (receiver *control) initEngine() {
 		}
 		if strings.Contains(config.Gin.Middleware, "recover") {
 			if config.Gin.RecoveryFunc == nil {
-				config.Gin.RecoveryFunc = func(c *gin.Context, err interface{}) {
+				config.Gin.RecoveryFunc = func(c *gin.Context, err any) {
 					c.JSON(http.StatusInternalServerError, engine.ErrorRes(-1, fmt.Sprintf("%v", err)))
 				}
 			}
@@ -81,7 +81,7 @@ func (receiver *control) routersHandler(ctx *gin.Context) {
 		}
 	}
 
-	ctx.JSON(http.StatusNotFound, engine.Result{
+	ctx.JSON(http.StatusNotFound, engine.Result[any]{
 		Status:  -1,
 		Message: "404 not found",
 	})

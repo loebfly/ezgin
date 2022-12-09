@@ -15,11 +15,11 @@ func (enter) Table(name string) Memory {
 	}
 }
 
-func (receiver enter) Add(key string, value interface{}, lifeSpan time.Duration) {
+func (receiver enter) Add(key string, value any, lifeSpan time.Duration) {
 	receiver.Table("DEFAULT").Add(key, value, lifeSpan)
 }
 
-func (receiver enter) Get(key string) (value interface{}, isExist bool) {
+func (receiver enter) Get(key string) (value any, isExist bool) {
 	return receiver.Table("DEFAULT").Get(key)
 }
 

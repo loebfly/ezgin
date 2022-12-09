@@ -18,15 +18,15 @@ func (enter) String(messageId string) string {
 	return ctl.getString(lang, messageId)
 }
 
-func (enter) StringFormat(messageId string, args ...interface{}) string {
+func (enter) StringFormat(messageId string, args ...any) string {
 	lang := engine.MWTrace.GetCurXLang()
 	return ctl.getString(lang, messageId, args...)
 }
 
-func (enter) StringByLang(lang, messageId string, args ...interface{}) string {
+func (enter) StringByLang(lang, messageId string, args ...any) string {
 	return ctl.getString(lang, messageId, args...)
 }
 
-func (enter) StringFormatByLang(lang, messageId string, args ...interface{}) string {
+func (enter) StringFormatByLang(lang, messageId string, args ...any) string {
 	return ctl.getString(lang, messageId, args...)
 }

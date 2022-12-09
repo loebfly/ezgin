@@ -10,11 +10,11 @@ type Memory struct {
 	table *cache2go.CacheTable
 }
 
-func (receiver Memory) Add(key string, value interface{}, lifeSpan time.Duration) {
+func (receiver Memory) Add(key string, value any, lifeSpan time.Duration) {
 	receiver.table.Add(key, lifeSpan, value)
 }
 
-func (receiver Memory) Get(key string) (value interface{}, isExist bool) {
+func (receiver Memory) Get(key string) (value any, isExist bool) {
 	item, err := receiver.table.Value(key)
 	if err != nil {
 		return nil, false

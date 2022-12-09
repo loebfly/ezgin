@@ -13,18 +13,16 @@ type jsonCall int
 
 const Json = jsonCall(0)
 
-func (receiver jsonCall) request(method define.HttpMethod, service, uri string, header, query map[string]string, body interface{}) (string, error) {
+func (receiver jsonCall) Request(method define.HttpMethod, service, uri string, header, query map[string]string, body any) (resp *grequests.Response, err error) {
 	var url string
-	var err error
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, header)
 	if err != nil {
 		logs.Enter.CError("CALL", "JSON - 获取{}服务地址失败:{}", service, err)
-		return "", err
+		return
 	}
 	logs.Enter.CDebug("CALL",
 		"JSON - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}",
 		method, url, header, query, body)
-	var resp *grequests.Response
 
 	var options = &grequests.RequestOptions{
 		Params:             query,
@@ -48,19 +46,20 @@ func (receiver jsonCall) request(method define.HttpMethod, service, uri string, 
 	case define.Patch:
 		resp, err = grequests.Patch(url, options)
 	default:
-		return "", errors.New("不支持的请求方法")
+		err = errors.New("不支持的请求方法")
+		return
 
 	}
 	if err != nil {
 		logs.Enter.CError("CALL",
 			"JSON - {}微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}",
 			method, url, query, header, err)
-		return "", err
+		return
 	}
 	logs.Enter.CDebug("CALL",
 		"JSON - {} 微服务请求响应 -- url: {} method: {}, params: {}, headers: {}, resp: {}",
 		method, url, query, header, resp.String())
-	return resp.String(), nil
+	return
 }
 
 func (receiver jsonCall) getReqUrlAndHeader(service, uri string, header map[string]string) (string, map[string]string, error) {

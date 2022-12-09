@@ -28,27 +28,27 @@ type Logger struct {
 	level    string
 }
 
-func (logger Logger) Debug(format string, args ...interface{}) {
+func (logger Logger) Debug(format string, args ...any) {
 	logger.level = LevelDebug
 	logger.outPut(format, args...)
 }
 
-func (logger Logger) Info(format string, args ...interface{}) {
+func (logger Logger) Info(format string, args ...any) {
 	logger.level = LevelInfo
 	logger.outPut(format, args...)
 }
 
-func (logger Logger) Warn(format string, args ...interface{}) {
+func (logger Logger) Warn(format string, args ...any) {
 	logger.level = LevelWarn
 	logger.outPut(format, args...)
 }
 
-func (logger Logger) Error(format string, args ...interface{}) {
+func (logger Logger) Error(format string, args ...any) {
 	logger.level = LevelError
 	logger.outPut(format, args...)
 }
 
-func (logger Logger) outPut(format string, args ...interface{}) {
+func (logger Logger) outPut(format string, args ...any) {
 	if Config.Logs.Level == "-" {
 		return
 	}
@@ -185,7 +185,7 @@ func (logger Logger) outputToFile(content string) {
 }
 
 // ConvToString 任意类型转换为字符串
-func (logger Logger) argToString(iFace interface{}) string {
+func (logger Logger) argToString(iFace any) string {
 	switch val := iFace.(type) {
 	case []byte:
 		return string(val)

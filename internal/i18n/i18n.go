@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/ezcall"
 	"github.com/loebfly/ezgin/internal/cache"
-	"github.com/loebfly/ezgin/internal/call"
 	"github.com/loebfly/ezgin/internal/logs"
 	"reflect"
 	"strconv"
@@ -72,17 +71,9 @@ func (ctl *control) cacheAppXlangData(appName, version string) {
 
 // getAppXLangLastVersion 获取应用最新的多语言版本号
 func (ctl *control) getAppXLangLastVersion(appName string) (string, error) {
-	respStr, err := call.Enter.FormPost(config.I18n.ServerName, config.I18n.CheckUri, map[string]string{
+	result := ezcall.FormPostToResult[map[string]string](config.I18n.ServerName, config.I18n.CheckUri, map[string]string{
 		"appName": appName,
 	})
-	if err != nil {
-		return "", err
-	}
-	var result engine.Result
-	err = json.Unmarshal([]byte(respStr), &result)
-	if err != nil {
-		return "", err
-	}
 	if result.Status != 1 {
 		return "", errors.New(result.Message)
 	}
@@ -97,17 +88,9 @@ func (ctl *control) getAppXLangLastVersion(appName string) (string, error) {
 
 // getLastAppXlangData 获取应用最新的多语言数据
 func (ctl *control) getLastAppXlangData(appName string) (map[string]string, error) {
-	respStr, err := call.Enter.FormPost(config.I18n.ServerName, config.I18n.QueryUri, map[string]string{
+	result := ezcall.FormPostToResult[map[string]string](config.I18n.ServerName, config.I18n.QueryUri, map[string]string{
 		"appName": appName,
 	})
-	if err != nil {
-		return nil, err
-	}
-	var result engine.Result
-	err = json.Unmarshal([]byte(respStr), &result)
-	if err != nil {
-		return nil, err
-	}
 	if result.Status != 1 {
 		return nil, errors.New(result.Message)
 	}
@@ -121,7 +104,7 @@ func (ctl *control) getLastAppXlangData(appName string) (map[string]string, erro
 }
 
 // getString 获取多语言字符串
-func (ctl *control) getString(lang, strId string, args ...interface{}) string {
+func (ctl *control) getString(lang, strId string, args ...any) string {
 	value, isExist := cache.Enter.Table(CacheTableXLang).Get(fmt.Sprintf("%s:%s", strId, lang))
 	if isExist {
 		format := value.(string)
@@ -136,7 +119,7 @@ func (ctl *control) getString(lang, strId string, args ...interface{}) string {
 }
 
 // ConvToString 任意类型转换为字符串
-func (ctl *control) argToString(iFace interface{}) string {
+func (ctl *control) argToString(iFace any) string {
 	switch val := iFace.(type) {
 	case []byte:
 		return string(val)

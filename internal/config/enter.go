@@ -35,7 +35,7 @@ func (enter) GetYmlData(confUrl string) (*koanf.Koanf, error) {
 }
 
 // GetYmlObj 以结构体获取配置数据，结构体tag必须包含json
-func (enter) GetYmlObj(confUrlOrPath string, obj interface{}) error {
+func (enter) GetYmlObj(confUrlOrPath string, obj any) error {
 	// 判断confUrl是否是本地路径
 	if strings.HasPrefix(confUrlOrPath, "http") {
 		resp, err := grequests.Get(confUrlOrPath, nil)

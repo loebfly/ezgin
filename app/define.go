@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type RecoveryFunc func(c *gin.Context, err interface{})
+type RecoveryFunc func(c *gin.Context, err any)
 
 type Start struct {
 	YmlPath string // yml配置文件路径, 为空时默认为当前程序所在目录的同名yml文件

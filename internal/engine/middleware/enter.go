@@ -25,7 +25,7 @@ func Logs(logChan chan engineDefine.ReqCtx) func(ctx *gin.Context) {
 	}
 }
 
-func Recover(recoverFunc func(c *gin.Context, err interface{})) func(ctx *gin.Context) {
+func Recover(recoverFunc func(c *gin.Context, err any)) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		ginrecover.Enter.Middleware(recoverFunc)
 	}

@@ -14,16 +14,14 @@ type restfulCall int
 
 const Restful = restfulCall(0)
 
-func (receiver restfulCall) request(method define.HttpMethod, service, uri string, path, header, query map[string]string, body interface{}) (string, error) {
+func (receiver restfulCall) Request(method define.HttpMethod, service, uri string, path, header, query map[string]string, body any) (resp *grequests.Response, err error) {
 	var url string
-	var err error
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, path, header)
 	if err != nil {
 		logs.Enter.CError("CALL", "RESTFUL - 获取{}服务地址失败:{}", service, err)
-		return "", err
+		return
 	}
 	logs.Enter.CDebug("CALL", "RESTFUL - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}", method, url, header, query, body)
-	var resp *grequests.Response
 	var options = &grequests.RequestOptions{
 		Params:             query,
 		Headers:            header,
@@ -47,14 +45,15 @@ func (receiver restfulCall) request(method define.HttpMethod, service, uri strin
 		resp, err = grequests.Patch(url, options)
 	default:
 		logs.Enter.CError("CALL", "RESTFUL - 不支持的请求方法:{}", method)
-		return "", errors.New("RESTFUL - 不支持的请求方法")
+		err = errors.New("不支持的请求方法")
+		return
 	}
 	if err != nil {
 		logs.Enter.CError("CALL", "RESTFUL - 请求{}微服务失败:{}", service, err)
-		return "", err
+		return
 	}
 	logs.Enter.CDebug("CALL", "RESTFUL - {}微服务请求结束 -- url: {}, headers: {}, query: {}, body:{}, resp: {}", method, url, header, query, body, resp.String())
-	return resp.String(), nil
+	return resp, nil
 }
 
 func (receiver restfulCall) getReqUrlAndHeader(service, uri string, path, header map[string]string) (string, map[string]string, error) {

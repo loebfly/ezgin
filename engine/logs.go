@@ -18,8 +18,8 @@ type ReqCtx struct {
 	URI         string            `json:"uri" bson:"uri"`                     // 请求URI
 	ClientIP    string            `json:"clientIP" bson:"clientIP"`           // 客户端IP
 	ReqHeaders  map[string]string `json:"requestHeader" bson:"requestHeader"` // 请求头
-	ReqParams   interface{}       `json:"requestParam" bson:"requestParam"`   // 请求参数
-	RespParams  interface{}       `json:"responseMap" bson:"responseMap"`     // 响应参数
+	ReqParams   any               `json:"requestParam" bson:"requestParam"`   // 请求参数
+	RespParams  any               `json:"responseMap" bson:"responseMap"`     // 响应参数
 }
 
 func (ctx ReqCtx) ToJson() string {
