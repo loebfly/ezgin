@@ -15,6 +15,7 @@ const (
 	HeaderXRealIPKey    = "X-Real-IP"
 	HeaderXUserAgentKey = "X-User-Agent"
 	HeaderXLangKey      = "X-Lang"
+	HeaderXTimeoutKey   = "X-Timeout"
 
 	XHeaderTable = "XHeaderTable"
 
@@ -53,6 +54,11 @@ func (receiver enter) Middleware(c *gin.Context) {
 	if headers[HeaderXLangKey] == "" {
 		// 如果请求头中没有X-Lang, 则默认为zh-cn
 		headers[HeaderXLangKey] = "zh-cn"
+	}
+
+	if headers[HeaderXTimeoutKey] == "" {
+		// 如果请求头中没有X-Timeout, 则默认为90s
+		headers[HeaderXTimeoutKey] = "90"
 	}
 
 	// 将请求头信息存入缓存
@@ -98,6 +104,15 @@ func (receiver enter) GetCurUserAgent() string {
 // GetCurXLang 获取当前语言
 func (receiver enter) GetCurXLang() string {
 	return receiver.GetCurHeader()[HeaderXLangKey]
+}
+
+// GetCurTimeout 获取当前超时时间
+func (receiver enter) GetCurTimeout() time.Duration {
+	timeout, err := strconv.Atoi(receiver.GetCurHeader()[HeaderXTimeoutKey])
+	if err != nil || timeout <= 0 {
+		return 90 * time.Second
+	}
+	return time.Duration(timeout) * time.Second
 }
 
 func (receiver enter) GetCurHeader() map[string]string {

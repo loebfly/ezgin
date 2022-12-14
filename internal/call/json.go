@@ -7,6 +7,7 @@ import (
 	"github.com/loebfly/ezgin/internal/engine"
 	"github.com/loebfly/ezgin/internal/logs"
 	"github.com/loebfly/ezgin/internal/nacos"
+	"strings"
 )
 
 type jsonCall int
@@ -14,6 +15,14 @@ type jsonCall int
 const Json = jsonCall(0)
 
 func (receiver jsonCall) request(method define.HttpMethod, service, uri string, header, query map[string]string, body interface{}) (string, error) {
+	return receiver.tryRequest(method, service, uri, header, query, body, true)
+}
+
+func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri string, header, query map[string]string, body interface{}, isFirstReq bool) (string, error) {
+	if !isFirstReq {
+		// 清除当前的服务缓存
+		nacos.Enter.CleanServiceCache(service)
+	}
 	var url string
 	var err error
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, header)
@@ -25,11 +34,12 @@ func (receiver jsonCall) request(method define.HttpMethod, service, uri string, 
 		"JSON - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}",
 		method, url, header, query, body)
 	var resp *grequests.Response
-
+	timeout := engine.MWTrace.GetCurTimeout()
 	var options = &grequests.RequestOptions{
 		Params:             query,
 		Headers:            header,
 		InsecureSkipVerify: true,
+		RequestTimeout:     timeout,
 		JSON:               body,
 	}
 	switch method {
@@ -55,6 +65,12 @@ func (receiver jsonCall) request(method define.HttpMethod, service, uri string, 
 		logs.Enter.CError("CALL",
 			"JSON - {}微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}",
 			method, url, query, header, err)
+		if isFirstReq && strings.Contains(err.Error(), "connection refused") {
+			return receiver.tryRequest(method, service, uri, header, query, body, false)
+		}
+		if strings.Contains(err.Error(), "dial tcp") {
+			return "", errors.New("service unavailable")
+		}
 		return "", err
 	}
 	logs.Enter.CDebug("CALL",

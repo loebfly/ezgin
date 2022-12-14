@@ -243,7 +243,7 @@ func (c *control) getService(name string) (url string, err error) {
 
 	if targetInstance.InstanceId == "" {
 		logs.Enter.CError("NACOS", "未获取到服务:{}", name)
-		return "", errors.New("未获取到服务:" + name)
+		return "", errors.New("service unavailable")
 	}
 	err = nil
 	logs.Enter.CInfo("NACOS", "获取到服务:{}", targetInstance)
@@ -260,8 +260,9 @@ func (c *control) getService(name string) (url string, err error) {
 		subErr := c.subscribeService(name, group)
 		if subErr != nil {
 			logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
+		} else {
+			cache.Enter.Table(CacheTableSubscribe).Add(name, true, CacheDuration)
 		}
-		cache.Enter.Table(CacheTableSubscribe).Add(name, true, CacheDuration)
 	}
 	return url, err
 }
@@ -309,6 +310,11 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 			}
 		},
 	})
+}
+
+// cleanServiceCache 清理服务缓存
+func (c *control) cleanServiceCache(name string) {
+	cache.Enter.Table(CacheTableService).Delete(name)
 }
 
 // createCacheDirIfNeed 创建缓存目录

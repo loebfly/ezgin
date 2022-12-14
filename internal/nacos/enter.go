@@ -30,3 +30,8 @@ func (enter) GetClient() naming_client.INamingClient {
 func (enter) GetService(name string) (url string, err error) {
 	return ctl.getService(name)
 }
+
+// CleanServiceCache 清理缓存
+func (enter) CleanServiceCache(name string) {
+	ctl.cleanServiceCache(name)
+}

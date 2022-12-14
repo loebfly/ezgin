@@ -15,6 +15,14 @@ type restfulCall int
 const Restful = restfulCall(0)
 
 func (receiver restfulCall) request(method define.HttpMethod, service, uri string, path, header, query map[string]string, body interface{}) (string, error) {
+	return receiver.tryRequest(method, service, uri, path, header, query, body, true)
+}
+
+func (receiver restfulCall) tryRequest(method define.HttpMethod, service, uri string, path, header, query map[string]string, body interface{}, isFirstReq bool) (string, error) {
+	if !isFirstReq {
+		// 清除当前的服务缓存
+		nacos.Enter.CleanServiceCache(service)
+	}
 	var url string
 	var err error
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, path, header)
@@ -24,10 +32,14 @@ func (receiver restfulCall) request(method define.HttpMethod, service, uri strin
 	}
 	logs.Enter.CDebug("CALL", "RESTFUL - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}", method, url, header, query, body)
 	var resp *grequests.Response
+
+	timeout := engine.MWTrace.GetCurTimeout()
+
 	var options = &grequests.RequestOptions{
 		Params:             query,
 		Headers:            header,
 		InsecureSkipVerify: true,
+		RequestTimeout:     timeout,
 		JSON:               body,
 	}
 	switch method {
@@ -47,10 +59,16 @@ func (receiver restfulCall) request(method define.HttpMethod, service, uri strin
 		resp, err = grequests.Patch(url, options)
 	default:
 		logs.Enter.CError("CALL", "RESTFUL - 不支持的请求方法:{}", method)
-		return "", errors.New("RESTFUL - 不支持的请求方法")
+		return "", errors.New("不支持的请求方法")
 	}
 	if err != nil {
 		logs.Enter.CError("CALL", "RESTFUL - 请求{}微服务失败:{}", service, err)
+		if isFirstReq && strings.Contains(err.Error(), "connection refused") {
+			return receiver.tryRequest(method, service, uri, path, header, query, body, false)
+		}
+		if strings.Contains(err.Error(), "dial tcp") {
+			return "", errors.New("service unavailable")
+		}
 		return "", err
 	}
 	logs.Enter.CDebug("CALL", "RESTFUL - {}微服务请求结束 -- url: {}, headers: {}, query: {}, body:{}, resp: {}", method, url, header, query, body, resp.String())
