@@ -286,6 +286,7 @@ func (c *control) getService(name string) (url string, err error) {
 			cache.Enter.Table(CacheTableSubscribe).Add("subscribed", subscribedMap, 0)
 		}
 	} else {
+		logs.Enter.CDebug("NACOS", "客户端已订阅服务:{}, 更新服务缓存", name)
 		// 已订阅，更新缓存
 		servicesMap := make(map[string][]string)
 		for _, s := range instances {
