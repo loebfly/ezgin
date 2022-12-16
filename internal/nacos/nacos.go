@@ -139,6 +139,18 @@ func (c *control) unregister() {
 	if c.client == nil {
 		return
 	}
+
+	logs.Enter.CWarn("NACOS", "正在取消订阅所有服务")
+
+	if subscribed, isExist := cache.Enter.Table(CacheTableSubscribe).Get("subscribed"); subscribed != nil && isExist {
+		for name, group := range subscribed.(map[string]string) {
+			subErr := c.unsubscribeService(name, group)
+			if subErr != nil {
+				logs.Enter.CError("NACOS", "取消订阅服务失败:{}", subErr)
+			}
+		}
+	}
+
 	logs.Enter.CWarn("NACOS", "正在注销客户端")
 	subErr := c.client.Unsubscribe(&vo.SubscribeParam{
 		ServiceName: Config.Nacos.App.Name,
@@ -256,12 +268,19 @@ func (c *control) getService(name string) (url string, err error) {
 	}
 
 	// 订阅服务，回调中更新缓存
-	if !cache.Enter.Table(CacheTableSubscribe).IsExist(name) {
-		subErr := c.subscribeService(name, group)
-		if subErr != nil {
-			logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
-		} else {
-			cache.Enter.Table(CacheTableSubscribe).Add(name, true, CacheDuration)
+	if subscribed, isExist := cache.Enter.Table(CacheTableSubscribe).Get("subscribed"); subscribed == nil || !isExist {
+		if subscribed == nil {
+			subscribed = make(map[string]string)
+		}
+		subscribedMap := subscribed.(map[string]string)
+		if _, ok := subscribedMap[name]; !ok {
+			subErr := c.subscribeService(name, group)
+			if subErr != nil {
+				logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
+			} else {
+				subscribedMap[name] = group
+				cache.Enter.Table(CacheTableSubscribe).Add("subscribed", subscribedMap, 0)
+			}
 		}
 	}
 	return url, err
@@ -307,6 +326,24 @@ func (c *control) subscribeService(serviceName, groupName string) error {
 				}
 				logs.Enter.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
 				cache.Enter.Table(CacheTableService).Add(sName, hosts, CacheDuration)
+			}
+		},
+	})
+}
+
+func (c *control) unsubscribeService(serviceName, groupName string) error {
+	logs.Enter.CInfo("NACOS", "取消订阅服务:{}", serviceName)
+	return c.client.Unsubscribe(&vo.SubscribeParam{
+		ServiceName: serviceName,
+		Clusters:    []string{"DEFAULT"},
+		GroupName:   groupName,
+		SubscribeCallback: func(services []model.SubscribeService, err error) {
+			if err != nil {
+				logs.Enter.CError("NACOS", "取消订阅回调错误:{}", err.Error())
+				return
+			}
+			for _, s := range services {
+				logs.Enter.CInfo("NACOS", "取消订阅服务:{} 成功", s)
 			}
 		},
 	})
