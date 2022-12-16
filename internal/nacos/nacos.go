@@ -212,18 +212,20 @@ func (c *control) getService(name string) (url string, err error) {
 	}
 
 	// 从Nacos中获取, 有则随机返回Nacos中的一个
+	var instances []model.Instance
 	var targetInstance model.Instance
 	var group string
 	// 最多尝试3次
 	for i := 0; i < 3; i++ {
 		group = Config.Nacos.GroupName
 		logs.Enter.CDebug("NACOS", "尝试从{}组中获取到服务:{}", group, name)
-		instances, err := c.client.SelectInstances(vo.SelectInstancesParam{
+		instances, err = c.client.SelectInstances(vo.SelectInstancesParam{
 			Clusters:    []string{Config.Nacos.ClusterName, "DEFAULT"},
 			ServiceName: name,
 			GroupName:   group,
 			HealthyOnly: true,
 		})
+
 		if instances == nil || len(instances) == 0 || err != nil {
 			logs.Enter.CWarn("NACOS", "未从{}组中获取到服务:{}", group, name)
 			group = "DEFAULT_GROUP"
@@ -239,43 +241,18 @@ func (c *control) getService(name string) (url string, err error) {
 				continue
 			}
 		}
-		servicesMap := make(map[string][]string)
+
 		// 删除debug实例
 		for j := 0; j < len(instances); j++ {
 			if instances[j].Metadata["debug"] == "true" {
 				instances = append(instances[:j], instances[j+1:]...)
 				j--
-			} else {
-				ins := instances[j]
-				protocol := "http"
-				if ins.Metadata != nil {
-					if ins.Metadata["debug"] == "true" {
-						continue
-					}
-					if ins.Metadata["ssl"] == "true" {
-						protocol = "https"
-					}
-				}
-
-				host := protocol + "://" + ins.Ip + ":" + strconv.Itoa(int(ins.Port))
-				if _, ok := servicesMap[name]; !ok {
-					servicesMap[name] = []string{host}
-				} else {
-					servicesMap[name] = append(servicesMap[name], host)
-				}
 			}
 		}
+
 		if len(instances) > 0 {
 			// 随机获取一个实例
 			targetInstance = instances[rand.Intn(len(instances))]
-			// 缓存服务
-			for sName, hosts := range servicesMap {
-				if cache.Enter.Table(CacheTableService).IsExist(sName) {
-					cache.Enter.Table(CacheTableService).Delete(sName)
-				}
-				logs.Enter.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
-				cache.Enter.Table(CacheTableService).Add(sName, hosts, CacheDuration)
-			}
 			break
 		}
 	}
@@ -307,6 +284,35 @@ func (c *control) getService(name string) (url string, err error) {
 		} else {
 			subscribedMap[name] = group
 			cache.Enter.Table(CacheTableSubscribe).Add("subscribed", subscribedMap, 0)
+		}
+	} else {
+		// 已订阅，更新缓存
+		servicesMap := make(map[string][]string)
+		for _, s := range instances {
+			protocol := "http"
+			if s.Metadata != nil {
+				if s.Metadata["debug"] == "true" {
+					continue
+				}
+				if s.Metadata["ssl"] == "true" {
+					protocol = "https"
+				}
+			}
+
+			host := protocol + "://" + s.Ip + ":" + strconv.Itoa(int(s.Port))
+			if _, ok = servicesMap[name]; !ok {
+				servicesMap[name] = []string{host}
+			} else {
+				servicesMap[name] = append(servicesMap[name], host)
+			}
+		}
+
+		for sName, hosts := range servicesMap {
+			if cache.Enter.Table(CacheTableService).IsExist(sName) {
+				cache.Enter.Table(CacheTableService).Delete(sName)
+			}
+			logs.Enter.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
+			cache.Enter.Table(CacheTableService).Add(sName, hosts, CacheDuration)
 		}
 	}
 	return url, err
