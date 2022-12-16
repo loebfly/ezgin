@@ -239,16 +239,43 @@ func (c *control) getService(name string) (url string, err error) {
 				continue
 			}
 		}
-
+		servicesMap := make(map[string][]string)
 		// 删除debug实例
 		for j := 0; j < len(instances); j++ {
 			if instances[j].Metadata["debug"] == "true" {
 				instances = append(instances[:j], instances[j+1:]...)
 				j--
+			} else {
+				ins := instances[j]
+				protocol := "http"
+				if ins.Metadata != nil {
+					if ins.Metadata["debug"] == "true" {
+						continue
+					}
+					if ins.Metadata["ssl"] == "true" {
+						protocol = "https"
+					}
+				}
+
+				host := protocol + "://" + ins.Ip + ":" + strconv.Itoa(int(ins.Port))
+				if _, ok := servicesMap[name]; !ok {
+					servicesMap[name] = []string{host}
+				} else {
+					servicesMap[name] = append(servicesMap[name], host)
+				}
 			}
 		}
 		if len(instances) > 0 {
+			// 随机获取一个实例
 			targetInstance = instances[rand.Intn(len(instances))]
+			// 缓存服务
+			for sName, hosts := range servicesMap {
+				if cache.Enter.Table(CacheTableService).IsExist(sName) {
+					cache.Enter.Table(CacheTableService).Delete(sName)
+				}
+				logs.Enter.CInfo("NACOS", "添加{}服务缓存,列表:{}", sName, hosts)
+				cache.Enter.Table(CacheTableService).Add(sName, hosts, CacheDuration)
+			}
 			break
 		}
 	}
