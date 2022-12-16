@@ -268,25 +268,25 @@ func (c *control) getService(name string) (url string, err error) {
 	}
 
 	// 订阅服务，回调中更新缓存
-	if subscribed, isExist := cache.Enter.Table(CacheTableSubscribe).Get("subscribed"); subscribed == nil || !isExist {
-		if subscribed == nil {
-			subscribed = make(map[string]string)
-		}
-		subscribedMap := subscribed.(map[string]string)
-		if _, ok := subscribedMap[name]; !ok {
-			subErr := c.subscribeService(name, group)
-			if subErr != nil {
-				logs.Enter.CError("NACOS", "客户端订阅服务:{}失败:{}", name, subErr.Error())
-			} else {
-				subscribedMap[name] = group
-				cache.Enter.Table(CacheTableSubscribe).Add("subscribed", subscribedMap, 0)
-			}
+	subscribed, isExist := cache.Enter.Table(CacheTableSubscribe).Get("subscribed")
+	if !isExist {
+		subscribed = make(map[string]string)
+	}
+	subscribedMap := subscribed.(map[string]string)
+	if _, ok := subscribedMap[name]; !ok {
+		subErr := c.subscribeService(name, group)
+		if subErr != nil {
+			logs.Enter.CError("NACOS", "客户端订阅服务:{} 失败:{}", name, subErr.Error())
+		} else {
+			subscribedMap[name] = group
+			cache.Enter.Table(CacheTableSubscribe).Add("subscribed", subscribedMap, 0)
 		}
 	}
 	return url, err
 }
 
 func (c *control) subscribeService(serviceName, groupName string) error {
+	logs.Enter.CDebug("NACOS", "客户端订阅服务:{}", serviceName)
 	return c.client.Subscribe(&vo.SubscribeParam{
 		ServiceName: serviceName,
 		Clusters:    []string{"DEFAULT"},
