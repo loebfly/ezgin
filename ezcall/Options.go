@@ -6,53 +6,69 @@ import (
 	"time"
 )
 
-type ReqWay int // 请求方式
-
-const (
-	ReqWayForm ReqWay = iota
-	ReqWayJson
-	ReqWayRestFul
-)
-
 type OptionsProtocol interface {
 	GetMethod() engine.HttpMethod
 	GetTimeout() time.Duration
 	GetHeader() map[string]string
 }
 
-type baseOptions struct {
+type FormOptions struct {
 	Method  engine.HttpMethod
 	Timeout time.Duration
 	Header  map[string]string
+	Files   []grequests.FileUpload
+	Params  map[string]string
 }
 
-func (receiver baseOptions) GetMethod() engine.HttpMethod {
+func (receiver FormOptions) GetMethod() engine.HttpMethod {
 	return receiver.Method
 }
 
-func (receiver baseOptions) GetTimeout() time.Duration {
+func (receiver FormOptions) GetTimeout() time.Duration {
 	return receiver.Timeout
 }
 
-func (receiver baseOptions) GetHeader() map[string]string {
+func (receiver FormOptions) GetHeader() map[string]string {
 	return receiver.Header
 }
 
-type FormOptions struct {
-	baseOptions
-	Files  []grequests.FileUpload
-	Params map[string]string
-}
-
 type JsonOptions struct {
-	baseOptions
-	Query map[string]string
-	JSON  any
+	Method  engine.HttpMethod
+	Timeout time.Duration
+	Header  map[string]string
+	Query   map[string]string
+	JSON    any
 }
 
-type RestFulOptions struct {
-	baseOptions
-	Path  map[string]string
-	Query map[string]string
-	Body  any
+func (receiver JsonOptions) GetMethod() engine.HttpMethod {
+	return receiver.Method
+}
+
+func (receiver JsonOptions) GetTimeout() time.Duration {
+	return receiver.Timeout
+}
+
+func (receiver JsonOptions) GetHeader() map[string]string {
+	return receiver.Header
+}
+
+type RestfulOptions struct {
+	Method  engine.HttpMethod
+	Timeout time.Duration
+	Header  map[string]string
+	Path    map[string]string
+	Query   map[string]string
+	Body    any
+}
+
+func (receiver RestfulOptions) GetMethod() engine.HttpMethod {
+	return receiver.Method
+}
+
+func (receiver RestfulOptions) GetTimeout() time.Duration {
+	return receiver.Timeout
+}
+
+func (receiver RestfulOptions) GetHeader() map[string]string {
+	return receiver.Header
 }

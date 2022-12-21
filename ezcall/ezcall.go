@@ -106,7 +106,7 @@ func Request(service, uri string, option OptionsProtocol) (*grequests.Response, 
 		return call.Form.Request(string(formOption.GetMethod()), service, uri, formOption.GetHeader(), formOption.Params, formOption.Files)
 	} else if jsonOption, ok := option.(JsonOptions); ok {
 		return call.Json.Request(jsonOption.GetMethod(), service, uri, jsonOption.GetHeader(), jsonOption.Query, jsonOption.JSON)
-	} else if restfulOption, ok := option.(RestFulOptions); ok {
+	} else if restfulOption, ok := option.(RestfulOptions); ok {
 		return call.Restful.Request(restfulOption.GetMethod(), service, uri, restfulOption.GetHeader(), restfulOption.Path, restfulOption.Query, restfulOption.Body)
 	} else {
 		return nil, errors.New("option is not support")
