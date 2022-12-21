@@ -14,18 +14,30 @@ type restfulCall int
 
 const Restful = restfulCall(0)
 
-func (receiver restfulCall) Request(method define.HttpMethod, service, uri string, path, header, query map[string]string, body any) (resp *grequests.Response, err error) {
+func (receiver restfulCall) Request(method define.HttpMethod, service, uri string, path, header, query map[string]string, body interface{}) (resp *grequests.Response, err error) {
+	return receiver.tryRequest(method, service, uri, path, header, query, body, true)
+}
+
+func (receiver restfulCall) tryRequest(method define.HttpMethod, service, uri string, path, header, query map[string]string, body interface{}, isFirstReq bool) (resp *grequests.Response, err error) {
+	if !isFirstReq {
+		// 清除当前的服务缓存
+		nacos.Enter.CleanServiceCache(service)
+	}
 	var url string
 	url, header, err = receiver.getReqUrlAndHeader(service, uri, path, header)
 	if err != nil {
 		ezlogs.CError("CALL", "RESTFUL - 获取{}服务地址失败:{}", service, err)
-		return
+		return nil, err
 	}
 	ezlogs.CDebug("CALL", "RESTFUL - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}", method, url, header, query, body)
+
+	timeout := engine.MWTrace.GetCurTimeout()
+
 	var options = &grequests.RequestOptions{
 		Params:             query,
 		Headers:            header,
 		InsecureSkipVerify: true,
+		RequestTimeout:     timeout,
 		JSON:               body,
 	}
 	switch method {
@@ -45,12 +57,17 @@ func (receiver restfulCall) Request(method define.HttpMethod, service, uri strin
 		resp, err = grequests.Patch(url, options)
 	default:
 		ezlogs.CError("CALL", "RESTFUL - 不支持的请求方法:{}", method)
-		err = errors.New("不支持的请求方法")
-		return
+		return nil, errors.New("不支持的请求方法")
 	}
 	if err != nil {
 		ezlogs.CError("CALL", "RESTFUL - 请求{}微服务失败:{}", service, err)
-		return
+		if isFirstReq && strings.Contains(err.Error(), "connection refused") {
+			return receiver.tryRequest(method, service, uri, path, header, query, body, false)
+		}
+		if strings.Contains(err.Error(), "dial tcp") {
+			return nil, errors.New("service unavailable")
+		}
+		return nil, err
 	}
 	ezlogs.CDebug("CALL", "RESTFUL - {}微服务请求结束 -- url: {}, headers: {}, query: {}, body:{}, resp: {}", method, url, header, query, body, resp.String())
 	return resp, nil
