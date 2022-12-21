@@ -2,6 +2,7 @@ package ezcall
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/levigross/grequests"
 	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/ezlogs"
@@ -92,6 +93,28 @@ func Restful(method engine.HttpMethod, service string, uri string, path, query m
 
 func RestfulWithHeader(method engine.HttpMethod, service string, uri string, path, header, query map[string]string, body any) (resp *grequests.Response, err error) {
 	return call.Restful.Request(method, service, uri, path, header, query, body)
+}
+
+/********* 通用 *********/
+
+func Request(service, uri string, option OptionsProtocol) (*grequests.Response, error) {
+	if option == nil {
+		return nil, errors.New("option is nil")
+	}
+
+	if formOption, ok := option.(FormOptions); ok {
+		return call.Form.Request(string(formOption.GetMethod()), service, uri, formOption.GetHeader(), formOption.Params, formOption.Files)
+	} else if jsonOption, ok := option.(JsonOptions); ok {
+		return call.Json.Request(jsonOption.GetMethod(), service, uri, jsonOption.GetHeader(), jsonOption.Query, jsonOption.JSON)
+	} else if restfulOption, ok := option.(RestFulOptions); ok {
+		return call.Restful.Request(restfulOption.GetMethod(), service, uri, restfulOption.GetHeader(), restfulOption.Path, restfulOption.Query, restfulOption.Body)
+	} else {
+		return nil, errors.New("option is not support")
+	}
+}
+
+func RequestToResult[D any](service, uri string, option OptionsProtocol) engine.Result[D] {
+	return toResult[D](Request(service, uri, option))
 }
 
 // toResult 将字符串转换为Result

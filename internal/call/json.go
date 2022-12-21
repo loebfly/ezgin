@@ -14,11 +14,11 @@ type jsonCall int
 
 const Json = jsonCall(0)
 
-func (receiver jsonCall) Request(method define.HttpMethod, service, uri string, header, query map[string]string, body interface{}) (resp *grequests.Response, err error) {
-	return receiver.tryRequest(method, service, uri, header, query, body, true)
+func (receiver jsonCall) Request(method define.HttpMethod, service, uri string, header, query map[string]string, JSON any) (resp *grequests.Response, err error) {
+	return receiver.tryRequest(method, service, uri, header, query, JSON, true)
 }
 
-func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri string, header, query map[string]string, body interface{}, isFirstReq bool) (resp *grequests.Response, err error) {
+func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri string, header, query map[string]string, JSON any, isFirstReq bool) (resp *grequests.Response, err error) {
 	if !isFirstReq {
 		// 清除当前的服务缓存
 		nacos.Enter.CleanServiceCache(service)
@@ -30,8 +30,8 @@ func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri strin
 		return nil, err
 	}
 	ezlogs.CDebug("CALL",
-		"JSON - {}微服务请求开始 -- url: {}, headers: {}, query: {}, body: {}",
-		method, url, header, query, body)
+		"JSON - {}微服务请求开始 -- url: {}, headers: {}, query: {}, JSON: {}",
+		method, url, header, query, JSON)
 
 	timeout := engine.MWTrace.GetCurTimeout()
 	var options = &grequests.RequestOptions{
@@ -39,7 +39,7 @@ func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri strin
 		Headers:            header,
 		InsecureSkipVerify: true,
 		RequestTimeout:     timeout,
-		JSON:               body,
+		JSON:               JSON,
 	}
 	switch method {
 	case define.Get:
@@ -65,7 +65,7 @@ func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri strin
 			"JSON - {}微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}",
 			method, url, query, header, err)
 		if isFirstReq && strings.Contains(err.Error(), "connection refused") {
-			return receiver.tryRequest(method, service, uri, header, query, body, false)
+			return receiver.tryRequest(method, service, uri, header, query, JSON, false)
 		}
 		if strings.Contains(err.Error(), "dial tcp") {
 			return nil, errors.New("service unavailable")
