@@ -33,12 +33,34 @@ type Result[D any] struct {
 	Page    *Page  `json:"page"`
 }
 
-func (receiver Result[D]) ToAny() Result[any] {
+// ToAnyRes 转换为Result[any]
+func (receiver Result[D]) ToAnyRes() Result[any] {
 	return Result[any]{
 		Status:  receiver.Status,
 		Message: receiver.Message,
 		Data:    receiver.Data,
 		Page:    receiver.Page,
+	}
+}
+
+// FreeConvResDataType 自由将Result[From]转换为Result[To]
+func FreeConvResDataType[From, To any](from Result[From]) Result[To] {
+	res := from.ToAnyRes()
+	return Result[To]{
+		Status:  res.Status,
+		Message: res.Message,
+		Data:    res.Data,
+		Page:    res.Page,
+	}
+}
+
+// ConvAnyResDataType 将Result[any]转换为Result[D]
+func ConvAnyResDataType[To any](from Result[any]) Result[To] {
+	return Result[To]{
+		Status:  from.Status,
+		Message: from.Message,
+		Data:    from.Data,
+		Page:    from.Page,
 	}
 }
 
