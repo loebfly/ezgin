@@ -49,7 +49,7 @@ func FreeConvResDataType[From, To any](from Result[From]) Result[To] {
 	return Result[To]{
 		Status:  res.Status,
 		Message: res.Message,
-		Data:    res.Data,
+		Data:    res.Data.(To),
 		Page:    res.Page,
 	}
 }
@@ -59,7 +59,7 @@ func ConvAnyResDataType[To any](from Result[any]) Result[To] {
 	return Result[To]{
 		Status:  from.Status,
 		Message: from.Message,
-		Data:    from.Data,
+		Data:    from.Data.(To),
 		Page:    from.Page,
 	}
 }
