@@ -47,15 +47,19 @@ func (receiver enter) Middleware(c *gin.Context) {
 	c.Next()
 
 	var reqParams any
-	if strings.Contains(c.ContentType(), gin.MIMEJSON) {
+	contentType := c.ContentType()
+	if strings.Contains(contentType, gin.MIMEJSON) {
 		var params = make(map[string]any)
-		err = json.Unmarshal(rawData, &reqParams)
+		err = json.Unmarshal(rawData, &params)
 		if err != nil {
-			ezlogs.CError("GIN", "reqParams json.unmarshal error:{}", err.Error())
+			ezlogs.CError("GIN", "respParams json.Unmarshal error:{}", err.Error())
+		}
+		for k, v := range c.Request.URL.Query() {
+			params[k] = v[0]
 		}
 		reqParams = params
-	} else if strings.Contains(c.ContentType(), gin.MIMEPOSTForm) ||
-		strings.Contains(c.ContentType(), gin.MIMEMultipartPOSTForm) {
+	} else if strings.Contains(contentType, gin.MIMEPOSTForm) ||
+		strings.Contains(contentType, gin.MIMEMultipartPOSTForm) {
 		reqParams = receiver.GetFormParams(c)
 	} else {
 		reqParams = string(rawData)
@@ -76,7 +80,6 @@ func (receiver enter) Middleware(c *gin.Context) {
 	ttl := int(endTime.UnixNano()/1e6 - startTime.UnixNano()/1e6)
 
 	method := c.Request.Method
-	contentType := c.ContentType()
 	uri := c.Request.RequestURI
 
 	clientIP := c.Request.Header.Get("X-Forward-For")
