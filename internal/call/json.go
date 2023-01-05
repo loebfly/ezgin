@@ -61,9 +61,9 @@ func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri strin
 
 	}
 	if err != nil {
-		ezlogs.CError("CALL",
-			"JSON - {}微服务请求失败 -- url: {}, params: {}, headers: {}, err: {}",
-			method, url, query, header, err)
+		ezlogs.CDebug("CALL",
+			"JSON - {}微服务请求失败 -- url: {}, headers: {}, query: {}, JSON: {}, err: {}",
+			method, url, header, query, err.Error())
 		if isFirstReq && strings.Contains(err.Error(), "connection refused") {
 			return receiver.tryRequest(method, service, uri, header, query, JSON, false)
 		}
@@ -73,8 +73,8 @@ func (receiver jsonCall) tryRequest(method define.HttpMethod, service, uri strin
 		return nil, err
 	}
 	ezlogs.CDebug("CALL",
-		"JSON - {} 微服务请求响应 -- url: {} method: {}, params: {}, headers: {}, resp: {}",
-		method, url, query, header, resp.String())
+		"JSON - {}微服务请求响应 -- url: {}, headers: {}, query: {}, JSON: {}, resp: {}",
+		method, url, header, query, resp.String())
 	return resp, nil
 }
 
