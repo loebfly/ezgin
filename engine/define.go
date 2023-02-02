@@ -35,6 +35,12 @@ type Result[D any] struct {
 
 // ToAnyRes 转换为Result[any]
 func (receiver Result[D]) ToAnyRes() Result[any] {
+	if receiver.Status != 1 {
+		return Result[any]{
+			Status:  receiver.Status,
+			Message: receiver.Message,
+		}
+	}
 	return Result[any]{
 		Status:  receiver.Status,
 		Message: receiver.Message,
