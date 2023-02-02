@@ -21,18 +21,23 @@ type EZRouter interface {
 	FreeRouters(methodPathHandlers map[engine.HttpMethod]map[string]engine.HandlerFunc) EZRouter
 }
 
-type MethodHandle struct {
-	handle engine.HandlerFunc
-	method engine.HttpMethod
-}
-
 type control struct {
 	engine  *gin.Engine
-	routers map[string]MethodHandle
+	routers map[engine.HttpMethod]map[string]engine.HandlerFunc
+}
+
+func (receiver *control) saveRouters(method engine.HttpMethod, path string, handler engine.HandlerFunc) {
+	if receiver.routers == nil {
+		receiver.routers = make(map[engine.HttpMethod]map[string]engine.HandlerFunc)
+	}
+	if _, ok := receiver.routers[method]; !ok {
+		receiver.routers[method] = make(map[string]engine.HandlerFunc)
+	}
+	receiver.routers[method][path] = handler
 }
 
 func (receiver *control) initEngine() {
-	receiver.routers = make(map[string]MethodHandle)
+	receiver.routers = make(map[engine.HttpMethod]map[string]engine.HandlerFunc)
 	receiver.engine = config.Gin.Engine
 	gin.SetMode(config.Gin.Mode)
 
@@ -74,15 +79,20 @@ func (receiver *control) lastChar(str string) uint8 {
 }
 
 func (receiver *control) routersHandler(ctx *gin.Context) {
-	for relativePath, methodHandle := range receiver.routers {
-		if strings.Contains(relativePath, ":") {
-			for _, p := range ctx.Params {
-				relativePath = strings.Replace(relativePath, ":"+p.Key, p.Value, -1)
-			}
+	for method, pathHandler := range receiver.routers {
+		if method != engine.Any && method != engine.HttpMethod(ctx.Request.Method) {
+			continue
 		}
-		if ctx.Request.URL.Path == relativePath && ctx.Request.Method == string(methodHandle.method) {
-			ctx.JSON(http.StatusOK, methodHandle.handle(ctx))
-			return
+		for relativePath, handler := range pathHandler {
+			if strings.Contains(relativePath, ":") {
+				for _, p := range ctx.Params {
+					relativePath = strings.Replace(relativePath, ":"+p.Key, p.Value, -1)
+				}
+			}
+			if ctx.Request.URL.Path == relativePath {
+				ctx.JSON(http.StatusOK, handler(ctx))
+				return
+			}
 		}
 	}
 }
@@ -149,10 +159,7 @@ func (receiver *control) Routers(method engine.HttpMethod, pathHandler map[strin
 			key += "/"
 		}
 		key += relativePath
-		receiver.routers[key] = MethodHandle{
-			handle: handler,
-			method: method,
-		}
+		receiver.saveRouters(method, key, handler)
 		switch method {
 		case engine.Get:
 			receiver.engine.GET(relativePath, receiver.routersHandler)
@@ -235,10 +242,7 @@ func (receiver *groupControl) Group(relativePath string) EZRouter {
 func (receiver *groupControl) Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) EZRouter {
 	for relativePath, handler := range pathHandler {
 		key := receiver.basePath + relativePath
-		receiver.control.routers[key] = MethodHandle{
-			handle: handler,
-			method: method,
-		}
+		receiver.control.saveRouters(method, key, handler)
 		switch method {
 		case engine.Get:
 			receiver.groupEngine.GET(relativePath, receiver.control.routersHandler)
