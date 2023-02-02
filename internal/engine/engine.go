@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/loebfly/ezgin/engine"
+	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/engine/middleware"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
 	"github.com/loebfly/ezgin/internal/logs"
 	"net/http"
 	"path"
+	"reflect"
+	"runtime"
 	"strings"
 )
 
@@ -33,7 +36,17 @@ func (receiver *control) saveRouters(method engine.HttpMethod, path string, hand
 	if _, ok := receiver.routers[method]; !ok {
 		receiver.routers[method] = make(map[string]engine.HandlerFunc)
 	}
-	receiver.routers[method][path] = handler
+	if method == engine.Any {
+		receiver.routers[engine.Get][path] = handler
+		receiver.routers[engine.Post][path] = handler
+		receiver.routers[engine.Put][path] = handler
+		receiver.routers[engine.Delete][path] = handler
+		receiver.routers[engine.Patch][path] = handler
+		receiver.routers[engine.Head][path] = handler
+		receiver.routers[engine.Options][path] = handler
+	} else {
+		receiver.routers[method][path] = handler
+	}
 }
 
 func (receiver *control) initEngine() {
@@ -80,7 +93,7 @@ func (receiver *control) lastChar(str string) uint8 {
 
 func (receiver *control) routersHandler(ctx *gin.Context) {
 	for method, pathHandler := range receiver.routers {
-		if method != engine.Any && method != engine.HttpMethod(ctx.Request.Method) {
+		if method != engine.HttpMethod(ctx.Request.Method) {
 			continue
 		}
 		for relativePath, handler := range pathHandler {
@@ -90,6 +103,8 @@ func (receiver *control) routersHandler(ctx *gin.Context) {
 				}
 			}
 			if ctx.Request.URL.Path == relativePath {
+				// 打印回调函数
+				ezlogs.Debug("method:{} handle:{}", method, path.Base(runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()))
 				ctx.JSON(http.StatusOK, handler(ctx))
 				return
 			}
