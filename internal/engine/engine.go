@@ -21,13 +21,18 @@ type EZRouter interface {
 	FreeRouters(methodPathHandlers map[engine.HttpMethod]map[string]engine.HandlerFunc) EZRouter
 }
 
+type MethodHandle struct {
+	handle engine.HandlerFunc
+	method engine.HttpMethod
+}
+
 type control struct {
 	engine  *gin.Engine
-	routers map[string]engine.HandlerFunc
+	routers map[string]MethodHandle
 }
 
 func (receiver *control) initEngine() {
-	receiver.routers = make(map[string]engine.HandlerFunc)
+	receiver.routers = make(map[string]MethodHandle)
 	receiver.engine = config.Gin.Engine
 	gin.SetMode(config.Gin.Mode)
 
@@ -69,22 +74,17 @@ func (receiver *control) lastChar(str string) uint8 {
 }
 
 func (receiver *control) routersHandler(ctx *gin.Context) {
-	for relativePath, handler := range receiver.routers {
+	for relativePath, methodHandle := range receiver.routers {
 		if strings.Contains(relativePath, ":") {
 			for _, p := range ctx.Params {
 				relativePath = strings.Replace(relativePath, ":"+p.Key, p.Value, -1)
 			}
 		}
-		if ctx.Request.URL.Path == relativePath {
-			ctx.JSON(http.StatusOK, handler(ctx))
+		if ctx.Request.URL.Path == relativePath && ctx.Request.Method == string(methodHandle.method) {
+			ctx.JSON(http.StatusOK, methodHandle.handle(ctx))
 			return
 		}
 	}
-
-	ctx.JSON(http.StatusNotFound, engine.Result[any]{
-		Status:  -1,
-		Message: "404 not found",
-	})
 }
 
 func (receiver *control) Get(relativePath string, handler engine.HandlerFunc) EZRouter {
@@ -149,7 +149,10 @@ func (receiver *control) Routers(method engine.HttpMethod, pathHandler map[strin
 			key += "/"
 		}
 		key += relativePath
-		receiver.routers[key] = handler
+		receiver.routers[key] = MethodHandle{
+			handle: handler,
+			method: method,
+		}
 		switch method {
 		case engine.Get:
 			receiver.engine.GET(relativePath, receiver.routersHandler)
@@ -232,7 +235,10 @@ func (receiver *groupControl) Group(relativePath string) EZRouter {
 func (receiver *groupControl) Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) EZRouter {
 	for relativePath, handler := range pathHandler {
 		key := receiver.basePath + relativePath
-		receiver.control.routers[key] = handler
+		receiver.control.routers[key] = MethodHandle{
+			handle: handler,
+			method: method,
+		}
 		switch method {
 		case engine.Get:
 			receiver.groupEngine.GET(relativePath, receiver.control.routersHandler)
