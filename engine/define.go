@@ -49,24 +49,20 @@ func (receiver Result[D]) ToAnyRes() Result[any] {
 	}
 }
 
-// FreeConvResDataType 自由将Result[From]转换为Result[To]
-func FreeConvResDataType[From, To any](from Result[From]) Result[To] {
+// ConvResDataType 自由将Result[From]转换为Result[To]
+func ConvResDataType[From, To any](from Result[From]) Result[To] {
 	res := from.ToAnyRes()
+	if res.Data == nil {
+		return Result[To]{
+			Status:  res.Status,
+			Message: res.Message,
+		}
+	}
 	return Result[To]{
 		Status:  res.Status,
 		Message: res.Message,
 		Data:    res.Data.(To),
 		Page:    res.Page,
-	}
-}
-
-// ConvAnyResDataType 将Result[any]转换为Result[D]
-func ConvAnyResDataType[To any](from Result[any]) Result[To] {
-	return Result[To]{
-		Status:  from.Status,
-		Message: from.Message,
-		Data:    from.Data.(To),
-		Page:    from.Page,
 	}
 }
 
