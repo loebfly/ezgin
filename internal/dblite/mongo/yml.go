@@ -7,7 +7,7 @@ type Yml struct {
 
 // SetYml 集合配置
 type SetYml struct {
-	EZGinMongo map[string]EZGinMongo `koanf:"ezgin_mongo"`
+	MongoSet map[string]EZGinMongo `koanf:"ezgin_mongo_set"`
 }
 
 type EZGinMongo struct {

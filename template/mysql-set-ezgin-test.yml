@@ -1,4 +1,4 @@
-ezgin_mysqls:
+ezgin_mysql_set:
   xxx: # 唯一标识，用于获取连接时查找使用, 必填
     url: # mysql连接地址
     debug: true # 是否开启调试模式，默认false

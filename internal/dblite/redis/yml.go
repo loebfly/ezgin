@@ -1,7 +1,13 @@
 package redis
 
+// Yml 配置
 type Yml struct {
 	EZGinRedis EZGinRedis `koanf:"ezgin_redis"`
+}
+
+// SetYml 集合配置
+type SetYml struct {
+	RedisSet map[string]EZGinRedis `koanf:"ezgin_redis_set"`
 }
 
 type EZGinRedis struct {

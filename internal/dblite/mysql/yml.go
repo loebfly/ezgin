@@ -1,7 +1,13 @@
 package mysql
 
+// Yml 配置
 type Yml struct {
 	EZGinMysql EZGinMysql `koanf:"ezgin_mysql"`
+}
+
+// SetYml 集合配置
+type SetYml struct {
+	MysqlSet map[string]EZGinMysql `koanf:"ezgin_mysql_set"`
 }
 
 type EZGinMysql struct {

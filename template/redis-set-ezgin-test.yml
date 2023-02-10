@@ -1,4 +1,4 @@
-ezgin_redis:
+ezgin_redis_set:
   xxx: # 唯一标识，用于获取连接时查找使用, 必填
     host: 127.0.0.1 # redis服务IP, 必填
     port: 6379 # redis服务端口, 必填

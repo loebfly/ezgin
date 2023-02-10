@@ -108,49 +108,88 @@ func (receiver enter) initNacos() {
 func (receiver enter) initDBLite() {
 	ez := config.EZGin()
 
-	var mongoObjs []mongo.EZGinMongo
+	var mongoObjs = make([]mongo.EZGinMongo, 0)
 	if ez.Nacos.Yml.Mongo != "" {
 		names := strings.Split(ez.Nacos.Yml.Mongo, ",")
 		mongoObjs = make([]mongo.EZGinMongo, len(names))
-		for i, name := range names {
+		for _, name := range names {
 			var yml mongo.Yml
 			nacosUrl := ez.GetYmlUrlOrPath(name)
 			err := ezcfg.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
 			}
-			mongoObjs[i] = yml.EZGinMongo
+			mongoObjs = append(mongoObjs, yml.EZGinMongo)
 		}
 	}
 
-	var mysqlObjs []mysql.EZGinMysql
+	if ez.Nacos.Yml.MongoSet != "" {
+		var yml mongo.SetYml
+		nacosUrl := ez.GetYmlUrlOrPath(ez.Nacos.Yml.MongoSet)
+		err := ezcfg.GetYmlObj(nacosUrl, &yml)
+		if err != nil {
+			panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
+		}
+		for tag, cfg := range yml.MongoSet {
+			cfg.Tag = tag
+			mongoObjs = append(mongoObjs, cfg)
+		}
+	}
+
+	var mysqlObjs = make([]mysql.EZGinMysql, 0)
 	if ez.Nacos.Yml.Mysql != "" {
 		names := strings.Split(ez.Nacos.Yml.Mysql, ",")
-		mysqlObjs = make([]mysql.EZGinMysql, len(names))
-		for i, name := range names {
+		for _, name := range names {
 			var yml mysql.Yml
 			nacosUrl := ez.GetYmlUrlOrPath(name)
 			err := ezcfg.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
 			}
-			mysqlObjs[i] = yml.EZGinMysql
+			mysqlObjs = append(mysqlObjs, yml.EZGinMysql)
 		}
 	}
-	var redisObjs []redis.EZGinRedis
+
+	if ez.Nacos.Yml.MysqlSet != "" {
+		var yml mysql.SetYml
+		nacosUrl := ez.GetYmlUrlOrPath(ez.Nacos.Yml.MysqlSet)
+		err := ezcfg.GetYmlObj(nacosUrl, &yml)
+		if err != nil {
+			panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
+		}
+		for tag, cfg := range yml.MysqlSet {
+			cfg.Tag = tag
+			mysqlObjs = append(mysqlObjs, cfg)
+		}
+	}
+
+	var redisObjs = make([]redis.EZGinRedis, 0)
 	if ez.Nacos.Yml.Redis != "" {
 		names := strings.Split(ez.Nacos.Yml.Redis, ",")
-		redisObjs = make([]redis.EZGinRedis, len(names))
-		for i, name := range names {
+		for _, name := range names {
 			var yml redis.Yml
 			nacosUrl := ez.GetYmlUrlOrPath(name)
 			err := ezcfg.GetYmlObj(nacosUrl, &yml)
 			if err != nil {
 				panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
 			}
-			redisObjs[i] = yml.EZGinRedis
+			redisObjs = append(redisObjs, yml.EZGinRedis)
 		}
 	}
+
+	if ez.Nacos.Yml.RedisSet != "" {
+		var yml redis.SetYml
+		nacosUrl := ez.GetYmlUrlOrPath(ez.Nacos.Yml.RedisSet)
+		err := ezcfg.GetYmlObj(nacosUrl, &yml)
+		if err != nil {
+			panic(fmt.Errorf("mysql配置文件获取失败: %s", err.Error()))
+		}
+		for tag, cfg := range yml.RedisSet {
+			cfg.Tag = tag
+			redisObjs = append(redisObjs, cfg)
+		}
+	}
+
 	var kafkaObjs []kafka.EZGinKafka
 	if ez.Nacos.Yml.Kafka != "" {
 		name := ez.Nacos.Yml.Kafka
