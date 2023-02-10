@@ -1,5 +1,9 @@
 ezgin_mongo:
-  url: # mongo连接地址
-  database: # mongo数据库名称
-  pool_max: 20 #  连接池最大连接数 默认20
-  tag: ezgin # 唯一标识，用于获取连接时查找使用, 必填
+  xxx: # 唯一标识，用于获取连接时查找使用, 必填
+    url: # mongo连接地址
+    database: # mongo数据库名称
+    pool_max: 20 #  连接池最大连接数 默认20
+  yyy: # 唯一标识，用于获取连接时查找使用, 必填
+    url: # mongo连接地址
+    database: # mongo数据库名称
+    pool_max: 20 #  连接池最大连接数 默认20

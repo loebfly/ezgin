@@ -15,12 +15,20 @@ ezgin:
     yml:
       # yml支持本地&nacos配置, 如果本地配置文件存在，则使用本地配置文件, 否则从nacos中读取
       # yml只需要配置文件的前缀，内部会自动拼接-$Env.yml, 例如: nacos-ezgin -> nacos-ezgin-test.yml
-      # 配置模版参考: template/nacos-ezgin-test.yml
-      nacos: nacos-ezgin # nacos配置文件前缀, 不支持多个配置文件, 如果不需要nacos,则不需要配置
-      mysql: mysql-ezgin # mysql配置文件前缀, 多个配置文件用逗号分隔, 如果不需要mysql,则不需要配置
-      mongo: mongo-ezgin # mongo配置文件前缀, 多个配置文件用逗号分隔, 如果不需要mongo,则不需要配置
-      redis: redis-ezgin # redis配置文件前缀, 多个配置文件用逗号分隔, 如果不需要redis,则不需要配置
-      kafka: kafka-ezgin # kafka配置文件前缀, 不支持多个配置文件, 如果不需要kafka,则不需要配置
+      # 配置模版参考: ezgin/template/xxx.yml
+      nacos: nacos-ezgin # nacos配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 只支持单个配置文件, 如果不需要nacos配置文件,则不需要配置
+
+      # 本地配置多个数据库，即数据库配置分开配置
+      mysql: mysql-ezgin # mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mysql配置文件,则不需要配置
+      mongo: mongo-ezgin # mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mongo配置文件,则不需要配置
+      redis: redis-ezgin # redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要redis配置文件,则不需要配置
+      kafka: kafka-ezgin # kafka配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 只支持单个配置文件, 如果不需要kafka配置文件,则不需要配置
+
+      # 一个配置文件中配置多个数据库，即数据库配置合并到一个配置文件中
+      mysql_set: mysql-set-ezgin # Mysql 集合配置文件名, 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+      mongo_set: mongo-set-ezgin # Mongo 集合配置文件名, 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+      redis_set: redis-set-ezgin # Redis 集合配置文件名, 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+
   gin: # gin配置
     mode: debug # gin模式, debug, release
     middleware: cors,trace,logs,recover # gin中间件, 用逗号分隔, 不填则默认全部开启, - 表示不开启

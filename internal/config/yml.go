@@ -27,12 +27,20 @@ type EZGinYml struct {
 		Yml    struct {
 			// yml支持本地&nacos配置, 如果本地配置文件存在，则使用本地配置文件, 否则从nacos中读取
 			// yml只需要配置文件的前缀，内部会自动拼接-$Env.yml, 例如: nacos-ezgin -> nacos-ezgin-test.yml
-			// 配置模版参考: template/nacos-ezgin-test.yml
+			// 配置模版参考: ezgin/template/xxx.yml
 			Nacos string `koanf:"nacos"` // nacos配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 只支持单个配置文件, 如果不需要nacos配置文件,则不需要配置
+
+			// 本地配置多个数据库，即数据库配置分开配置
 			Mysql string `koanf:"mysql"` // mysql配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mysql配置文件,则不需要配置
 			Mongo string `koanf:"mongo"` // mongo配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要mongo配置文件,则不需要配置
 			Redis string `koanf:"redis"` // redis配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 多个配置文件用逗号分隔, 如果不需要redis配置文件,则不需要配置
 			Kafka string `koanf:"kafka"` // kafka配置文件名 只需要配置文件的前缀，内部会自动拼接-$Env.yml, 只支持单个配置文件, 如果不需要kafka配置文件,则不需要配置
+
+			// 一个配置文件中配置多个数据库，即数据库配置合并到一个配置文件中
+			MysqlSet string `koanf:"mysql_set"` // Mysql 集合配置文件名, 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+			MongoSet string `koanf:"mongo_set"` // Mongo 集合配置文件名, 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+			RedisSet string `koanf:"redis_set"` // Redis 集合配置文件名, 只需要配置文件的前缀，内部会自动拼接-$Env.yml
+			KafkaSet string `koanf:"kafka_set"` // Kafka 集合配置文件名, 只需要配置文件的前缀，内部会自动拼接-$Env.yml
 		} `koanf:"yml"` // nacos配置文件名
 	} `koanf:"nacos"` // nacos配置
 

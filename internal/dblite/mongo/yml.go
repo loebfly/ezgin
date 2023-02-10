@@ -1,7 +1,13 @@
 package mongo
 
+// Yml 配置
 type Yml struct {
 	EZGinMongo EZGinMongo `koanf:"ezgin_mongo"`
+}
+
+// SetYml 集合配置
+type SetYml struct {
+	EZGinMongo map[string]EZGinMongo `koanf:"ezgin_mongo"`
 }
 
 type EZGinMongo struct {

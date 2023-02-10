@@ -4,3 +4,4 @@ ezgin_kafka:
   auto_commit:   #是否自动提交 true, false, 默认true
   partitioner:   #分区选择模式 hash,random,round-robin, 默认hash
   version: #kafka版本, 默认2.8.1
+  tag: ezgin # 唯一标识，用于获取连接时查找使用, 必填
