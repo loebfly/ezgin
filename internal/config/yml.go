@@ -48,9 +48,22 @@ type EZGinYml struct {
 		Mode       string `koanf:"mode"`       // gin模式 debug, release
 		Middleware string `koanf:"middleware"` // gin中间件, 用逗号分隔, 暂时支持 cors,trace,logs,recover 不填则默认全部开启, - 表示不开启
 		MwLogs     struct {
-			MongoTag   string `koanf:"mongo_tag"`   // 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
-			MongoTable string `koanf:"mongo_table"` // 日志表名, 默认为${App.Name}APIRequestLogs
-			KafkaTopic string `koanf:"kafka_topic"` // # kafka 消息主题, 默认为${App.Name}, 多个主题用逗号分隔, - 表示不开启
+			// 需要与Nacos.Yml.Mongo中配置文件名对应, 默认为Nacos.Yml.Mongo中第一个配置文件, - 表示不开启
+			// 可配置变量: {header:xxx}，表示从请求头中获取key为xxx对应的值替换变量
+			// 假设请求头中有一个key为: X-Request-Id，值为: abc123
+			// 配置文件中的变量为: {header:X-Request-Id}
+			// 则最终的变量值为: abc123
+			MongoTag string `koanf:"mongo_tag"`
+			// 日志表名, 默认为${App.Name}APIRequestLogs,
+			// 可配置变量: {header:xxx}，表示从请求头中获取key为xxx对应的值替换变量
+			// 假设请求头中有一个key为: X-Request-Id，值为: abc123
+			// 效果为:{header:X-Request-Id}_APIRequestLogs -> abc123_APIRequestLogs
+			MongoTable string `koanf:"mongo_table"`
+			// kafka 消息主题, 默认为${App.Name}, 多个主题用逗号分隔, - 表示不开启
+			// 可配置变量: {header:xxx}，表示从请求头中获取key为xxx对应的值替换变量
+			// 假设请求头中有一个key为: X-Request-Id，值为: abc123
+			// 效果为:{header:X-Request-Id}_Topic -> abc123_Topic
+			KafkaTopic string `koanf:"kafka_topic"`
 		} `koanf:"mw_logs"` // 日志中间件数据库配置
 	} `yaml:"gin"` // gin配置
 

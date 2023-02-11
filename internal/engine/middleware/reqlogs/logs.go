@@ -9,7 +9,7 @@ import (
 	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/config"
 	"github.com/loebfly/ezgin/internal/engine/middleware/trace"
-	"io/ioutil"
+	"io"
 	"reflect"
 	"strconv"
 	"strings"
@@ -41,7 +41,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 		reqHeaders[k] = v[0]
 	}
 	// 关键点 重置请求体
-	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(rawData))
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(rawData))
 
 	// 处理请求
 	c.Next()

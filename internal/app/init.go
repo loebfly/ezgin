@@ -231,7 +231,7 @@ func (receiver enter) initEngine() {
 					var returnDB func(db *mgo.Database)
 					var err error
 					if mongoTag != "" {
-						db, returnDB, err = ezdb.Mongo(mongoTag)
+						db, returnDB, err = ezdb.Mongo(ctx.GetRealMgoTag(mongoTag))
 					} else {
 						db, returnDB, err = ezdb.Mongo()
 					}
@@ -241,7 +241,7 @@ func (receiver enter) initEngine() {
 						return
 					}
 					ctx.Id = bson.NewObjectId()
-					err = db.C(mongoTable).Insert(ctx)
+					err = db.C(ctx.GetRealMgoTable(mongoTable)).Insert(ctx)
 					if err != nil {
 						ezlogs.CError("MIDDLEWARE", "写入Mongo日志失败: {}", err.Error())
 						returnDB(db)
@@ -249,12 +249,9 @@ func (receiver enter) initEngine() {
 					returnDB(db)
 				}
 				if kafkaTopic != "-" && ezdb.Kafka().GetClient() != nil {
-					topicList := strings.Split(kafkaTopic, ",")
-					for _, topic := range topicList {
-						err := ezdb.Kafka().InputMsgForTopic(topic, ctx.ToJson())
-						if err != nil {
-							ezlogs.CError("MIDDLEWARE", "kafka输入失败: {}", err.Error())
-						}
+					err := ezdb.Kafka().InputMsgForTopic(ctx.GetRealKafkaTopic(kafkaTopic), ctx.ToJson())
+					if err != nil {
+						ezlogs.CError("MIDDLEWARE", "kafka输入失败: {}", err.Error())
 					}
 				}
 			}

@@ -34,8 +34,16 @@ ezgin:
     middleware: cors,trace,logs,recover # gin中间件, 用逗号分隔, 不填则默认全部开启, - 表示不开启
     mw_logs: # gin日志中间件配置
       mongo_tag: ezgin-tag # 需要与Nacos.Yml.Mongo中配置文件名中的tag一致, 默认为Nacos.Yml.Mongo中第一个配置文件的tag, - 表示不开启
-      mongo_table: EZGinAPIRequestLogs # mongo中的表名, 默认为${App.Name}APIRequestLogs
-      kafka_topic: ezgin # kafka 消息主题, 默认为${App.Name}, 多个主题用逗号分隔, - 表示不开启
+      # 日志表名, 默认为${App.Name}APIRequestLogs,
+      # 可配置变量: {header:xxx}，表示从请求头中获取key为xxx对应的值替换变量
+      # 假设请求头中有一个key为: X-Request-Id，值为: abc123
+      # 效果为:{header:X-Request-Id}_APIRequestLogs -> abc123_APIRequestLogs
+      mongo_table: EZGinAPIRequestLogs
+      # kafka 消息主题, 默认为${App.Name}, 多个主题用逗号分隔, - 表示不开启
+      # 可配置变量: {header:xxx}，表示从请求头中获取key为xxx对应的值替换变量
+      # 假设请求头中有一个key为: X-Request-Id，值为: abc123
+      # 效果为:{header:X-Request-Id}_Topic -> abc123_Topic
+      kafka_topic: ezgin
 
   logs: # 日志配置
     level: debug # 日志级别, debug > info > warn > error, 默认debug即全部输出, - 表示不开启
