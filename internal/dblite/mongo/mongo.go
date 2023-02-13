@@ -83,29 +83,41 @@ func (c *control) addCheckTicker() {
 }
 
 // getDB 获取mongoDB
-// 如果fineName为空且有已连接的数据库链接，则返回第一个链接，没有则返回错误
-// 如果fineName不为空，则返回fineName对应的链接，如果没有则错误
+// 如果tag为空且有已连接的数据库链接，则返回第一个链接，没有则返回错误
+// 如果tag不为空，则返回fineName对应的链接，如果没有则错误
 func (c *control) getDB(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
 	key := ""
+	database := ""
 	if len(tag) == 0 {
 		if len(config.Objs) > 0 {
 			key = config.Objs[0].Tag
+			database = config.Objs[0].Database
 		} else {
 			return nil, c.returnDB, errors.New("未配置Mongo数据库")
 		}
 	} else {
 		key = tag[0]
+		for _, v := range config.Objs {
+			if v.Tag == key {
+				database = v.Database
+				break
+			}
+		}
+		// 如果database为空，则说明没有找到对应的数据库
+		if database == "" {
+			return nil, c.returnDB, errors.New(fmt.Sprintf("未找到%s对应的Mongo数据库", key))
+		}
 	}
 
 	if v, ok := c.dbMap[key]; ok {
-		return v.Copy().DB(key), c.returnDB, nil
+		return v.Copy().DB(database), c.returnDB, nil
 	}
 
 	err = c.tryConnect(key)
 	if err != nil {
 		return nil, c.returnDB, err
 	}
-	return c.dbMap[key].Copy().DB(key), c.returnDB, nil
+	return c.dbMap[key].Copy().DB(database), c.returnDB, nil
 }
 
 func (c *control) returnDB(db *mgo.Database) {
