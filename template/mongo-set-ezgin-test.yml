@@ -1,4 +1,4 @@
-ezgin_mongo_tag:
+ezgin_mongo_set:
   xxx: # 唯一标识，用于获取连接时查找使用, 必填
     url: # mongo连接地址
     database: # mongo数据库名称
