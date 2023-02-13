@@ -20,6 +20,14 @@ func GetDB(tag ...string) (db *gorm.DB, err error) {
 	return ctl.getDB(tag...)
 }
 
+func GetAllTags() []string {
+	var tags = make([]string, 0)
+	for _, obj := range config.Objs {
+		tags = append(tags, obj.Tag)
+	}
+	return tags
+}
+
 func Disconnect() {
 	ctl.disconnect()
 }

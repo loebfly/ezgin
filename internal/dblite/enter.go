@@ -7,10 +7,6 @@ import (
 	redisDB "github.com/loebfly/ezgin/internal/dblite/redis"
 )
 
-type enter int
-
-const Enter = enter(0)
-
 // InitDB 初始化数据库
 func InitDB(mongoObjs []mongoDB.EZGinMongo, mysqlObjs []mysqlDB.EZGinMysql, redisObjs []redisDB.EZGinRedis, kafkaObjs []kafkaDB.EZGinKafka) {
 	if mongoObjs != nil && len(mongoObjs) > 0 {

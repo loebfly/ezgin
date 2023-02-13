@@ -20,123 +20,27 @@ const (
 	Options HttpMethod = "OPTIONS"
 )
 
+// MiddlewareFunc 中间件函数
 type MiddlewareFunc func(c *gin.Context)
 
+// HandlerFunc 路由处理函数
 type HandlerFunc func(c *gin.Context) Result[any]
 
+// RecoveryFunc 恢复函数
 type RecoveryFunc func(c *gin.Context, err any)
 
-type Result[D any] struct {
-	Status  int    `json:"status"`
-	Message string `json:"msg"`
-	Data    D      `json:"data"`
-	Page    *Page  `json:"page"`
-}
-
-// ToAnyRes 转换为Result[any]
-func (receiver Result[D]) ToAnyRes() Result[any] {
-	if receiver.Status != 1 {
-		return Result[any]{
-			Status:  receiver.Status,
-			Message: receiver.Message,
-		}
-	}
-	return Result[any]{
-		Status:  receiver.Status,
-		Message: receiver.Message,
-		Data:    receiver.Data,
-		Page:    receiver.Page,
-	}
-}
-
-// ConvResDataType 自由将Result[From]转换为Result[To]
-func ConvResDataType[From, To any](from Result[From]) Result[To] {
-	res := from.ToAnyRes()
-	if res.Data == nil {
-		return Result[To]{
-			Status:  res.Status,
-			Message: res.Message,
-		}
-	}
-	return Result[To]{
-		Status:  res.Status,
-		Message: res.Message,
-		Data:    res.Data.(To),
-		Page:    res.Page,
-	}
-}
-
-type Page struct {
-	Count int `json:"count"`
-	Index int `json:"index"`
-	Size  int `json:"size"`
-	Total int `json:"total"`
-}
-
-func ErrorRes(status int, message string) Result[any] {
-	return Result[any]{
-		Status:  status,
-		Message: message,
-	}
-}
-
-func SuccessRes[D any](data D, message ...string) Result[D] {
-	msg := "success"
-	if len(message) > 0 {
-		msg = message[0]
-	}
-	return Result[D]{
-		Status:  1,
-		Message: msg,
-		Data:    data,
-	}
-}
-
-func SuccessPageRes[D any](data D, page Page, message ...string) Result[D] {
-	msg := "success"
-	if len(message) > 0 {
-		msg = message[0]
-	}
-	return Result[D]{
-		Status:  1,
-		Message: msg,
-		Data:    data,
-		Page:    &page,
-	}
-}
-
-const (
-	ContentTypeFormUrlEncode = "application/x-www-form-urlencoded"
-	ContentTypeFormMultipart = "multipart/form-data"
-)
-
-func GetFormParams(ctx *gin.Context) map[string]string {
-	params := make(map[string]string)
-	cType := ctx.ContentType()
-	// bugfix: ctx.ContentType() 可能为空，导致无法获取参数
-	if cType != "" && cType != ContentTypeFormUrlEncode &&
-		cType != ContentTypeFormMultipart {
-		return params
-	}
-	if ctx.Request == nil {
-		return params
-	}
-	if ctx.Request.Method == "GET" {
-		for k, v := range ctx.Request.URL.Query() {
-			params[k] = v[0]
-		}
-		return params
-	} else {
-		err := ctx.Request.ParseForm()
-		if err != nil {
-			return params
-		}
-		for k, v := range ctx.Request.PostForm {
-			params[k] = v[0]
-		}
-		for k, v := range ctx.Request.URL.Query() {
-			params[k] = v[0]
-		}
-		return params
-	}
+// EZRouter 路由接口
+type EZRouter interface {
+	Use(middleware ...MiddlewareFunc) EZRouter
+	Group(relativePath string) EZRouter
+	Routers(method HttpMethod, pathHandler map[string]HandlerFunc) EZRouter
+	FreeRouters(methodPathHandlers map[HttpMethod]map[string]HandlerFunc) EZRouter
+	Any(relativePath string, handler HandlerFunc) EZRouter
+	Get(relativePath string, handler HandlerFunc) EZRouter
+	Head(relativePath string, handler HandlerFunc) EZRouter
+	Post(relativePath string, handler HandlerFunc) EZRouter
+	Put(relativePath string, handler HandlerFunc) EZRouter
+	Patch(relativePath string, handler HandlerFunc) EZRouter
+	Delete(relativePath string, handler HandlerFunc) EZRouter
+	Options(relativePath string, handler HandlerFunc) EZRouter
 }

@@ -64,47 +64,47 @@ func (receiver enter) GetMWTraceCurXLang() string {
 	return MWTrace.GetCurXLang()
 }
 
-func (enter) Any(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Any(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Any, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Get(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Get(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Get, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Post(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Post(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Post, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Delete(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Delete(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Delete, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Patch(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Patch(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Patch, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Put(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Put(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Put, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Head(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Head(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Head, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Options(relativePath string, handler engine.HandlerFunc) EZRouter {
+func (enter) Options(relativePath string, handler engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(engine.Options, map[string]engine.HandlerFunc{relativePath: handler})
 }
 
-func (enter) Use(middleware ...engine.MiddlewareFunc) EZRouter {
+func (enter) Use(middleware ...engine.MiddlewareFunc) engine.EZRouter {
 	return ctl.Use(middleware...)
 }
-func (enter) Group(relativePath string) EZRouter {
+func (enter) Group(relativePath string) engine.EZRouter {
 	return ctl.Group(relativePath)
 }
-func (enter) Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) EZRouter {
+func (enter) Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) engine.EZRouter {
 	return ctl.Routers(method, pathHandler)
 }
-func (enter) FreeRouters(methodPathHandlers map[engine.HttpMethod]map[string]engine.HandlerFunc) EZRouter {
+func (enter) FreeRouters(methodPathHandlers map[engine.HttpMethod]map[string]engine.HandlerFunc) engine.EZRouter {
 	return ctl.FreeRouters(methodPathHandlers)
 }
