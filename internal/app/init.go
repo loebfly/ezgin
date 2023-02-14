@@ -111,7 +111,6 @@ func (receiver enter) initDBLite() {
 	var mongoObjs = make([]mongo.EZGinMongo, 0)
 	if ez.Nacos.Yml.Mongo != "" {
 		names := strings.Split(ez.Nacos.Yml.Mongo, ",")
-		mongoObjs = make([]mongo.EZGinMongo, len(names))
 		for _, name := range names {
 			var yml mongo.Yml
 			nacosUrl := ez.GetYmlUrlOrPath(name)
