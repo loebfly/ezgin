@@ -7,7 +7,51 @@ import (
 	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/call"
+	"reflect"
 )
+
+/********* 通用 *********/
+
+// Request 发起请求, service 服务名, uri 请求地址, option 请求参数(FormOptions, JsonOptions, RestfulOptions)
+func Request(option OptionsProtocol) (*grequests.Response, error) {
+	if option == nil {
+		return nil, errors.New("option is nil")
+	}
+	// 判断option 是否为指针地址
+	if reflect.ValueOf(option).Kind() != reflect.Ptr {
+		return nil, errors.New("options 需要传入指针地址")
+	}
+	if reflect.ValueOf(option).IsNil() {
+		return nil, errors.New("option is nil")
+	}
+	// 判断option类型
+	typeStr := reflect.TypeOf(option).String()
+	if typeStr == "*ezcall.FormOptions" {
+		formOptions := option.(*FormOptions)
+		if !formOptions.IsValid() {
+			return nil, errors.New("options参数不完整")
+		}
+		return call.Form.Request(string(formOptions.Method), formOptions.Service, formOptions.Uri, formOptions.Header, formOptions.Params, formOptions.Files)
+	} else if typeStr == "*ezcall.JsonOptions" {
+		jsonOption := option.(*JsonOptions)
+		if !jsonOption.IsValid() {
+			return nil, errors.New("options参数不完整")
+		}
+		return call.Json.Request(jsonOption.Method, jsonOption.Service, jsonOption.Uri, jsonOption.Header, jsonOption.Query, jsonOption.JSON)
+	} else if typeStr == "*ezcall.RestfulOptions" {
+		restfulOption := option.(*RestfulOptions)
+		if !restfulOption.IsValid() {
+			return nil, errors.New("options参数不完整")
+		}
+		return call.Restful.Request(restfulOption.Method, restfulOption.Service, restfulOption.Uri, restfulOption.Header, restfulOption.Path, restfulOption.Query, restfulOption.Body)
+	} else {
+		return nil, errors.New("option is not *FormOptions/*JsonOptions/*RestfulOptions")
+	}
+}
+
+func RequestToResult[D any](option OptionsProtocol) engine.Result[D] {
+	return toResult[D](Request(option))
+}
 
 /******* Form ******* */
 
@@ -95,28 +139,6 @@ func RestfulWithHeader(method engine.HttpMethod, service string, uri string, pat
 	return call.Restful.Request(method, service, uri, path, header, query, body)
 }
 
-/********* 通用 *********/
-
-func Request(service, uri string, option OptionsProtocol) (*grequests.Response, error) {
-	if option == nil {
-		return nil, errors.New("option is nil")
-	}
-
-	if formOption, ok := option.(FormOptions); ok {
-		return call.Form.Request(string(formOption.GetMethod()), service, uri, formOption.GetHeader(), formOption.Params, formOption.Files)
-	} else if jsonOption, ok := option.(JsonOptions); ok {
-		return call.Json.Request(jsonOption.GetMethod(), service, uri, jsonOption.GetHeader(), jsonOption.Query, jsonOption.JSON)
-	} else if restfulOption, ok := option.(RestfulOptions); ok {
-		return call.Restful.Request(restfulOption.GetMethod(), service, uri, restfulOption.GetHeader(), restfulOption.Path, restfulOption.Query, restfulOption.Body)
-	} else {
-		return nil, errors.New("option is not support")
-	}
-}
-
-func RequestToResult[D any](service, uri string, option OptionsProtocol) engine.Result[D] {
-	return toResult[D](Request(service, uri, option))
-}
-
 // toResult 将字符串转换为Result
 func toResult[D any](resp *grequests.Response, err error) engine.Result[D] {
 	if err != nil {
@@ -125,13 +147,20 @@ func toResult[D any](resp *grequests.Response, err error) engine.Result[D] {
 			Message: err.Error(),
 		}
 	}
+	if resp == nil || resp.String() == "" {
+		ezlogs.Error("resp:{}, 返回结果为空", resp)
+		return engine.Result[D]{
+			Status:  engine.ErrorCodeResUnmarshalFailure,
+			Message: "response is nil",
+		}
+	}
 	var result engine.Result[D]
 	err = json.Unmarshal([]byte(resp.String()), &result)
 	if err != nil {
-		ezlogs.Error("resp:{}, 返回结果序列化失败: {}", resp, err)
+		ezlogs.Error("resp:{}, 返回结果序列化失败: {}", resp, err.Error())
 		return engine.Result[D]{
 			Status:  engine.ErrorCodeResUnmarshalFailure,
-			Message: err.Error(),
+			Message: "response unmarshal failure",
 		}
 	} else {
 		return result
