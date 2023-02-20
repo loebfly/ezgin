@@ -56,11 +56,11 @@ func (receiver restfulCall) tryRequest(method define.HttpMethod, service, uri st
 	case define.Patch:
 		resp, err = grequests.Patch(url, options)
 	default:
-		ezlogs.CError("CALL", "RESTFUL - 不支持的请求方法:{}", method)
+		ezlogs.CError("CALL", "RESTFUL - 请求{}微服务失败 -- url: {}, headers: {}, query: {}, body: {} err: 不支持{}请求", service, url, header, query, body, method)
 		return nil, errors.New("不支持的请求方法")
 	}
 	if err != nil {
-		ezlogs.CError("CALL", "RESTFUL - 请求{}微服务失败:{}", service, err)
+		ezlogs.CError("CALL", "RESTFUL - 请求{}微服务失败 -- url: {}, headers: {}, query: {}, body: {} err: {}", service, url, header, query, body, err)
 		if isFirstReq && strings.Contains(err.Error(), "connection refused") {
 			return receiver.tryRequest(method, service, uri, path, header, query, body, false)
 		}
