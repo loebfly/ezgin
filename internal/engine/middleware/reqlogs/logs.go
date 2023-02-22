@@ -47,22 +47,31 @@ func (receiver enter) Middleware(c *gin.Context) {
 	c.Next()
 
 	var reqParams any
-	contentType := c.ContentType()
-	if strings.Contains(contentType, gin.MIMEJSON) {
+
+	if c.Request.Method == "GET" {
 		var params = make(map[string]any)
-		err = json.Unmarshal(rawData, &params)
-		if err != nil {
-			ezlogs.CError("GIN", "respParams json.Unmarshal error:{}", err.Error())
-		}
 		for k, v := range c.Request.URL.Query() {
 			params[k] = v[0]
 		}
 		reqParams = params
-	} else if strings.Contains(contentType, gin.MIMEPOSTForm) ||
-		strings.Contains(contentType, gin.MIMEMultipartPOSTForm) {
-		reqParams = receiver.GetFormParams(c)
 	} else {
-		reqParams = string(rawData)
+		contentType := c.ContentType()
+		if strings.Contains(contentType, gin.MIMEJSON) {
+			var params = make(map[string]any)
+			err = json.Unmarshal(rawData, &params)
+			if err != nil {
+				ezlogs.CError("GIN", "reqParams json.Unmarshal error:{}", err.Error())
+			}
+			for k, v := range c.Request.URL.Query() {
+				params[k] = v[0]
+			}
+			reqParams = params
+		} else if strings.Contains(contentType, gin.MIMEPOSTForm) ||
+			strings.Contains(contentType, gin.MIMEMultipartPOSTForm) {
+			reqParams = receiver.GetFormParams(c)
+		} else {
+			reqParams = string(rawData)
+		}
 	}
 
 	endTime := time.Now()
@@ -110,7 +119,7 @@ func (receiver enter) Middleware(c *gin.Context) {
 		TTL:         ttl,
 		AppName:     config.EZGin().App.Name,
 		Method:      method,
-		ContentType: contentType,
+		ContentType: c.ContentType(),
 		URI:         uri,
 		ClientIP:    clientIP,
 		ReqHeaders:  reqHeaders,
@@ -120,34 +129,39 @@ func (receiver enter) Middleware(c *gin.Context) {
 	logChan <- ctx
 }
 
-func (receiver enter) GetFormParams(ctx *gin.Context) map[string]string {
+func (receiver enter) GetFormParams(c *gin.Context) map[string]string {
 	params := make(map[string]string)
-	cType := ctx.ContentType()
-	if !strings.Contains(cType, gin.MIMEPOSTForm) &&
-		!strings.Contains(cType, gin.MIMEMultipartPOSTForm) {
-		return params
-	}
-	if ctx.Request == nil {
-		return params
-	}
-	if ctx.Request.Method == "GET" {
-		for k, v := range ctx.Request.URL.Query() {
+	if c.Request.Method == "GET" {
+		for k, v := range c.Request.URL.Query() {
 			params[k] = v[0]
 		}
 		return params
-	} else {
-		err := ctx.Request.ParseForm()
-		if err != nil {
-			return params
+	} else if c.Request.Method == "POST" {
+		if strings.Contains(c.ContentType(), "x-www-form-urlencoded") {
+			err := c.Request.ParseForm()
+			if err != nil {
+				return params
+			}
+			for k, v := range c.Request.PostForm {
+				params[k] = v[0]
+			}
+			for k, v := range c.Request.URL.Query() {
+				params[k] = v[0]
+			}
+		} else if strings.Contains(c.ContentType(), "multipart/form-data") {
+			err := c.Request.ParseMultipartForm(100 * 1024 * 1024)
+			if err != nil {
+				return params
+			}
+			for k, v := range c.Request.MultipartForm.Value {
+				params[k] = v[0]
+			}
+			for k, v := range c.Request.URL.Query() {
+				params[k] = v[0]
+			}
 		}
-		for k, v := range ctx.Request.PostForm {
-			params[k] = v[0]
-		}
-		for k, v := range ctx.Request.URL.Query() {
-			params[k] = v[0]
-		}
-		return params
 	}
+	return params
 }
 
 // ConvToString 任意类型转换为字符串
