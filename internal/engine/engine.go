@@ -257,7 +257,7 @@ func (receiver *groupControl) Group(relativePath string) engine.EZRouter {
 
 func (receiver *groupControl) Routers(method engine.HttpMethod, pathHandler map[string]engine.HandlerFunc) engine.EZRouter {
 	for relativePath, handler := range pathHandler {
-		key := receiver.basePath + relativePath
+		key := path.Join(receiver.basePath, relativePath)
 		receiver.control.saveRouters(method, key, handler)
 		switch method {
 		case engine.Get:
