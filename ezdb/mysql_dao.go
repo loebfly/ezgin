@@ -22,6 +22,21 @@ func (receiver *MysqlDao[E]) Create(entity *E) error {
 	return nil
 }
 
+// MultiCreate 插入多条数据
+func (receiver *MysqlDao[E]) MultiCreate(entities []*E) error {
+	db, err := Mysql()
+	if err != nil {
+		ezlogs.Error("数据库连接失败: {}", err.Error())
+		return errors.New("数据库连接失败")
+	}
+	err = db.Create(entities).Error
+	if err != nil {
+		ezlogs.Error("数据库插入失败: {}", err.Error())
+		return errors.New("数据库插入失败")
+	}
+	return nil
+}
+
 // Delete 删除数据
 func (receiver *MysqlDao[E]) Delete(entity E) error {
 	db, err := Mysql()
