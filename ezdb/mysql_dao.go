@@ -60,7 +60,7 @@ func (receiver *MysqlDao[E]) Updates(entity *E) error {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
 	}
-	err = db.Debug().Updates(entity).Error
+	err = db.Updates(entity).Error
 	if err != nil {
 		ezlogs.Error("数据库更新失败: {}", err.Error())
 		return errors.New("数据库更新失败")
@@ -75,7 +75,7 @@ func (receiver *MysqlDao[E]) Save(entity *E) error {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
 	}
-	err = db.Debug().Save(entity).Error
+	err = db.Save(entity).Error
 	if err != nil {
 		ezlogs.Error("数据库保存失败: {}", err.Error())
 		return errors.New("数据库保存失败")
