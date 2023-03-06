@@ -3,11 +3,14 @@ package ezdb
 import (
 	"errors"
 	"github.com/loebfly/ezgin/ezlogs"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // MongoDao mongo数据库操作
-type MongoDao[E MongoNameSetter] struct{}
+type MongoDao[E MongoNameSetter] struct {
+	DBTag func() string
+}
 
 // MongoNameSetter mongo数据库操作
 type MongoNameSetter interface {
@@ -16,7 +19,14 @@ type MongoNameSetter interface {
 
 // Insert 插入数据
 func (receiver *MongoDao[E]) Insert(entity E) error {
-	db, returnDB, err := Mongo()
+	var db *mgo.Database
+	var returnDB func(db *mgo.Database)
+	var err error
+	if receiver.DBTag != nil {
+		db, returnDB, err = Mongo(receiver.DBTag())
+	} else {
+		db, returnDB, err = Mongo()
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
@@ -32,7 +42,14 @@ func (receiver *MongoDao[E]) Insert(entity E) error {
 
 // RemoveId 删除数据
 func (receiver *MongoDao[E]) RemoveId(id bson.ObjectId) error {
-	db, returnDB, err := Mongo()
+	var db *mgo.Database
+	var returnDB func(db *mgo.Database)
+	var err error
+	if receiver.DBTag != nil {
+		db, returnDB, err = Mongo(receiver.DBTag())
+	} else {
+		db, returnDB, err = Mongo()
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
@@ -49,7 +66,14 @@ func (receiver *MongoDao[E]) RemoveId(id bson.ObjectId) error {
 
 // UpdateId 更新数据
 func (receiver *MongoDao[E]) UpdateId(id bson.ObjectId, entity E) error {
-	db, returnDB, err := Mongo()
+	var db *mgo.Database
+	var returnDB func(db *mgo.Database)
+	var err error
+	if receiver.DBTag != nil {
+		db, returnDB, err = Mongo(receiver.DBTag())
+	} else {
+		db, returnDB, err = Mongo()
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")

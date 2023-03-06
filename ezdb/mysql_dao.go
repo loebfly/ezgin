@@ -3,16 +3,38 @@ package ezdb
 import (
 	"errors"
 	"github.com/loebfly/ezgin/ezlogs"
+	"gorm.io/gorm"
 )
 
-type MysqlDao[E any] struct{}
+type MysqlDao[E any] struct {
+	DBTag func() string // 数据库标签
+	debug bool          // 是否开启debug模式
+}
+
+// Debug 开启debug模式
+func (receiver *MysqlDao[E]) Debug() *MysqlDao[E] {
+	newDao := &MysqlDao[E]{
+		DBTag: receiver.DBTag,
+		debug: true,
+	}
+	return newDao
+}
 
 // Create 插入数据
 func (receiver *MysqlDao[E]) Create(entity *E) error {
-	db, err := Mysql()
+	var db *gorm.DB
+	var err error
+	if receiver.DBTag == nil {
+		db, err = Mysql()
+	} else {
+		db, err = Mysql(receiver.DBTag())
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
+	}
+	if receiver.debug {
+		db = db.Debug()
 	}
 	err = db.Create(entity).Error
 	if err != nil {
@@ -24,10 +46,19 @@ func (receiver *MysqlDao[E]) Create(entity *E) error {
 
 // MultiCreate 插入多条数据
 func (receiver *MysqlDao[E]) MultiCreate(entities []*E) error {
-	db, err := Mysql()
+	var db *gorm.DB
+	var err error
+	if receiver.DBTag == nil {
+		db, err = Mysql()
+	} else {
+		db, err = Mysql(receiver.DBTag())
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
+	}
+	if receiver.debug {
+		db = db.Debug()
 	}
 	err = db.Create(entities).Error
 	if err != nil {
@@ -39,10 +70,19 @@ func (receiver *MysqlDao[E]) MultiCreate(entities []*E) error {
 
 // Delete 删除数据
 func (receiver *MysqlDao[E]) Delete(entity E) error {
-	db, err := Mysql()
+	var db *gorm.DB
+	var err error
+	if receiver.DBTag == nil {
+		db, err = Mysql()
+	} else {
+		db, err = Mysql(receiver.DBTag())
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
+	}
+	if receiver.debug {
+		db = db.Debug()
 	}
 	var e E
 	err = db.Where(entity).Delete(&e).Error
@@ -55,10 +95,19 @@ func (receiver *MysqlDao[E]) Delete(entity E) error {
 
 // Updates 更新数据
 func (receiver *MysqlDao[E]) Updates(entity *E) error {
-	db, err := Mysql()
+	var db *gorm.DB
+	var err error
+	if receiver.DBTag == nil {
+		db, err = Mysql()
+	} else {
+		db, err = Mysql(receiver.DBTag())
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
+	}
+	if receiver.debug {
+		db = db.Debug()
 	}
 	err = db.Updates(entity).Error
 	if err != nil {
@@ -70,10 +119,19 @@ func (receiver *MysqlDao[E]) Updates(entity *E) error {
 
 // Save 保存数据
 func (receiver *MysqlDao[E]) Save(entity *E) error {
-	db, err := Mysql()
+	var db *gorm.DB
+	var err error
+	if receiver.DBTag == nil {
+		db, err = Mysql()
+	} else {
+		db, err = Mysql(receiver.DBTag())
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return errors.New("数据库连接失败")
+	}
+	if receiver.debug {
+		db = db.Debug()
 	}
 	err = db.Save(entity).Error
 	if err != nil {
@@ -85,12 +143,20 @@ func (receiver *MysqlDao[E]) Save(entity *E) error {
 
 // All mysql动态查询数据
 func (receiver *MysqlDao[E]) All(entity E) ([]E, error) {
-	db, err := Mysql()
+	var db *gorm.DB
+	var err error
+	if receiver.DBTag == nil {
+		db, err = Mysql()
+	} else {
+		db, err = Mysql(receiver.DBTag())
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return nil, errors.New("数据库连接失败")
 	}
-
+	if receiver.debug {
+		db = db.Debug()
+	}
 	var result = make([]E, 0)
 	err = db.Where(entity).Find(&result).Error
 	if err != nil {
@@ -102,10 +168,19 @@ func (receiver *MysqlDao[E]) All(entity E) ([]E, error) {
 
 // One mysql动态查询一条数据
 func (receiver *MysqlDao[E]) One(entity E) (*E, error) {
-	db, err := Mysql()
+	var db *gorm.DB
+	var err error
+	if receiver.DBTag == nil {
+		db, err = Mysql()
+	} else {
+		db, err = Mysql(receiver.DBTag())
+	}
 	if err != nil {
 		ezlogs.Error("数据库连接失败: {}", err.Error())
 		return nil, errors.New("数据库连接失败")
+	}
+	if receiver.debug {
+		db = db.Debug()
 	}
 	var result *E
 	err = db.Where(entity).Find(&result).Error
