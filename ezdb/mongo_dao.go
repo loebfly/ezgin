@@ -2,6 +2,7 @@ package ezdb
 
 import (
 	"errors"
+	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/ezlogs"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -85,4 +86,49 @@ func (receiver *MongoDao[E]) UpdateId(id bson.ObjectId, entity E) error {
 		return errors.New("数据库更新失败")
 	}
 	return nil
+}
+
+// Pager 分页查询
+func (receiver *MongoDao[E]) Pager(db *mgo.Database, query bson.M, sort []string, page, pageSize int) ([]E, engine.Page, error) {
+	var e E
+	var total int
+	var err error
+	var result []E
+	var returnDB func(db *mgo.Database)
+	if db == nil {
+		if receiver.DBTag != nil {
+			db, returnDB, err = Mongo(receiver.DBTag())
+		} else {
+			db, returnDB, err = Mongo()
+		}
+		if err != nil {
+			ezlogs.Error("数据库连接失败: {}", err.Error())
+			return nil, engine.Page{}, errors.New("数据库连接失败")
+		}
+		defer returnDB(db)
+	}
+	total, err = db.C(e.MongoName()).Find(query).Count()
+	if err != nil {
+		ezlogs.Error("数据库查询失败: {}", err.Error())
+		return nil, engine.Page{}, errors.New("数据库查询失败")
+	}
+	err = db.C(e.MongoName()).Find(query).Sort(sort...).Skip((page - 1) * pageSize).Limit(pageSize).All(&result)
+	if err != nil {
+		ezlogs.Error("数据库查询失败: {}", err.Error())
+		return nil, engine.Page{}, errors.New("数据库查询失败")
+	}
+
+	var count int
+	if total%pageSize == 0 {
+		count = total / pageSize
+	} else {
+		count = total/pageSize + 1
+	}
+
+	return result, engine.Page{
+		Total: total,
+		Index: page,
+		Size:  pageSize,
+		Count: count,
+	}, nil
 }
