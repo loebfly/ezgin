@@ -88,31 +88,35 @@ func (receiver *MongoDao[E]) UpdateId(id bson.ObjectId, entity E) error {
 	return nil
 }
 
-// Pager 分页查询
-func (receiver *MongoDao[E]) Pager(db *mgo.Database, query bson.M, sort []string, page, pageSize int) ([]E, engine.Page, error) {
+// Pager 分页查询 db
+func (receiver *MongoDao[E]) Pager(query bson.M, page, pageSize int, sort ...string) ([]E, engine.Page, error) {
 	var e E
 	var total int
 	var err error
 	var result []E
+	var db *mgo.Database
 	var returnDB func(db *mgo.Database)
-	if db == nil {
-		if receiver.DBTag != nil {
-			db, returnDB, err = Mongo(receiver.DBTag())
-		} else {
-			db, returnDB, err = Mongo()
-		}
-		if err != nil {
-			ezlogs.Error("数据库连接失败: {}", err.Error())
-			return nil, engine.Page{}, errors.New("数据库连接失败")
-		}
-		defer returnDB(db)
+	if receiver.DBTag != nil {
+		db, returnDB, err = Mongo(receiver.DBTag())
+	} else {
+		db, returnDB, err = Mongo()
 	}
-	total, err = db.C(e.MongoName()).Find(query).Count()
+	if err != nil {
+		ezlogs.Error("数据库连接失败: {}", err.Error())
+		return nil, engine.Page{}, errors.New("数据库连接失败")
+	}
+	defer returnDB(db)
+	find := db.C(e.MongoName()).Find(query)
+	total, err = find.Count()
 	if err != nil {
 		ezlogs.Error("数据库查询失败: {}", err.Error())
 		return nil, engine.Page{}, errors.New("数据库查询失败")
 	}
-	err = db.C(e.MongoName()).Find(query).Sort(sort...).Skip((page - 1) * pageSize).Limit(pageSize).All(&result)
+
+	if sort != nil {
+		find = find.Sort(sort...)
+	}
+	err = find.Skip((page - 1) * pageSize).Limit(pageSize).All(&result)
 	if err != nil {
 		ezlogs.Error("数据库查询失败: {}", err.Error())
 		return nil, engine.Page{}, errors.New("数据库查询失败")
