@@ -2,6 +2,7 @@ package ezdb
 
 import (
 	"errors"
+	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/ezlogs"
 	"gorm.io/gorm"
 )
@@ -189,4 +190,36 @@ func (receiver *MysqlDao[E]) One(entity E) (*E, error) {
 		return nil, errors.New("数据库查询失败")
 	}
 	return result, nil
+}
+
+// Pager 分页查询, db为已经设置好的查询条件的db，page为当前页，pageSize为每页条数，返回值为查询结果，分页信息，错误信息
+func (receiver *MysqlDao[E]) Pager(db *gorm.DB, page, pageSize int) ([]E, engine.Page, error) {
+	var err error
+	var result = make([]E, 0)
+	var total int64
+	offset := (page - 1) * pageSize
+	err = db.Offset(offset).Limit(pageSize).Find(&result).Error
+	if err != nil {
+		ezlogs.Error("数据库查询失败: {}", err.Error())
+		return nil, engine.Page{}, errors.New("数据库查询失败")
+	}
+	err = db.Count(&total).Error
+	if err != nil {
+		ezlogs.Error("数据库查询失败: {}", err.Error())
+		return nil, engine.Page{}, errors.New("数据库查询失败")
+	}
+
+	var count int
+	if total%int64(pageSize) == 0 {
+		count = int(total) / pageSize
+	} else {
+		count = int(total)/pageSize + 1
+	}
+
+	return result, engine.Page{
+		Total: int(total),
+		Size:  pageSize,
+		Index: page,
+		Count: count,
+	}, nil
 }
