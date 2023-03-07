@@ -80,7 +80,11 @@ func (receiver restfulCall) getReqUrlAndHeader(service, uri string, path, header
 	}
 
 	for k, v := range path {
-		uri = strings.ReplaceAll(uri, "{"+k+"}", v)
+		if strings.Contains(uri, "{"+k+"}") {
+			uri = strings.ReplaceAll(uri, "{"+k+"}", v)
+		} else if strings.Contains(uri, ":"+k) {
+			uri = strings.ReplaceAll(uri, ":"+k, v)
+		}
 	}
 	url := host + uri
 	traceHeader := engine.MWTrace.GetCurHeader()
