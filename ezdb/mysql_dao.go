@@ -5,9 +5,10 @@ import (
 	"github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/ezlogs"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
-type MysqlDao[E any] struct {
+type MysqlDao[E schema.Tabler] struct {
 	DBTag func() string // 数据库标签
 	debug bool          // 是否开启debug模式
 }
@@ -142,7 +143,7 @@ func (receiver *MysqlDao[E]) Save(entity *E) error {
 	return nil
 }
 
-// All mysql动态查询数据
+// All 不带分页查询数据列表
 func (receiver *MysqlDao[E]) All(entity E) ([]E, error) {
 	var db *gorm.DB
 	var err error
@@ -167,7 +168,7 @@ func (receiver *MysqlDao[E]) All(entity E) ([]E, error) {
 	return result, nil
 }
 
-// One mysql动态查询一条数据
+// One 查询一条数据
 func (receiver *MysqlDao[E]) One(entity E) (*E, error) {
 	var db *gorm.DB
 	var err error
@@ -184,8 +185,11 @@ func (receiver *MysqlDao[E]) One(entity E) (*E, error) {
 		db = db.Debug()
 	}
 	var result *E
-	err = db.Where(entity).Find(&result).Error
+	err = db.Where(entity).First(&result).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
 		ezlogs.Error("数据库查询失败: {}", err.Error())
 		return nil, errors.New("数据库查询失败")
 	}
