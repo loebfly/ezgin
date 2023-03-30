@@ -98,19 +98,21 @@ func (c Client) InputMsgForTopic(topic string, message ...string) error {
 	if len(message) == 0 {
 		return errors.New("message 为空，无法输入")
 	}
-	producer, err := c.GetSyncProducer()
+
+	_ = c.CreateTopic(topic)
+
+	producer, err := c.GetAsyncProducer()
 	if err != nil {
 		return err
 	}
 
-	for _, msg := range message {
-		_, _, err = producer.SendMessage(&sarama.ProducerMessage{
+	for _, content := range message {
+		msg := &sarama.ProducerMessage{
 			Topic: topic,
-			Value: sarama.StringEncoder(msg),
-		})
-		if err != nil {
-			return errors.New("输入{" + msg + "}消息失败")
+			Value: sarama.StringEncoder(content),
 		}
+		producer.Input() <- msg
+		ezlogs.CDebug("KAFKA", "成功向{}主题发送了消息:{}", topic, content)
 	}
 	return nil
 }
