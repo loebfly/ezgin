@@ -13,7 +13,7 @@ func InitObjs(objs []EZGinRedis) {
 		ezlogs.CError("REDIS", "初始化失败: {}", err.Error())
 	}
 	ezlogs.CDebug("REDIS", "初始化成功")
-	ctl.addCheckTicker()
+	//ctl.addCheckTicker()
 }
 
 func GetDB(tag ...string) (db *redis.Client, err error) {
