@@ -138,3 +138,10 @@ func (receiver enter) CopyPreHeaderToCurRoutine(preRoutineId string) {
 		ezcache.Table(XHeaderTable).Add(receiver.GetCurRoutineId(), headers, CacheDuration)
 	}
 }
+
+// SetHeaderForCur 添加请求头信息到当前协程
+func (receiver enter) SetHeaderForCur(key, value string) {
+	headers := receiver.GetCurHeader()
+	headers[key] = value
+	ezcache.Table(XHeaderTable).Add(receiver.GetCurRoutineId(), headers, CacheDuration)
+}
