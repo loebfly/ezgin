@@ -5,10 +5,10 @@
 		fmt.Println(args)
 	})
 	safeGo.SetGoBeforeHandler(func() string {
-		return ezgin.Engine.GetMWTraceCurRoutineId()
+		return ezgin.MWTrace.GetCurRoutineId()
 	})
 	safeGo.SetGoAfterHandler(func(params string) {
-		ezgin.Engine.CopyMWTracePreHeaderToCurRoutine(params)
+		ezgin.MWTrace.CopyPreHeaderToCurRoutine(params)
 	})
 	safeGo.Run("hello", "world")
 */
