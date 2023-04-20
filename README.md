@@ -8,7 +8,10 @@
 go get -u github.com/loebfly/ezgin
 ```
 
-## 2. 功能概览
+## 2. 配置
+参考ezgin/template目录下的配置文件
+
+## 3. 概览
 
 - ezgin (服务启动、优化退出、gin封装)
 - ezlogs (日志模块)
@@ -18,11 +21,10 @@ go get -u github.com/loebfly/ezgin
 - ezgo (安全携程模块)
 - ezcache (内存缓存模块)
 - ezcall (微服务调用模块)
-- ezi18n (国际化模块)
 
-## 3. 使用示例
+## 4. 示例
 
-### 3.1 ezgin
+### 4.1 ezgin
 
 ```go
 package main
@@ -67,7 +69,7 @@ func main() {
 }
 ```
 
-### 3.2 ezlogs
+### 4.2 ezlogs
 
 ```go
 package main
@@ -86,7 +88,7 @@ func main() {
 
 ```
 
-### 3.3 ezdb
+### 4.3 ezdb
 
 ```go
 package main
@@ -130,7 +132,7 @@ func main() {
 }
 ```
 
-### 3.4 ezcfg
+### 4.4 ezcfg
 
 ```go
 package main
@@ -147,7 +149,7 @@ func main() {
 }
 ```
 
-### 3.5 ezi18n
+### 4.5 ezi18n
 
 ```go
 package main
@@ -163,7 +165,7 @@ func main() {
 }
 ```
 
-### 3.6 ezgo
+### 4.6 ezgo
 
 ```go
 package main
@@ -189,7 +191,7 @@ func main() {
 }
 ```
 
-### 3.7 ezcache
+### 4.7 ezcache
 
 ```go
 package main
@@ -207,7 +209,7 @@ func main() {
 }
 ```
 
-### 3.8 ezcall
+### 4.8 ezcall
 
 ```go
 package main
