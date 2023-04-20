@@ -17,8 +17,9 @@ func InitObj(obj EZGinKafka) {
 	err := ctl.initConnect()
 	if err != nil {
 		ezlogs.CError("KAFKA", "初始化失败: {}", err.Error())
+	} else {
+		ezlogs.CInfo("KAFKA", "初始化成功")
 	}
-	ezlogs.CInfo("KAFKA", "初始化成功")
 	ctl.addCheckTicker()
 }
 

@@ -11,8 +11,9 @@ func InitObjs(objs []EZGinMysql) {
 	err := ctl.initConnect()
 	if err != nil {
 		ezlogs.CError("MYSQL", "初始化失败: {}", err.Error())
+	} else {
+		ezlogs.CInfo("MYSQL", "初始化成功")
 	}
-	ezlogs.CInfo("MYSQL", "初始化成功")
 	ctl.addCheckTicker()
 }
 
