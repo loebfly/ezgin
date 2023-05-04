@@ -69,18 +69,27 @@ func GetYmlObj(confUrlOrPath string, obj any) error {
 	return nil
 }
 
+// GetString 获取key对应的string类型值
 func GetString(key string) string {
 	return config.YmlData.String(key)
 }
 
+// GetInt 获取key对应的int类型值
 func GetInt(key string) int {
 	return config.YmlData.Int(key)
 }
 
+// GetBool 获取key对应的bool类型值
 func GetBool(key string) bool {
 	return config.YmlData.Bool(key)
 }
 
+// GetFloat64 获取key对应的float64类型值
 func GetFloat64(key string) float64 {
 	return config.YmlData.Float64(key)
+}
+
+// GetYmlUrlOrPath 获取前缀对应的配置文件路径或Nacos的URL
+func GetYmlUrlOrPath(prefix string) string {
+	return config.YmlObj.EZGin.GetYmlUrlOrPath(prefix)
 }
