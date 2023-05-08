@@ -412,12 +412,12 @@ func (c *control) getLocalIPV4() []string {
 			if ipNet.IP.IsPrivate() {
 				lanIps = append(lanIps, ipNet.IP.String())
 				if Config.Nacos.Lan &&
-					strings.HasSuffix(ipNet.IP.String(), Config.Nacos.LanNet) {
+					strings.HasPrefix(ipNet.IP.String(), Config.Nacos.LanNet) {
 					ips = append(ips, ipNet.IP.String())
 				}
 			} else {
 				wanIps = append(wanIps, ipNet.IP.String())
-				if Config.Nacos.Lan == false {
+				if !Config.Nacos.Lan {
 					ips = append(ips, ipNet.IP.String())
 				}
 			}
