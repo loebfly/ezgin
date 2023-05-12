@@ -237,15 +237,15 @@ func (receiver enter) initEngine() {
 
 					if err != nil {
 						ezlogs.CError("MIDDLEWARE", "写入Mongo日志失败, 获取数据库失败: {}", err.Error())
-						return
-					}
-					ctx.Id = bson.NewObjectId()
-					err = db.C(ctx.GetRealMgoTable(mongoTable)).Insert(ctx)
-					if err != nil {
-						ezlogs.CError("MIDDLEWARE", "写入Mongo日志失败: {}", err.Error())
+						continue
+					} else {
+						ctx.Id = bson.NewObjectId()
+						err = db.C(ctx.GetRealMgoTable(mongoTable)).Insert(ctx)
+						if err != nil {
+							ezlogs.CError("MIDDLEWARE", "写入Mongo日志失败: {}", err.Error())
+						}
 						returnDB(db)
 					}
-					returnDB(db)
 				}
 				if kafkaTopic != "-" && ezdb.Kafka().GetClient() != nil {
 					err := ezdb.Kafka().InputMsgForTopic(ctx.GetRealKafkaTopic(kafkaTopic), ctx.ToJson())
