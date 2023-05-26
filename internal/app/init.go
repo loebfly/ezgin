@@ -277,10 +277,6 @@ func (receiver enter) initEngine() {
 	if StartCfg != nil && StartCfg.GinCfg.NoRouteHandler != nil {
 		engine.Enter.GetOriGin().NoRoute(StartCfg.GinCfg.NoRouteHandler)
 	}
-	// 初始化文档路由
-	if StartCfg != nil && StartCfg.GinCfg.SwaggerRelativePath != "" && StartCfg.GinCfg.SwaggerHandler != nil {
-		engine.Enter.GetOriGin().GET(StartCfg.GinCfg.SwaggerRelativePath, StartCfg.GinCfg.SwaggerHandler)
-	}
 }
 
 // initServer 初始化服务

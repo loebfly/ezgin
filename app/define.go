@@ -14,11 +14,9 @@ type Start struct {
 }
 
 type GinCfg struct {
-	Engine              *gin.Engine     // gin引擎, 传nil则使用gin默认引擎
-	RecoveryHandler     RecoveryFunc    // 异常恢复处理函数, 传nil则使用默认处理函数
-	NoRouteHandler      gin.HandlerFunc // 404处理函数, 传nil不处理
-	SwaggerRelativePath string          // swagger相对路径, 传空则不启用swagger
-	SwaggerHandler      gin.HandlerFunc // swagger处理函数, 传nil则不启用swagger
+	Engine          *gin.Engine     // gin引擎, 传nil则使用gin默认引擎
+	RecoveryHandler RecoveryFunc    // 异常恢复处理函数, 传nil则使用默认处理函数
+	NoRouteHandler  gin.HandlerFunc // 404处理函数, 传nil不处理
 }
 
 type Shutdown struct {
