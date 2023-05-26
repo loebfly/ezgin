@@ -29,9 +29,7 @@ func main() {
 			},
 			NoRouteHandler: func(c *gin.Context) {
 				c.JSON(http.StatusOK, i18n.UrlNotFound.ErrorRes())
-			},
-			SwaggerRelativePath: "/docs/*any",
-			SwaggerHandler:      ginSwagger.WrapHandler(swaggerFiles.Handler),
+			}
 		},
 	})
 }
@@ -44,6 +42,11 @@ func Start(start ...appDefine.Start) {
 // shutdown 退出配置
 func ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
 	app.ShutdownWhenExitSignal(shutdown...)
+}
+
+// SetSwaggerHandler 设置swagger
+func SetSwaggerHandler(handler gin.HandlerFunc) {
+	GetOriGin().GET("/docs/*any", handler)
 }
 
 // GetOriGin 获取原生gin.Engine
@@ -86,12 +89,15 @@ func Options(relativePath string, handler engineDefine.HandlerFunc) engineDefine
 func Use(middleware ...engineDefine.MiddlewareFunc) engineDefine.EZRouter {
 	return engine.Enter.Use(middleware...)
 }
+
 func Group(relativePath string) engineDefine.EZRouter {
 	return engine.Enter.Group(relativePath)
 }
+
 func Routers(method engineDefine.HttpMethod, pathHandler map[string]engineDefine.HandlerFunc) engineDefine.EZRouter {
 	return engine.Enter.Routers(method, pathHandler)
 }
+
 func FreeRouters(methodPathHandlers map[engineDefine.HttpMethod]map[string]engineDefine.HandlerFunc) engineDefine.EZRouter {
 	return engine.Enter.FreeRouters(methodPathHandlers)
 }
