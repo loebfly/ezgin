@@ -2,6 +2,7 @@ package call
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/levigross/grequests"
 	define "github.com/loebfly/ezgin/engine"
 	"github.com/loebfly/ezgin/ezlogs"
@@ -97,6 +98,6 @@ func (receiver restfulCall) getReqUrlAndHeader(service, uri string, path, header
 			}
 		}
 	}
-	header["Content-Type"] = "application/json"
+	header["Content-Type"] = gin.MIMEJSON
 	return url, header, nil
 }

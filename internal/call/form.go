@@ -2,6 +2,7 @@ package call
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/levigross/grequests"
 	"github.com/loebfly/ezgin/ezlogs"
 	"github.com/loebfly/ezgin/internal/engine"
@@ -35,7 +36,8 @@ func (receiver formCall) tryRequest(method, service, uri string, header, params 
 		ezlogs.CDebug("CALL",
 			"FORM - FILE 微服务开始请求 -- url: {}, params: {}, header: {}",
 			url, method, params, header)
-
+		// 上传文件, 需要删除Content-Type
+		delete(header, "Content-Type")
 		resp, err = grequests.Post(url, &grequests.RequestOptions{
 			Data:               params,
 			Files:              files,
@@ -111,5 +113,6 @@ func (receiver formCall) getReqUrlAndHeader(service, uri string, header map[stri
 			}
 		}
 	}
+	header["Content-Type"] = gin.MIMEPOSTForm
 	return url, header, nil
 }
