@@ -12,31 +12,26 @@ import (
 var ctl = new(control)
 
 type control struct {
-	dbMap map[string]*redis.Client
+	dbMap map[string]redis.UniversalClient
 }
 
 func (c *control) initConnect() error {
 	if c.dbMap == nil {
-		c.dbMap = make(map[string]*redis.Client)
+		c.dbMap = make(map[string]redis.UniversalClient)
 	}
 	for _, v := range config.Objs {
-		addr := fmt.Sprintf("%s:%d", v.Host, v.Port)
-		client := redis.NewClient(&redis.Options{
-			Addr:         addr,
+
+		client := redis.NewUniversalClient(&redis.UniversalOptions{
+			Addrs:        v.GetAddrs(),
+			DB:           v.GetDB(),
 			Password:     v.Password,
-			DB:           v.Database,
+			DialTimeout:  time.Duration(v.Pool.Timeout) * time.Second,
 			PoolSize:     v.Pool.Max,
 			MinIdleConns: v.Pool.Min,
-			IdleTimeout:  time.Duration(v.Pool.Idle) * time.Minute,
-			DialTimeout:  time.Duration(v.Pool.Timeout) * time.Second,
-			Dialer: func() (net.Conn, error) {
-				netDialer := &net.Dialer{
-					Timeout:   5 * time.Second,
-					KeepAlive: 5 * time.Minute,
-				}
-				return netDialer.Dial("tcp", addr)
-			},
+			IdleTimeout:  time.Duration(v.Timeout) * time.Minute,
+			MasterName:   v.MasterName,
 		})
+
 		_, err := client.Ping().Result()
 		if err != nil {
 			return err
@@ -112,7 +107,7 @@ func (c *control) addCheckTicker() {
 	}(c)
 }
 
-func (c *control) getDB(tag ...string) (*redis.Client, error) {
+func (c *control) getDB(tag ...string) (redis.UniversalClient, error) {
 	key := ""
 	if len(tag) == 0 {
 		if len(config.Objs) > 0 {

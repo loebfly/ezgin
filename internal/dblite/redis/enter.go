@@ -17,7 +17,7 @@ func InitObjs(objs []EZGinRedis) {
 	//ctl.addCheckTicker()
 }
 
-func GetDB(tag ...string) (db *redis.Client, err error) {
+func GetDB(tag ...string) (db redis.UniversalClient, err error) {
 	return ctl.getDB(tag...)
 }
 

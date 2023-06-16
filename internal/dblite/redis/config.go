@@ -22,11 +22,13 @@ func (cfg *ymlConfig) InitObjs(objs []EZGinRedis) {
 
 func (cfg *ymlConfig) checkObjs() error {
 	for i, obj := range cfg.Objs {
-		if obj.Host == "" {
-			return errors.New(fmt.Sprintf("第 %d 个 redis.host 不可为空", i+1))
-		}
-		if obj.Port == 0 {
-			return errors.New(fmt.Sprintf("第 %d 个 redis.port 不可为空", i+1))
+		if len(obj.Addrs) == 0 {
+			if obj.Host == "" {
+				return errors.New(fmt.Sprintf("第 %d 个 redis.host 不可为空", i+1))
+			}
+			if obj.Port == 0 {
+				return errors.New(fmt.Sprintf("第 %d 个 redis.port 不可为空", i+1))
+			}
 		}
 		if obj.Password == "" {
 			return errors.New(fmt.Sprintf("第 %d 个 redis.password 不可为空", i+1))
@@ -38,7 +40,7 @@ func (cfg *ymlConfig) checkObjs() error {
 func (cfg *ymlConfig) fillNull() {
 	for i, obj := range cfg.Objs {
 		if obj.Timeout == 0 {
-			cfg.Objs[i].Timeout = 1000
+			cfg.Objs[i].Timeout = 5
 		}
 		if obj.Pool.Min == 0 {
 			cfg.Objs[i].Pool.Min = 3
@@ -50,7 +52,7 @@ func (cfg *ymlConfig) fillNull() {
 			cfg.Objs[i].Pool.Idle = 10
 		}
 		if obj.Pool.Timeout == 0 {
-			cfg.Objs[i].Pool.Timeout = 300
+			cfg.Objs[i].Pool.Timeout = 60
 		}
 	}
 }
