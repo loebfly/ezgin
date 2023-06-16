@@ -31,7 +31,7 @@ func GetMongoAllTags() []string {
 }
 
 // Redis 获取redis数据库, tag为空时返回第一个数据库, tag 多个只取第一个
-func Redis(tag ...string) (db *redis.Client, err error) {
+func Redis(tag ...string) (db redis.UniversalClient, err error) {
 	return redisDB.GetDB(tag...)
 }
 
