@@ -201,7 +201,8 @@ func (receiver *MysqlDao[E]) Pager(db *gorm.DB, page, pageSize int) ([]E, engine
 	var err error
 	var result = make([]E, 0)
 	var total int64
-	err = db.Count(&total).Error
+	var e E
+	err = db.Model(e).Count(&total).Error
 	if err != nil {
 		ezlogs.Error("数据库查询失败: {}", err.Error())
 		return nil, engine.Page{}, errors.New("数据库查询失败")
