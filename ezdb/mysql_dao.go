@@ -201,14 +201,7 @@ func (receiver *MysqlDao[E]) Pager(db *gorm.DB, page, pageSize int) ([]E, engine
 	var err error
 	var result = make([]E, 0)
 	var total int64
-	offset := (page - 1) * pageSize
-	err = db.Offset(offset).Limit(pageSize).Find(&result).Error
-	if err != nil {
-		ezlogs.Error("数据库查询失败: {}", err.Error())
-		return nil, engine.Page{}, errors.New("数据库查询失败")
-	}
-	var model E
-	err = db.Model(model).Count(&total).Error
+	err = db.Count(&total).Error
 	if err != nil {
 		ezlogs.Error("数据库查询失败: {}", err.Error())
 		return nil, engine.Page{}, errors.New("数据库查询失败")
@@ -219,6 +212,13 @@ func (receiver *MysqlDao[E]) Pager(db *gorm.DB, page, pageSize int) ([]E, engine
 		count = int(total) / pageSize
 	} else {
 		count = int(total)/pageSize + 1
+	}
+
+	offset := (page - 1) * pageSize
+	err = db.Offset(offset).Limit(pageSize).Find(&result).Error
+	if err != nil {
+		ezlogs.Error("数据库查询失败: {}", err.Error())
+		return nil, engine.Page{}, errors.New("数据库查询失败")
 	}
 
 	return result, engine.Page{
