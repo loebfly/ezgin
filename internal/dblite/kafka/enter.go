@@ -88,7 +88,7 @@ func (c Client) CreateTopic(topic string) error {
 		NumPartitions:     1,
 		ReplicationFactor: 1,
 	}, false)
-	if err != nil && strings.Contains(err.Error(), "Topic with this name already exists") {
+	if err != nil && !strings.Contains(err.Error(), "Topic with this name already exists") {
 		ezlogs.CError("KAFKA", "创建topic失败: {}", err.Error())
 		return err
 	}
