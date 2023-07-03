@@ -138,7 +138,7 @@ func (c Client) ListenTopicForGroupId(topic, groupId string, handler func(msg st
 				handler: handler,
 			})
 			if err3 != nil {
-				ezlogs.CError("KAFKA", "消费{}组的{}主题失败: {}", groupId, topic, err.Error())
+				ezlogs.CError("KAFKA", "消费{}组的{}主题失败: {}", groupId, topic, err3.Error())
 			}
 		}
 	}()
