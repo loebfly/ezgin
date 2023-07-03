@@ -125,13 +125,23 @@ func (c Client) ListenTopicForGroupId(topic, groupId string, handler func(msg st
 		return err
 	}
 
-	err = consumerGroup.Consume(context.Background(), []string{topic}, &msgConsumerGroupHandler{
-		handler: handler,
-	})
-	if err != nil {
-		ezlogs.CError("KAFKA", "监听{}组的{}主题失败: {}", groupId, topic, err.Error())
-		return err
-	}
+	go func() {
+		for err2 := range consumerGroup.Errors() {
+			ezlogs.CError("KAFKA", "消费者组{}监听{}主题出错: {}", groupId, topic, err2.Error())
+		}
+	}()
+
+	go func() {
+		for {
+			err3 := consumerGroup.Consume(context.Background(), []string{topic}, &msgConsumerGroupHandler{
+				handler: handler,
+			})
+			if err3 != nil {
+				ezlogs.CError("KAFKA", "监听{}组的{}主题失败: {}", groupId, topic, err.Error())
+			}
+			ezlogs.CInfo("KAFKA", "监听{}组的{}主题成功", groupId, topic)
+		}
+	}()
 
 	return nil
 }
