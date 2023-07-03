@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/Shopify/sarama"
 	"github.com/loebfly/ezgin/ezlogs"
+	"strings"
 )
 
 var client = Client{}
@@ -87,7 +88,7 @@ func (c Client) CreateTopic(topic string) error {
 		NumPartitions:     1,
 		ReplicationFactor: 1,
 	}, false)
-	if err != nil {
+	if err != nil && strings.Contains(err.Error(), "Topic with this name already exists") {
 		ezlogs.CError("KAFKA", "创建topic失败: {}", err.Error())
 		return err
 	}
@@ -137,9 +138,8 @@ func (c Client) ListenTopicForGroupId(topic, groupId string, handler func(msg st
 				handler: handler,
 			})
 			if err3 != nil {
-				ezlogs.CError("KAFKA", "监听{}组的{}主题失败: {}", groupId, topic, err.Error())
+				ezlogs.CError("KAFKA", "消费{}组的{}主题失败: {}", groupId, topic, err.Error())
 			}
-			ezlogs.CInfo("KAFKA", "监听{}组的{}主题成功", groupId, topic)
 		}
 	}()
 
