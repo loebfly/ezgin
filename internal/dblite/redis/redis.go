@@ -42,7 +42,7 @@ func (c *control) initConnect() error {
 }
 
 func (c *control) tryConnect(tag string) error {
-	if db, ok := c.dbMap[tag]; !ok {
+	if db, ok := c.dbMap[tag]; ok {
 		if db != nil {
 			_, err := db.Ping().Result()
 			if err == nil {
