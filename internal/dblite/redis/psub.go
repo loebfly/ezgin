@@ -39,10 +39,10 @@ func (receiver *PSubOperator) AddKeyExpiredChannel() *PSubOperator {
 	return receiver
 }
 
-// Run 运行
-func (receiver *PSubOperator) Run(handler func(msg *redis.Message)) {
+// Receive 接收
+func (receiver *PSubOperator) Receive(handler func(dbTag *string, msg *redis.Message)) {
 	if handler == nil {
-		ezlogs.Error("REDIS", "PSubOperator.Run: handler is nil")
+		ezlogs.Error("REDIS", "PSubOperator.Receive: handler is nil")
 		return
 	}
 	rds, err := ctl.getDB(receiver.dbTag...)
@@ -54,20 +54,26 @@ func (receiver *PSubOperator) Run(handler func(msg *redis.Message)) {
 	msgCn := pubSub.Channel()
 	for msg := range msgCn {
 		ezlogs.Debug("REDIS", "收到Redis消息:{}", msg.Payload)
-		handler(msg)
+		var dbTag *string
+		if len(receiver.dbTag) > 0 {
+			dbTag = &receiver.dbTag[0]
+		} else {
+			dbTag = &config.Objs[0].Tag
+		}
+		handler(dbTag, msg)
 	}
 	_ = pubSub.Close()
 }
 
-// HoldRun 持续运行
-func (receiver *PSubOperator) HoldRun(handler func(msg *redis.Message)) {
+// HoldReceive 保持接收
+func (receiver *PSubOperator) HoldReceive(handler func(dbTag *string, msg *redis.Message)) {
 	if handler == nil {
-		ezlogs.Error("REDIS", "PSubOperator.Run: handler is nil")
+		ezlogs.Error("REDIS", "PSubOperator.Receive: handler is nil")
 		return
 	}
 	go func() {
 		for {
-			receiver.Run(handler)
+			receiver.Receive(handler)
 			time.Sleep(time.Second)
 		}
 	}()

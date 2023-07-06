@@ -38,8 +38,8 @@ func Redis(tag ...string) (db redis.UniversalClient, err error) {
 // NewRedisPSub 创建一个新的PSub操作对象
 /*
 示例:
-	ezdb.NewRedisPSub().AddKeyExpiredChannel().HoldRun(func(msg *redis.Message) {
-		fmt.Println(msg.Channel, msg.Payload)
+	ezdb.NewRedisPSub().AddKeyExpiredChannel().HoldReceive(func(dbTag *string, msg *redis.Message) {
+		fmt.Println(dbTag, msg.Channel, msg.Payload)
 	})
 */
 func NewRedisPSub(tag ...string) *redisDB.PSubOperator {
