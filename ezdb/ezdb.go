@@ -38,12 +38,12 @@ func Redis(tag ...string) (db redis.UniversalClient, err error) {
 // NewRedisPSub 创建一个新的PSub操作对象
 /*
 示例:
-	ezdb.NewRedisPSub().SetChannels("test").SetDBTag("default").HoldRun(func(msg *redis.Message) {
+	ezdb.NewRedisPSub().SetChannels("test").HoldRun(func(msg *redis.Message) {
 		fmt.Println(msg.Channel, msg.Payload)
 	})
 */
-func NewRedisPSub() *redisDB.PSubOperator {
-	return redisDB.NewPSub()
+func NewRedisPSub(tag ...string) *redisDB.PSubOperator {
+	return redisDB.NewPSub(tag...)
 }
 
 // GetRedisAllTags 获取所有redis数据库标签

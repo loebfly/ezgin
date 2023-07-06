@@ -22,9 +22,12 @@ func GetDB(tag ...string) (db redis.UniversalClient, err error) {
 }
 
 // NewPSub 创建一个新的PSub操作对象
-func NewPSub() *PSubOperator {
+func NewPSub(dbTag ...string) *PSubOperator {
+	if len(dbTag) == 0 {
+		dbTag = []string{}
+	}
 	return &PSubOperator{
-		dbTag:    []string{},
+		dbTag:    dbTag,
 		channels: []string{},
 	}
 }

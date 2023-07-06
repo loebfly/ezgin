@@ -1,8 +1,10 @@
 package redis
 
 import (
+	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/loebfly/ezgin/ezlogs"
+	"strconv"
 	"time"
 )
 
@@ -12,15 +14,28 @@ type PSubOperator struct {
 	channels []string
 }
 
-// SetDBTag 设置数据库标签
-func (receiver *PSubOperator) SetDBTag(dbTag ...string) *PSubOperator {
-	receiver.dbTag = dbTag
-	return receiver
-}
-
 // SetChannels 设置订阅的频道
 func (receiver *PSubOperator) SetChannels(channels ...string) *PSubOperator {
 	receiver.channels = channels
+	return receiver
+}
+
+// AddKeyExpiredChannel 添加键过期的频道
+func (receiver *PSubOperator) AddKeyExpiredChannel() *PSubOperator {
+	dbNum := "*" // 默认为任意数据库
+	if len(config.Objs) > 0 {
+		if len(receiver.dbTag) > 0 {
+			for _, obj := range config.Objs {
+				if obj.Tag == receiver.dbTag[0] {
+					dbNum = strconv.Itoa(obj.GetDB())
+				}
+			}
+		} else {
+			dbNum = strconv.Itoa(config.Objs[0].GetDB())
+		}
+	}
+
+	receiver.channels = append(receiver.channels, fmt.Sprintf("__keyevent@%s__:expired", dbNum))
 	return receiver
 }
 
