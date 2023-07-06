@@ -21,6 +21,14 @@ func GetDB(tag ...string) (db redis.UniversalClient, err error) {
 	return ctl.getDB(tag...)
 }
 
+// NewPSub 创建一个新的PSub操作对象
+func NewPSub() *PSubOperator {
+	return &PSubOperator{
+		dbTag:    []string{},
+		channels: []string{},
+	}
+}
+
 func GetAllTags() []string {
 	var tags = make([]string, 0)
 	for _, obj := range config.Objs {

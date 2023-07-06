@@ -44,16 +44,16 @@ func (c *control) initConnect() error {
 	saramaCfg.Version = version
 
 	servers := strings.Split(config.Obj.Servers, ",")
-	client, err := sarama.NewClient(servers, saramaCfg)
+	newClient, err := sarama.NewClient(servers, saramaCfg)
 	if err != nil {
 		return errors.New("kafka.NewClient: " + err.Error())
 	}
-	if len(client.Brokers()) == 0 {
+	if len(newClient.Brokers()) == 0 {
 		return errors.New("kafka连接失败, 请检查配置, 无法连接到kafka服务器")
-	} else if strings.Contains(client.Brokers()[0].Addr(), "127.0.0.1") {
+	} else if strings.Contains(newClient.Brokers()[0].Addr(), "127.0.0.1") {
 		return errors.New("kafka连接失败, 请检查配置, 不能连接到127.0.0.1")
 	}
-	c.client = client
+	c.client = newClient
 	return nil
 }
 

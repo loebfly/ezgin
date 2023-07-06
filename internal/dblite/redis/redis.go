@@ -118,9 +118,9 @@ func (c *control) getDB(tag ...string) (redis.UniversalClient, error) {
 	} else {
 		key = tag[0]
 	}
-	if db, ok := c.dbMap[key]; ok {
-		return db, nil
-	}
+	//if db, ok := c.dbMap[key]; ok {
+	//	return db, nil
+	//}
 	err := c.tryConnect(key)
 	if err != nil {
 		return nil, err

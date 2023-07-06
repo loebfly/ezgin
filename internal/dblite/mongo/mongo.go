@@ -109,9 +109,9 @@ func (c *control) getDB(tag ...string) (db *mgo.Database, returnDB func(db *mgo.
 		}
 	}
 
-	if v, ok := c.dbMap[key]; ok {
-		return v.Copy().DB(database), c.returnDB, nil
-	}
+	//if v, ok := c.dbMap[key]; ok {
+	//	return v.Copy().DB(database), c.returnDB, nil
+	//}
 
 	err = c.tryConnect(key)
 	if err != nil {

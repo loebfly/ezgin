@@ -14,7 +14,7 @@ func InitObjs(objs []EZGinMongo) {
 	} else {
 		ezlogs.CInfo("MONGO", "初始化成功")
 	}
-	ctl.addCheckTicker()
+	// ctl.addCheckTicker()
 }
 
 func GetDB(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {

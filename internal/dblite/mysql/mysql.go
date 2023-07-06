@@ -119,9 +119,9 @@ func (c *control) getDB(findName ...string) (*gorm.DB, error) {
 	} else {
 		key = findName[0]
 	}
-	if db, ok := c.dbMap[key]; ok {
-		return db, nil
-	}
+	//if db, ok := c.dbMap[key]; ok {
+	//	return db, nil
+	//}
 	err := c.tryConnect(key)
 	if err != nil {
 		return nil, err
