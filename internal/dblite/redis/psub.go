@@ -42,18 +42,18 @@ func (receiver *PSubOperator) AddKeyExpiredChannel() *PSubOperator {
 // Receive 接收
 func (receiver *PSubOperator) Receive(handler func(dbTag *string, msg *redis.Message)) {
 	if handler == nil {
-		ezlogs.Error("REDIS", "PSubOperator err: handler is nil")
+		ezlogs.CError("REDIS", "PSubOperator err: handler is nil")
 		return
 	}
 	rds, err := ctl.getDB(receiver.dbTag...)
 	if err != nil {
-		ezlogs.Error("REDIS", "PSubOperator err: {}", err.Error())
+		ezlogs.CError("REDIS", "PSubOperator err: {}", err.Error())
 		return
 	}
 	pubSub := rds.PSubscribe(receiver.channels...)
 	msgCn := pubSub.Channel()
 	for msg := range msgCn {
-		ezlogs.Debug("REDIS", "PSubOperator receive Payload:{}", msg.Payload)
+		ezlogs.CDebug("REDIS", "PSubOperator receive Payload:{}", msg.Payload)
 		var dbTag *string
 		if len(receiver.dbTag) > 0 {
 			dbTag = &receiver.dbTag[0]
@@ -68,7 +68,7 @@ func (receiver *PSubOperator) Receive(handler func(dbTag *string, msg *redis.Mes
 // HoldReceive 保持接收
 func (receiver *PSubOperator) HoldReceive(handler func(dbTag *string, msg *redis.Message)) {
 	if handler == nil {
-		ezlogs.Error("REDIS", "PSubOperator err: handler is nil")
+		ezlogs.CError("REDIS", "PSubOperator err: handler is nil")
 		return
 	}
 	go func() {
