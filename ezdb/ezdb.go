@@ -8,6 +8,7 @@ import (
 	redisDB "github.com/loebfly/ezgin/internal/dblite/redis"
 	"gopkg.in/mgo.v2"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 // Mysql 获取mysql数据库, tag为空时返回第一个数据库, tag 多个只取第一个
@@ -20,6 +21,13 @@ func GetMysqlAllTags() []string {
 	return mysqlDB.GetAllTags()
 }
 
+// NewMysqlDao 创建一个新的MysqlDao
+func NewMysqlDao[E schema.Tabler](dbTag func() string) *MysqlDao[E] {
+	return &MysqlDao[E]{
+		DBTag: dbTag,
+	}
+}
+
 // Mongo 获取mongo数据库, tag为空时返回第一个数据库, tag 多个只取第一个
 func Mongo(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), err error) {
 	return mongoDB.GetDB(tag...)
@@ -28,6 +36,13 @@ func Mongo(tag ...string) (db *mgo.Database, returnDB func(db *mgo.Database), er
 // GetMongoAllTags 获取所有mongo数据库标签
 func GetMongoAllTags() []string {
 	return mongoDB.GetAllTags()
+}
+
+// NewMongoDao 创建一个新的MongoDao
+func NewMongoDao[E MongoNameSetter](dbTag func() string) *MongoDao[E] {
+	return &MongoDao[E]{
+		DBTag: dbTag,
+	}
 }
 
 // Redis 获取redis数据库, tag为空时返回第一个数据库, tag 多个只取第一个
