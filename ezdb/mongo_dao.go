@@ -44,13 +44,13 @@ func (receiver *MongoDao[E]) Insert(entity E) error {
 	defer returnDB(db)
 	err = db.C(entity.MongoName()).Insert(entity)
 	if err != nil {
-		ezlogs.Error("数据库插入失败: {}", err.Error())
+		ezlogs.Error("Mongo数据库插入失败: {}", err.Error())
 		return errors.New("数据库插入失败")
 	}
 	return nil
 }
 
-// RemoveId 删除数据
+// RemoveId 删除数据, 根据ID
 func (receiver *MongoDao[E]) RemoveId(id bson.ObjectId) error {
 	db, returnDB, err := receiver.GetDB()
 	if err != nil {
@@ -60,7 +60,7 @@ func (receiver *MongoDao[E]) RemoveId(id bson.ObjectId) error {
 	var e E
 	err = db.C(e.MongoName()).RemoveId(id)
 	if err != nil {
-		ezlogs.Error("数据库删除失败: {}", err.Error())
+		ezlogs.Error("Mongo数据库删除失败: {}", err.Error())
 		return errors.New("数据库删除失败")
 	}
 	return nil
@@ -75,7 +75,7 @@ func (receiver *MongoDao[E]) UpdateId(id bson.ObjectId, entity E) error {
 	defer returnDB(db)
 	err = db.C(entity.MongoName()).UpdateId(id, entity)
 	if err != nil {
-		ezlogs.Error("数据库更新失败: {}", err.Error())
+		ezlogs.Error("Mongo数据库更新失败: {}", err.Error())
 		return errors.New("数据库更新失败")
 	}
 	return nil
@@ -97,7 +97,7 @@ func (receiver *MongoDao[E]) All(query bson.M, sort ...string) ([]E, error) {
 	var result = make([]E, 0)
 	err = find.All(&result)
 	if err != nil {
-		ezlogs.Error("数据库查询失败: {}", err.Error())
+		ezlogs.Error("Mongo数据库查询失败: {}", err.Error())
 		return nil, errors.New("数据库查询失败")
 	}
 	return result, nil
@@ -117,7 +117,7 @@ func (receiver *MongoDao[E]) One(query bson.M) (*E, error) {
 		if err == mgo.ErrNotFound {
 			return nil, nil
 		}
-		ezlogs.Error("数据库查询失败: {}", err.Error())
+		ezlogs.Error("Mongo数据库查询失败: {}", err.Error())
 		return nil, errors.New("数据库查询失败")
 	}
 
@@ -136,7 +136,7 @@ func (receiver *MongoDao[E]) Pager(query bson.M, page, pageSize int, sort ...str
 	var total int
 	total, err = find.Count()
 	if err != nil {
-		ezlogs.Error("数据库查询失败: {}", err.Error())
+		ezlogs.Error("Mongo数据库查询总数失败: {}", err.Error())
 		return nil, engine.Page{}, errors.New("数据库查询失败")
 	}
 
@@ -147,7 +147,7 @@ func (receiver *MongoDao[E]) Pager(query bson.M, page, pageSize int, sort ...str
 	var result = make([]E, 0)
 	err = find.Skip((page - 1) * pageSize).Limit(pageSize).All(&result)
 	if err != nil {
-		ezlogs.Error("数据库查询失败: {}", err.Error())
+		ezlogs.Error("Mongo数据库查询列表失败: {}", err.Error())
 		return nil, engine.Page{}, errors.New("数据库查询失败")
 	}
 

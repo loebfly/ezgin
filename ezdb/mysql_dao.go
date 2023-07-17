@@ -22,7 +22,7 @@ func (receiver *MysqlDao[E]) Debug() *MysqlDao[E] {
 	return newDao
 }
 
-// GetDB 获取Mysql数据库连接
+// GetDB 获取Mysql数据库
 func (receiver *MysqlDao[E]) GetDB() (*gorm.DB, error) {
 	var db *gorm.DB
 	var err error
@@ -32,7 +32,7 @@ func (receiver *MysqlDao[E]) GetDB() (*gorm.DB, error) {
 		db, err = Mysql(receiver.DBTag())
 	}
 	if err != nil {
-		ezlogs.Error("mysql数据库连接失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库连接失败: {}", err.Error())
 		return nil, errors.New("数据库连接失败")
 	}
 	if receiver.debug {
@@ -49,7 +49,7 @@ func (receiver *MysqlDao[E]) Create(entity *E) error {
 	}
 	err = db.Create(entity).Error
 	if err != nil {
-		ezlogs.Error("数据库插入失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库插入失败: {}", err.Error())
 		return errors.New("数据库插入失败")
 	}
 	return nil
@@ -63,7 +63,7 @@ func (receiver *MysqlDao[E]) MultiCreate(entities []*E) error {
 	}
 	err = db.Create(entities).Error
 	if err != nil {
-		ezlogs.Error("数据库插入失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库插入失败: {}", err.Error())
 		return errors.New("数据库插入失败")
 	}
 	return nil
@@ -78,7 +78,7 @@ func (receiver *MysqlDao[E]) Delete(entity E) error {
 	var e E
 	err = db.Where(entity).Delete(&e).Error
 	if err != nil {
-		ezlogs.Error("数据库删除失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库删除失败: {}", err.Error())
 		return errors.New("数据库删除失败")
 	}
 	return nil
@@ -92,7 +92,7 @@ func (receiver *MysqlDao[E]) Updates(entity *E) error {
 	}
 	err = db.Updates(entity).Error
 	if err != nil {
-		ezlogs.Error("数据库更新失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库更新失败: {}", err.Error())
 		return errors.New("数据库更新失败")
 	}
 	return nil
@@ -106,7 +106,7 @@ func (receiver *MysqlDao[E]) Save(entity *E) error {
 	}
 	err = db.Save(entity).Error
 	if err != nil {
-		ezlogs.Error("数据库保存失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库保存失败: {}", err.Error())
 		return errors.New("数据库保存失败")
 	}
 	return nil
@@ -121,7 +121,7 @@ func (receiver *MysqlDao[E]) All(entity E) ([]E, error) {
 	var result = make([]E, 0)
 	err = db.Where(entity).Find(&result).Error
 	if err != nil {
-		ezlogs.Error("数据库查询失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库查询失败: {}", err.Error())
 		return nil, errors.New("数据库查询失败")
 	}
 	return result, nil
@@ -139,7 +139,7 @@ func (receiver *MysqlDao[E]) One(entity E) (*E, error) {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
-		ezlogs.Error("数据库查询失败: {}", err.Error())
+		ezlogs.Error("Mysql数据库查询失败: {}", err.Error())
 		return nil, errors.New("数据库查询失败")
 	}
 	return result, nil
