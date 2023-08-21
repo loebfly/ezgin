@@ -25,7 +25,7 @@ func (receiver Memory) Get(key string) (value any, isExist bool) {
 func (receiver Memory) Delete(key string) {
 	_, err := receiver.Table.Delete(key)
 	if err != nil {
-		ezlogs.CError("cache", "delete cache error", err)
+		ezlogs.CError("cache", "delete cache error: {}", err)
 	}
 }
 
