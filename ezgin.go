@@ -45,7 +45,11 @@ func ShutdownWhenExitSignal(shutdown ...appDefine.Shutdown) {
 }
 
 // SetSwaggerHandler 设置swagger
-func SetSwaggerHandler(handler gin.HandlerFunc) {
+func SetSwaggerHandler(handler gin.HandlerFunc, relativePath ...string) {
+	if len(relativePath) > 0 {
+		GetOriGin().GET(relativePath[0], handler)
+		return
+	}
 	GetOriGin().GET("/docs/*any", handler)
 }
 
