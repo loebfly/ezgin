@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// GetYmlData 以字节获取配置数据，结构体必须是yaml格式
+// GetYmlData 以字节请求yaml格式配置数据
 func GetYmlData(confUrl string) (*koanf.Koanf, error) {
 	resp, err := grequests.Get(confUrl, nil)
 	if err != nil {
@@ -79,6 +79,11 @@ func GetInt(key string) int {
 	return config.YmlData.Int(key)
 }
 
+// GetInt64 获取key对应的int64类型的值
+func GetInt64(key string) int64 {
+	return config.YmlData.Int64(key)
+}
+
 // GetBool 获取key对应的bool类型值
 func GetBool(key string) bool {
 	return config.YmlData.Bool(key)
@@ -87,6 +92,25 @@ func GetBool(key string) bool {
 // GetFloat64 获取key对应的float64类型值
 func GetFloat64(key string) float64 {
 	return config.YmlData.Float64(key)
+}
+
+// GetArray 获取数组
+func GetArray[T any](key string) []T {
+	var res []T
+	if srcArr, ok := config.YmlData.Get(key).([]interface{}); ok {
+		res = make([]T, len(srcArr))
+		for i := 0; i < len(srcArr); i++ {
+			if val, valOk := srcArr[i].(T); valOk {
+				res[i] = val
+			} else {
+				var place T
+				res[i] = place
+			}
+
+		}
+		return res
+	}
+	return res
 }
 
 // GetYmlUrlOrPath 获取前缀对应的配置文件路径或Nacos的URL
